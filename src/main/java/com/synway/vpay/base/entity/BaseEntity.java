@@ -9,7 +9,7 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
@@ -22,13 +22,13 @@ public abstract class BaseEntity {
     // 创建时间
     @Column(updatable = false, nullable = false)
     @CreationTimestamp
-    private Timestamp createTime;
+    private LocalDateTime createTime;
 
     // 修改时间
     @Column(nullable = false)
     @UpdateTimestamp
-    private Timestamp updateTime;
+    private LocalDateTime updateTime;
 
     // 是否已被删除
-    private boolean deleted = Boolean.FALSE;
+    // private boolean deleted = Boolean.FALSE;
 }

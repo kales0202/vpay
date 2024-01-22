@@ -2,12 +2,10 @@ package com.synway.vpay.entity;
 
 import com.synway.vpay.base.entity.BaseEntity;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -21,12 +19,10 @@ public class PayOrder extends BaseEntity {
     private String payId;
 
     // 支付时间
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date payTime;
+    private LocalDateTime payTime;
 
     // 关闭时间
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date closeTime;
+    private LocalDateTime closeTime;
 
     // 订单自定义参数，会原封返回给异步接口和同步接口
     private String param;
