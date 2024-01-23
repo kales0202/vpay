@@ -20,6 +20,6 @@ public class BusinessException extends RuntimeException {
     }
 
     public int getCode() {
-        return -1;
+        return CODE;
     }
 }

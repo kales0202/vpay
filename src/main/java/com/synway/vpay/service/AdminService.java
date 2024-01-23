@@ -28,13 +28,11 @@ public class AdminService {
         if (Objects.isNull(settingMap) || settingMap.isEmpty()) {
             return;
         }
-        settingMap.entrySet().stream()
+        List<Setting> settings = settingMap.entrySet().stream()
                 .filter(e -> Objects.nonNull(e.getValue()))
-                .forEach(e -> {
-                    log.info("save setting: {}={}", e.getKey(), e.getValue());
-                    Setting setting = new Setting(e.getKey(), String.valueOf(e.getValue()));
-                    settingRepository.save(setting);
-                });
+                .map(e -> new Setting(e.getKey(), e.getValue().toString()))
+                .toList();
+        settingRepository.saveAll(settings);
     }
 
     public String getSettingByKey(String keyword) {
