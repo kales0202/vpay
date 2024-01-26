@@ -1,23 +1,108 @@
 package com.synway.vpay.entity;
 
 import com.synway.vpay.base.entity.BaseEntity;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @Entity
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(callSuper = true)
 public class Setting extends BaseEntity {
 
-    @Column(unique = true)
+    /**
+     * 管理员账号
+     *
+     * @since 0.1
+     */
+    @NotNull
+    private String username;
+
+    /**
+     * 管理员密码
+     *
+     * @since 0.1
+     */
+    @NotNull
+    private String password;
+
+    /**
+     * 通讯密钥
+     *
+     * @since 0.1
+     */
     private String keyword;
 
-    private String content;
+    /**
+     * 异步通知地址
+     *
+     * @since 0.1
+     */
+    private String notifyUrl;
 
+    /**
+     * 同步通知地址
+     *
+     * @since 0.1
+     */
+    private String returnUrl;
+
+    /**
+     * 监控端最后心跳
+     *
+     * @since 0.1
+     */
+    private String lastHeart;
+
+    /**
+     * 监控端最后收款
+     *
+     * @since 0.1
+     */
+    private String lastPay;
+
+    /**
+     * 监控端状态
+     *
+     * @mock -1
+     * @since 0.1
+     */
+    private int jkState = -1;
+
+    /**
+     * 微信通用收款码
+     *
+     * @since 0.1
+     */
+    private String wxPay;
+
+    /**
+     * 支付宝通用收款码
+     *
+     * @since 0.1
+     */
+    private String aliPay;
+
+    /**
+     * 区分方式 0-金额递增 1-金额递减
+     *
+     * @mock 0
+     * @since 0.1
+     */
+    private int payQf = 1;
+
+    /**
+     * 订单有效时间，单位分钟，默认是5
+     *
+     * @mock 5
+     * @since 0.1
+     */
+    private int close = 5;
 }
