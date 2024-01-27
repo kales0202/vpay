@@ -1,6 +1,7 @@
 package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
+import com.synway.vpay.entity.Menu;
 import com.synway.vpay.entity.Setting;
 import com.synway.vpay.service.AdminService;
 import com.synway.vpay.service.SettingService;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Validated
 @RestController
@@ -54,6 +57,17 @@ public class AdminController {
     @GetMapping("/setting/{username}")
     public Result<Setting> setting(@PathVariable String username) {
         return Result.success(settingService.findByUsername(username));
+    }
+
+    /**
+     * 获取菜单
+     *
+     * @return 菜单集合
+     * @since 0.1
+     */
+    @RequestMapping("/getMenu")
+    public List<Menu> getMenu() {
+        return adminService.getMenu();
     }
 
     /**

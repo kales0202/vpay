@@ -11,18 +11,21 @@ public class Result<T> {
 
     /**
      * 状态码
+     *
      * @since 0.1
      */
     private int code;
 
     /**
      * 返回数据
+     *
      * @since 0.1
      */
     private T data;
 
     /**
      * 返回信息
+     *
      * @since 0.1
      */
     private String msg;

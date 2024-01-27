@@ -9,6 +9,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * 用户信息
+ */
 @Data
 @Entity
 @EqualsAndHashCode(callSuper = true)
