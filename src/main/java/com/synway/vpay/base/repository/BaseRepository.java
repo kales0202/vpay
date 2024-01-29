@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import java.io.Serializable;
 
 public abstract class BaseRepository<T extends BaseEntity, ID extends Serializable> extends SimpleJpaRepository<T, ID> {
+
     protected final EntityManager entityManager;
 
     protected BaseRepository(Class<T> domainClass, EntityManager entityManager) {

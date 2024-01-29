@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
     public Result<Object> businessException(HttpServletRequest request, BusinessException e) {
         this.commonHandle(request, e);
         return Result.error(e.getCode(), e.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    public Result<Object> exception(HttpServletRequest request, MethodArgumentTypeMismatchException e) {
+        this.commonHandle(request, e);
+        return Result.error("非法参数！");
     }
 
     @ResponseBody

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,21 +16,21 @@ public class Result<T> {
      *
      * @since 0.1
      */
-    private int code;
+    protected int code;
 
     /**
      * 返回数据
      *
      * @since 0.1
      */
-    private T data;
+    protected T data;
 
     /**
      * 返回信息
      *
      * @since 0.1
      */
-    private String msg;
+    protected String msg;
 
     public static <T> Result<T> success(T data, String msg) {
         return new Result<>(0, data, msg);
@@ -36,6 +38,10 @@ public class Result<T> {
 
     public static <T> Result<T> success(T data) {
         return success(data, null);
+    }
+
+    public static <T> Result<PageData<T>> page(int total, int page, int size, List<T> data) {
+        return success(new PageData<>(total, page, size, data), null);
     }
 
     public static <T> Result<T> error(int code, String msg) {
@@ -53,4 +59,5 @@ public class Result<T> {
     public static <T> Result<T> error() {
         return error(-1, null);
     }
+
 }
