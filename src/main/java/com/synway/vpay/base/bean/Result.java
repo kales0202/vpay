@@ -40,6 +40,10 @@ public class Result<T> {
         return success(data, null);
     }
 
+    public static <T> Result<T> success() {
+        return success(null, null);
+    }
+
     public static <T> Result<PageData<T>> page(int total, int page, int size, List<T> data) {
         return success(new PageData<>(total, page, size, data), null);
     }

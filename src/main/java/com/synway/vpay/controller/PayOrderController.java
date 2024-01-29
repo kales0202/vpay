@@ -7,6 +7,7 @@ import com.synway.vpay.entity.PayOrder;
 import com.synway.vpay.service.PayOrderService;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+/**
+ * 订单管理
+ *
+ * @since 0.1
+ */
 @Validated
 @RestController
 @RequestMapping("/order")
@@ -33,6 +39,18 @@ public class PayOrderController {
     @GetMapping("/{id}")
     public Result<PayOrder> get(@PathVariable UUID id) {
         return Result.success(payOrderService.findById(id));
+    }
+
+    /**
+     * 根据订单ID删除订单数据
+     *
+     * @param id 订单ID
+     * @since 0.1
+     */
+    @DeleteMapping("/{id}")
+    public Result<PayOrder> delete(@PathVariable UUID id) {
+        payOrderService.deleteById(id);
+        return Result.success();
     }
 
     /**

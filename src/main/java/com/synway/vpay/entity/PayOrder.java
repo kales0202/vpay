@@ -1,6 +1,9 @@
 package com.synway.vpay.entity;
 
 import com.synway.vpay.base.entity.BaseEntity;
+import com.synway.vpay.enums.OrderState;
+import com.synway.vpay.enums.PayQRCodeType;
+import com.synway.vpay.enums.PayType;
 import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -46,18 +49,18 @@ public class PayOrder extends BaseEntity {
     private LocalDateTime closeTime;
 
     /**
-     * 订单自定义参数，会原封返回给异步接口和同步接口
+     * 订单自定义参数，会原封不动的返回给异步接口和同步接口
      *
      * @since 0.1
      */
     private String param;
 
     /**
-     * 支付类型 1：微信 2：支付宝
+     * 支付方式
      *
      * @since 0.1
      */
-    private int type;
+    private PayType type;
 
     /**
      * 订单价格
@@ -88,18 +91,18 @@ public class PayOrder extends BaseEntity {
     private String returnUrl;
 
     /**
-     * 订单状态  -1：订单过期 0：等待支付 1：支付成功
+     * 订单状态
      *
      * @since 0.1
      */
-    private int state;
+    private OrderState state;
 
     /**
-     * 是否为通用二维码，1为通用二维码 0为固定转账二维码
+     * 支付二维码类型
      *
      * @since 0.1
      */
-    private int isAuto;
+    private PayQRCodeType isAuto;
 
     /**
      * 二维码内容

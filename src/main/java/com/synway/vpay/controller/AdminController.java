@@ -21,6 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 管理员相关接口
+ *
+ * @since 0.1
+ */
 @Validated
 @RestController
 @RequestMapping("/admin")

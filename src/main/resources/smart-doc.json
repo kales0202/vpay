@@ -1,4 +1,12 @@
 {
   "outPath": "build/doc",
-  "codePath": "src/main/java"
+  "codePath": "src/main/java",
+  "dataDictionaries": [
+    {
+      "title": "数据字典",
+      "enumClassName": "com.synway.vpay.base.define.IBaseEnum",
+      "codeField": "value",
+      "descField": "name"
+    }
+  ]
 }

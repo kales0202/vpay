@@ -1,6 +1,7 @@
 package com.synway.vpay.entity;
 
 import com.synway.vpay.base.entity.BaseEntity;
+import com.synway.vpay.enums.MenuType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -35,11 +36,11 @@ public class Menu extends BaseEntity {
     private String name;
 
     /**
-     * 类型, url, menu
+     * 菜单类型
      *
      * @since 0.1
      */
-    private String type = "url";
+    private MenuType type = MenuType.URL;
 
     /**
      * url地址
@@ -71,7 +72,7 @@ public class Menu extends BaseEntity {
 
     public Menu(String name, List<Menu> children) {
         this.name = name;
-        this.type = "menu";
+        this.type = MenuType.MENU;
         if (!CollectionUtils.isEmpty(children)) {
             this.children.addAll(children);
         }

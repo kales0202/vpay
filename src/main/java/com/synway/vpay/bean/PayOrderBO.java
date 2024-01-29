@@ -2,6 +2,8 @@ package com.synway.vpay.bean;
 
 import com.synway.vpay.base.bean.BasePage.BasePageBO;
 import com.synway.vpay.entity.PayOrder;
+import com.synway.vpay.enums.OrderState;
+import com.synway.vpay.enums.PayType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -17,17 +19,13 @@ public class PayOrderBO extends BasePageBO {
 
     /**
      * 支付类型
-     *
-     * @see PayOrder#type
      */
-    private Integer type;
+    private PayType type;
 
     /**
      * 订单状态
-     *
-     * @see PayOrder#state
      */
-    private Integer state;
+    private OrderState state;
 
     @Override
     public Pageable getPageable() {

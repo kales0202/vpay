@@ -19,6 +19,10 @@ public class PayOrderService {
         return payOrderRepository.findById(id).orElse(null);
     }
 
+    public void deleteById(UUID id) {
+        payOrderRepository.deleteById(id);
+    }
+
     public PageData<PayOrder> findAll(PayOrderBO bo) {
         Page<PayOrder> orders = payOrderRepository.findAll(bo);
         return new PageData<>(orders.getTotalElements(), bo.getPage(), bo.getSize(), orders.getContent());
