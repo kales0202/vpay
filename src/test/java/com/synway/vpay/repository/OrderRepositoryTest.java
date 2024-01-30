@@ -1,6 +1,6 @@
 package com.synway.vpay.repository;
 
-import com.synway.vpay.entity.PayOrder;
+import com.synway.vpay.entity.Order;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -9,26 +9,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-class PayOrderRepositoryTest {
+class OrderRepositoryTest {
 
     @Resource
-    private PayOrderRepository payOrderRepository;
+    private OrderRepository orderRepository;
 
     @AfterEach
     void tearDown() {
-        payOrderRepository.deleteAll();
+        orderRepository.deleteAll();
     }
 
     @Test
     public void testFindById() {
-        PayOrder order = getPayOrder();
-        payOrderRepository.save(order);
-        PayOrder result = payOrderRepository.findById(order.getId()).get();
+        Order order = getOrder();
+        orderRepository.save(order);
+        Order result = orderRepository.findById(order.getId()).get();
         assertEquals(order.getId(), result.getId());
     }
 
-    private PayOrder getPayOrder() {
-        PayOrder order = new PayOrder();
+    private Order getOrder() {
+        Order order = new Order();
         order.setOrderId("123");
         return order;
     }

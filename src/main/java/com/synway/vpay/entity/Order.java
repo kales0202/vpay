@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
  * 订单
  */
 @Data
-@Entity
+@Entity(name = "pay_order")
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class PayOrder extends BaseEntity {
+public class Order extends BaseEntity {
 
     /**
      * 支付云端唯一订单号

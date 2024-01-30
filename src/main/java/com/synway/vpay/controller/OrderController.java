@@ -2,9 +2,9 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.bean.Result;
-import com.synway.vpay.bean.PayOrderBO;
-import com.synway.vpay.entity.PayOrder;
-import com.synway.vpay.service.PayOrderService;
+import com.synway.vpay.bean.OrderBO;
+import com.synway.vpay.entity.Order;
+import com.synway.vpay.service.OrderService;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,10 +25,10 @@ import java.util.UUID;
 @Validated
 @RestController
 @RequestMapping("/order")
-public class PayOrderController {
+public class OrderController {
 
     @Resource
-    private PayOrderService payOrderService;
+    private OrderService orderService;
 
     /**
      * 根据订单ID获取订单数据
@@ -37,8 +37,8 @@ public class PayOrderController {
      * @since 0.1
      */
     @GetMapping("/{id}")
-    public Result<PayOrder> get(@PathVariable UUID id) {
-        return Result.success(payOrderService.findById(id));
+    public Result<Order> get(@PathVariable UUID id) {
+        return Result.success(orderService.findById(id));
     }
 
     /**
@@ -48,19 +48,31 @@ public class PayOrderController {
      * @since 0.1
      */
     @DeleteMapping("/{id}")
-    public Result<PayOrder> delete(@PathVariable UUID id) {
-        payOrderService.deleteById(id);
+    public Result<Order> delete(@PathVariable UUID id) {
+        orderService.deleteById(id);
+        return Result.success();
+    }
+
+    /**
+     * 新建订单
+     *
+     * @param order 订单信息
+     * @since 0.1
+     */
+    @PostMapping
+    public Result<Void> create(@RequestBody Order order) {
+        orderService.save(order);
         return Result.success();
     }
 
     /**
      * 分页获取订单数据列表
      *
-     * @param payOrderBO 订单查询参数
+     * @param orderBO 订单查询参数
      * @since 0.1
      */
     @PostMapping("/list")
-    public Result<PageData<PayOrder>> orders(@RequestBody PayOrderBO payOrderBO) {
-        return Result.success(payOrderService.findAll(payOrderBO));
+    public Result<PageData<Order>> orders(@RequestBody OrderBO orderBO) {
+        return Result.success(orderService.findAll(orderBO));
     }
 }
