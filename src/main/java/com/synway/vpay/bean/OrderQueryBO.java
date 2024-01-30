@@ -11,19 +11,28 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+/**
+ * 订单查询入参
+ *
+ * @since 0.1
+ */
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class OrderBO extends BasePageBO {
+public class OrderQueryBO extends BasePageBO {
     private final static Sort DESC_BY_CREATE_TIME = Sort.sort(Order.class).by(Order::getCreateTime).descending();
 
     /**
      * 支付类型
+     *
+     * @since 0.1
      */
     private PayType type;
 
     /**
      * 订单状态
+     *
+     * @since 0.1
      */
     private OrderState state;
 

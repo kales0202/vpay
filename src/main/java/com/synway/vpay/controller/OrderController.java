@@ -2,7 +2,7 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.bean.Result;
-import com.synway.vpay.bean.OrderBO;
+import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.service.OrderService;
 import jakarta.annotation.Resource;
@@ -68,11 +68,11 @@ public class OrderController {
     /**
      * 分页获取订单数据列表
      *
-     * @param orderBO 订单查询参数
+     * @param orderQueryBO 订单查询参数
      * @since 0.1
      */
     @PostMapping("/list")
-    public Result<PageData<Order>> orders(@RequestBody OrderBO orderBO) {
-        return Result.success(orderService.findAll(orderBO));
+    public Result<PageData<Order>> orders(@RequestBody OrderQueryBO orderQueryBO) {
+        return Result.success(orderService.findAll(orderQueryBO));
     }
 }

@@ -6,6 +6,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * 统一返回结果
+ *
+ * @param <T> 返回数据类型
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

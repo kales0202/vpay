@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 
 /**
  * 订单
+ *
+ * @since 0.1
  */
 @Data
 @Entity(name = "pay_order")

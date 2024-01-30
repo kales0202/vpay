@@ -17,6 +17,11 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
+/**
+ * 统一异常处理器
+ *
+ * @since 0.1
+ */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {

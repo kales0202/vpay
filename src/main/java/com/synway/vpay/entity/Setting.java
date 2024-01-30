@@ -11,6 +11,8 @@ import lombok.ToString;
 
 /**
  * 用户信息
+ *
+ * @since 0.1
  */
 @Data
 @Entity

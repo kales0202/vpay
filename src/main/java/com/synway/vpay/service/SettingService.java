@@ -63,6 +63,7 @@ public class SettingService {
      *
      * @param id 用户名
      * @return Setting
+     * @since 0.1
      */
     public Setting findById(@NotNull UUID id) {
         return settingRepository.findById(id).orElseThrow(NotFoundException::new);
@@ -73,6 +74,7 @@ public class SettingService {
      *
      * @param username 用户名
      * @return Setting
+     * @since 0.1
      */
     public Setting findByUsername(@NotNull String username) {
         return settingRepository.findByUsername(username);

@@ -1,7 +1,7 @@
 package com.synway.vpay.repository;
 
 import com.synway.vpay.base.repository.BaseRepository;
-import com.synway.vpay.bean.OrderBO;
+import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.entity.Order;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.Expression;
@@ -26,8 +26,9 @@ public class OrderRepository extends BaseRepository<Order, UUID> {
      *
      * @param bo orderBO
      * @return 订单分页数据集合
+     * @since 0.1
      */
-    public Page<Order> findAll(OrderBO bo) {
+    public Page<Order> findAll(OrderQueryBO bo) {
         Specification<Order> specification = (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
             List<Expression<Boolean>> expressions = predicate.getExpressions();

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 静态页面
+ *
+ * @since 0.1
  */
 @Controller
 @RequestMapping("/")
@@ -17,6 +19,7 @@ public class ResourceController {
      * 首页
      *
      * @return 首页
+     * @since 0.1
      */
     @GetMapping()
     public String index() {
@@ -27,6 +30,7 @@ public class ResourceController {
      * 登录页
      *
      * @return 登录页
+     * @since 0.1
      */
     @GetMapping({"login"})
     public String notFound() {
@@ -35,6 +39,8 @@ public class ResourceController {
 
     /**
      * favicon.ico
+     *
+     * @since 0.1
      */
     @GetMapping({"favicon.ico", "favicon"})
     @ResponseBody

@@ -1,7 +1,7 @@
 package com.synway.vpay.service;
 
 import com.synway.vpay.base.bean.PageData;
-import com.synway.vpay.bean.OrderBO;
+import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.repository.OrderRepository;
 import jakarta.annotation.Resource;
@@ -27,7 +27,7 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    public PageData<Order> findAll(OrderBO bo) {
+    public PageData<Order> findAll(OrderQueryBO bo) {
         Page<Order> orders = orderRepository.findAll(bo);
         return new PageData<>(orders.getTotalElements(), bo.getPage(), bo.getSize(), orders.getContent());
     }

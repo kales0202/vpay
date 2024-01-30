@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * 实体基类
+ * 数据库实体基类
  *
  * @since 0.1
  */
