@@ -1,7 +1,9 @@
 package com.synway.vpay.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.synway.vpay.base.entity.BaseEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +22,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-public class Setting extends BaseEntity {
+public class Account extends BaseEntity {
 
     /**
      * 管理员账号
@@ -28,7 +30,7 @@ public class Setting extends BaseEntity {
      * @since 0.1
      */
     @NotNull
-    private String username;
+    private String name;
 
     /**
      * 管理员密码
@@ -110,4 +112,13 @@ public class Setting extends BaseEntity {
      * @since 0.1
      */
     private int close = 5;
+
+    /**
+     * 会话ID
+     *
+     * @since 0.1
+     */
+    @Transient
+    @JsonIgnore
+    private String sessionId;
 }

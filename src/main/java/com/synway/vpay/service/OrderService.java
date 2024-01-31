@@ -1,6 +1,7 @@
 package com.synway.vpay.service;
 
 import com.synway.vpay.base.bean.PageData;
+import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.repository.OrderRepository;
@@ -15,6 +16,9 @@ public class OrderService {
     @Resource
     private OrderRepository orderRepository;
 
+    @Resource
+    private TempPriceService tempPriceService;
+
     public Order findById(UUID id) {
         return orderRepository.findById(id).orElse(null);
     }
@@ -23,8 +27,10 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
-    public void save(Order order) {
-        orderRepository.save(order);
+    public Order save(OrderCreateBO createBO) {
+        Order order = createBO.toOrder();
+        order.setRealPrice(tempPriceService.getRealPrice(order.getPrice()));
+        return orderRepository.save(order);
     }
 
     public PageData<Order> findAll(OrderQueryBO bo) {

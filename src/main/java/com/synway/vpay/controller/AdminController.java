@@ -1,11 +1,11 @@
 package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
+import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Menu;
-import com.synway.vpay.entity.Setting;
+import com.synway.vpay.service.AccountService;
 import com.synway.vpay.service.AdminService;
-import com.synway.vpay.service.SettingService;
-import com.synway.vpay.util.VpayConstant;
+import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -13,7 +13,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,10 +34,24 @@ public class AdminController {
     private AdminService adminService;
 
     @Resource
-    private SettingService settingService;
+    private AccountService accountService;
 
     @Resource
     private HttpSession session;
+
+    @Resource
+    private Account account;
+
+    /**
+     * 登录接口(测试)
+     */
+    @GetMapping("/login")
+    public void login1(String name, String pass) {
+        LoginInfo loginInfo = new LoginInfo();
+        loginInfo.setName(name);
+        loginInfo.setPass(pass);
+        this.login(loginInfo);
+    }
 
     /**
      * 登录接口
@@ -48,20 +61,27 @@ public class AdminController {
      */
     @PostMapping("/login")
     public void login(@RequestBody @Valid LoginInfo loginInfo) {
-        Setting setting = adminService.login(loginInfo.getUser(), loginInfo.getPass());
-        session.setAttribute(VpayConstant.USER, setting);
+        Account a = adminService.login(loginInfo.getName(), loginInfo.getPass());
+        account.setId(a.getId());
+        account.setName(a.getName());
+        account.setPassword(a.getPassword());
+        account.setKeyword(a.getKeyword());
+        account.setWxPay(a.getWxPay());
+        account.setAliPay(a.getAliPay());
+        account.setPayQf(a.getPayQf());
+        account.setClose(a.getClose());
+        account.setSessionId(session.getId());
     }
 
     /**
-     * 根据用户名获取配置信息
+     * 获取配置信息
      *
-     * @param username 用户名
-     * @return Setting 配置信息，找不到则返回null
+     * @return Account 配置信息，找不到则返回null
      * @since 0.1
      */
-    @GetMapping("/setting/{username}")
-    public Result<Setting> setting(@PathVariable String username) {
-        return Result.success(settingService.findByUsername(username));
+    @GetMapping("/account")
+    public Result<Account> account() {
+        return Result.success(VpayUtil.getTargetBean(account));
     }
 
     /**
@@ -89,7 +109,7 @@ public class AdminController {
          * @since 0.1
          */
         @NotNull
-        String user;
+        String name;
 
         /**
          * 密码

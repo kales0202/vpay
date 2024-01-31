@@ -2,8 +2,8 @@ package com.synway.vpay.service;
 
 import com.synway.vpay.base.exception.IllegalOperationException;
 import com.synway.vpay.base.exception.NotFoundException;
-import com.synway.vpay.entity.Setting;
-import com.synway.vpay.repository.SettingRepository;
+import com.synway.vpay.entity.Account;
+import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.util.VpayConstant;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
@@ -17,32 +17,32 @@ import java.util.UUID;
 @Slf4j
 @Service
 @Validated
-public class SettingService {
+public class AccountService {
 
     @Resource
-    private SettingRepository settingRepository;
+    private AccountRepository accountRepository;
 
     /**
      * 保存设置
      *
-     * @param setting 设置
+     * @param account 设置
      * @since 0.1
      */
-    public void save(Setting setting) {
-        settingRepository.save(setting);
+    public void save(Account account) {
+        accountRepository.save(account);
     }
 
     /**
      * 删除设置
      *
-     * @param setting 设置
+     * @param account 设置
      * @since 0.1
      */
-    public void delete(Setting setting) {
-        if (Objects.equals(VpayConstant.SUPER_ID, setting.getId())) {
+    public void delete(Account account) {
+        if (Objects.equals(VpayConstant.SUPER_ID, account.getId())) {
             throw new IllegalOperationException("不允许删除超级管理员！");
         }
-        settingRepository.delete(setting);
+        accountRepository.delete(account);
     }
 
     /**
@@ -55,28 +55,28 @@ public class SettingService {
         if (Objects.equals(VpayConstant.SUPER_ID, id)) {
             throw new IllegalOperationException("不允许删除超级管理员！");
         }
-        settingRepository.deleteById(id);
+        accountRepository.deleteById(id);
     }
 
     /**
      * 获取用户信息
      *
      * @param id 用户名
-     * @return Setting
+     * @return Account
      * @since 0.1
      */
-    public Setting findById(@NotNull UUID id) {
-        return settingRepository.findById(id).orElseThrow(NotFoundException::new);
+    public Account findById(@NotNull UUID id) {
+        return accountRepository.findById(id).orElseThrow(NotFoundException::new);
     }
 
     /**
      * 获取用户信息
      *
-     * @param username 用户名
-     * @return Setting
+     * @param name 用户名
+     * @return Account
      * @since 0.1
      */
-    public Setting findByUsername(@NotNull String username) {
-        return settingRepository.findByUsername(username);
+    public Account findByName(@NotNull String name) {
+        return accountRepository.findByName(name);
     }
 }

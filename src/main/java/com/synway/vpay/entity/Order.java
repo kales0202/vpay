@@ -4,11 +4,13 @@ import com.synway.vpay.base.entity.BaseEntity;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayQRCodeType;
 import com.synway.vpay.enums.PayType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -69,24 +71,26 @@ public class Order extends BaseEntity {
      *
      * @since 0.1
      */
-    private double price;
+    @Column(columnDefinition = "decimal(18,2)")
+    private BigDecimal price;
 
     /**
      * 实际支付价格
      *
      * @since 0.1
      */
-    private double reallyPrice;
+    @Column(columnDefinition = "decimal(18,2)")
+    private BigDecimal realPrice;
 
     /**
-     * 异步地址
+     * 异步通知地址，如果为空则使用系统后台设置的地址
      *
      * @since 0.1
      */
     private String notifyUrl;
 
     /**
-     * 支付完成后跳转地址
+     * 支付完成后同步跳转地址，将会携带参数跳转
      *
      * @since 0.1
      */

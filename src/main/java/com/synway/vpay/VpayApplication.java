@@ -1,10 +1,10 @@
 package com.synway.vpay;
 
 import com.google.common.collect.Lists;
+import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Menu;
-import com.synway.vpay.entity.Setting;
+import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.repository.MenuRepository;
-import com.synway.vpay.repository.SettingRepository;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -25,7 +25,7 @@ import java.util.List;
 public class VpayApplication implements ApplicationRunner {
 
     @Resource
-    private SettingRepository settingRepository;
+    private AccountRepository accountRepository;
 
     @Resource
     private MenuRepository menuRepository;
@@ -36,27 +36,27 @@ public class VpayApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (settingRepository.count() != 0) {
+        if (accountRepository.count() != 0) {
             return;
         }
         log.info("检测到系统为首次启动，正在进行数据库初始化...");
-        initSetting();
+        initAccount();
         initMenu();
         log.info("数据库初始化完成...");
     }
 
-    private void initSetting() {
-        Setting setting = new Setting();
-        setting.setId(VpayConstant.SUPER_ID);
-        setting.setUsername(VpayConstant.SUPER_USER);
-        setting.setPassword(VpayConstant.SUPER_USER);
-        setting.setKeyword(VpayUtil.md5(new Date().toString()));
-        settingRepository.save(setting);
+    private void initAccount() {
+        Account account = new Account();
+        account.setId(VpayConstant.SUPER_ID);
+        account.setName(VpayConstant.SUPER_ACCOUNT);
+        account.setPassword(VpayConstant.SUPER_ACCOUNT);
+        account.setKeyword(VpayUtil.md5(new Date().toString()));
+        accountRepository.save(account);
     }
 
     private void initMenu() {
         List<Menu> menus = new ArrayList<>();
-        menus.add(new Menu("系统设置", "admin/setting.html"));
+        menus.add(new Menu("系统设置", "admin/account.html"));
         menus.add(new Menu("监控端设置", "admin/jk.html"));
 
         // 微信二维码

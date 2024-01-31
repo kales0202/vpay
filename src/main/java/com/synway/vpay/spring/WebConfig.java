@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
-                .excludePathPatterns("/login", "/**/*.html", "/js/**", "/css/**", "/images/**", "/favicon.ico", "/favicon")
+                .excludePathPatterns("/login", "/admin/login", "/**/*.html", "/js/**", "/css/**", "/images/**", "/favicon.ico", "/favicon")
                 .addPathPatterns("/**");
     }
 
@@ -23,5 +23,11 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/");
+    }
+
+    @Bean
+    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public Account account() {
+        return new Account();
     }
 }

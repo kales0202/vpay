@@ -3,9 +3,11 @@ package com.synway.vpay.base.handler;
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.base.exception.AuthorizedException;
 import com.synway.vpay.base.exception.BusinessException;
+import com.synway.vpay.base.exception.IllegalArgumentException;
 import com.synway.vpay.base.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,6 +18,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
+
+import java.util.Optional;
 
 /**
  * 统一异常处理器
@@ -60,9 +64,20 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseBody
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    public Result<Object> exception(HttpServletRequest request, MethodArgumentNotValidException e) {
+        this.commonHandle(request, e);
+        String msg = Optional.ofNullable(e.getBindingResult().getFieldError())
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .orElse(IllegalArgumentException.MESSAGE);
+        return Result.error(msg);
+    }
+
+    @ResponseBody
     @ExceptionHandler(value = Exception.class)
     public Result<Object> exception(HttpServletRequest request, Exception e) {
         this.commonHandle(request, e);
+        log.error("", e);
         return Result.error(e.getMessage());
     }
 

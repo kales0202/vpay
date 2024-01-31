@@ -37,6 +37,11 @@ public class ResourceController {
         return "/login.html";
     }
 
+    @GetMapping("/pay")
+    public String pay(String order) {
+        return "/page/pay.html?order=" + order;
+    }
+
     /**
      * favicon.ico
      *

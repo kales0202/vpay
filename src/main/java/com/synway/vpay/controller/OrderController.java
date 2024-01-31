@@ -2,10 +2,14 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.bean.Result;
+import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.entity.Order;
+import com.synway.vpay.service.AdminService;
 import com.synway.vpay.service.OrderService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -29,6 +34,9 @@ public class OrderController {
 
     @Resource
     private OrderService orderService;
+
+    @Resource
+    private AdminService adminService;
 
     /**
      * 根据订单ID获取订单数据
@@ -56,13 +64,23 @@ public class OrderController {
     /**
      * 新建订单
      *
-     * @param order 订单信息
+     * @param createBO 订单创建入参信息
      * @since 0.1
      */
     @PostMapping
-    public Result<Void> create(@RequestBody Order order) {
-        orderService.save(order);
-        return Result.success();
+    public Result<Order> create(
+            HttpServletResponse response,
+            @RequestBody @Valid OrderCreateBO createBO
+    ) throws IOException {
+        // 验证签名
+        // adminService.verifySign(createBO.getPayId(), createBO.getParam(),
+        //         createBO.getType(), createBO.getPrice(), createBO.getSign());
+
+        Order order = orderService.save(createBO);
+        if (createBO.openHtml()) {
+            response.sendRedirect("/pay?order=" + order.getOrderId());
+        }
+        return Result.success(order);
     }
 
     /**
