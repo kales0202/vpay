@@ -16,7 +16,7 @@ public enum OrderState implements IBaseEnum {
      *
      * @since 0.1
      */
-    OUT(0, "订单已过期"),
+    EXPIRED(0, "订单已过期"),
 
     /**
      * 等待支付

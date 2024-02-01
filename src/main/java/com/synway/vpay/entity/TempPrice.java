@@ -12,7 +12,7 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * 用户信息
+ * 账户信息
  *
  * @since 0.1
  */

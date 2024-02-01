@@ -33,9 +33,6 @@ public class AdminService {
     private AccountRepository accountRepository;
 
     @Resource
-    private MenuRepository menuRepository;
-
-    @Resource
     private HttpServletRequest request;
 
     public Account login(String name, String pass) {
@@ -51,11 +48,6 @@ public class AdminService {
             throw new BusinessException("账号或密码不正确！");
         }
         return account;
-    }
-
-    @Cacheable(value = "menus", key = "#root.methodName")
-    public List<Menu> getMenu() {
-        return menuRepository.findRoots();
     }
 
     public void verifySign(@NotBlank String payId,

@@ -2,8 +2,6 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.entity.Account;
-import com.synway.vpay.entity.Menu;
-import com.synway.vpay.service.AccountService;
 import com.synway.vpay.service.AdminService;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -18,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * 管理员相关接口
  *
@@ -32,9 +28,6 @@ public class AdminController {
 
     @Resource
     private AdminService adminService;
-
-    @Resource
-    private AccountService accountService;
 
     @Resource
     private HttpSession session;
@@ -82,17 +75,6 @@ public class AdminController {
     @GetMapping("/account")
     public Result<Account> account() {
         return Result.success(VpayUtil.getTargetBean(account));
-    }
-
-    /**
-     * 获取菜单
-     *
-     * @return 菜单集合
-     * @since 0.1
-     */
-    @RequestMapping("/getMenu")
-    public List<Menu> getMenu() {
-        return adminService.getMenu();
     }
 
     /**

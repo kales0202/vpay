@@ -4,8 +4,8 @@ import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderQueryBO;
+import com.synway.vpay.bean.OrderStatisticsVO;
 import com.synway.vpay.entity.Order;
-import com.synway.vpay.service.AdminService;
 import com.synway.vpay.service.OrderService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,9 +34,6 @@ public class OrderController {
 
     @Resource
     private OrderService orderService;
-
-    @Resource
-    private AdminService adminService;
 
     /**
      * 根据订单ID获取订单数据
@@ -90,7 +87,17 @@ public class OrderController {
      * @since 0.1
      */
     @PostMapping("/list")
-    public Result<PageData<Order>> orders(@RequestBody OrderQueryBO orderQueryBO) {
+    public Result<PageData<Order>> list(@RequestBody OrderQueryBO orderQueryBO) {
         return Result.success(orderService.findAll(orderQueryBO));
+    }
+
+    /**
+     * 获取订单统计数据
+     *
+     * @since 0.1
+     */
+    @GetMapping("/statistics")
+    public Result<OrderStatisticsVO> statistics() {
+        return Result.success(orderService.statistics());
     }
 }

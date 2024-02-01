@@ -59,9 +59,9 @@ public class AccountService {
     }
 
     /**
-     * 获取用户信息
+     * 获取账户信息
      *
-     * @param id 用户名
+     * @param id 账户ID
      * @return Account
      * @since 0.1
      */
@@ -70,7 +70,7 @@ public class AccountService {
     }
 
     /**
-     * 获取用户信息
+     * 获取账户信息
      *
      * @param name 用户名
      * @return Account

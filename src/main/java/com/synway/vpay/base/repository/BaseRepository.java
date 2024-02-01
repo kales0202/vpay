@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import java.io.Serializable;
 
 /**
- * Repository基类
+ * 如果需要实现逻辑删除的效果，可以使用此类作为JpaRepository基类
+ * 然后在启动类上加上注解即可：@EnableJpaRepositories(repositoryBaseClass = BaseRepository.class)
  *
  * @param <T>  实体类型
  * @param <ID> 主键ID

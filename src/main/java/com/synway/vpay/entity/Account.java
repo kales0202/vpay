@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * 用户信息
+ * 账户信息
  *
  * @since 0.1
  */

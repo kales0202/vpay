@@ -37,10 +37,16 @@ public interface IBaseEnum {
 
         @Override
         public final Integer convertToDatabaseColumn(T attribute) {
+            if (Objects.isNull(attribute)) {
+                return null;
+            }
             return attribute.getValue();
         }
 
         public final T convertToEntityAttribute(Integer value) {
+            if (Objects.isNull(value)) {
+                return null;
+            }
             T[] enums = this.getTClass().getEnumConstants();
             for (T item : enums) {
                 if (Objects.equals(item.getValue(), value)) {
