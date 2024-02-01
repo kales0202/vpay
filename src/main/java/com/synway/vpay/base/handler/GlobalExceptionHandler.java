@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
         if (this.isInterface(request)) {
             return this.jsonResult(NotFoundException.CODE, NotFoundException.MESSAGE);
         }
-        return "/404.html";
+        return "redirect:/404";
     }
 
     @ExceptionHandler(value = AuthorizedException.class)
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
         if (this.isInterface(request)) {
             return this.jsonResult(AuthorizedException.CODE, AuthorizedException.MESSAGE);
         }
-        return "/login.html";
+        return "redirect:/login";
     }
 
     @ResponseBody

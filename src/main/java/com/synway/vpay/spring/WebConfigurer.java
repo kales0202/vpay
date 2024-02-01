@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class WebConfigurer implements WebMvcConfigurer {
 
     @Resource
     private LoginInterceptor loginInterceptor;
@@ -20,7 +20,19 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
-                .excludePathPatterns("/login", "/admin/login", "/**/*.html", "/js/**", "/css/**", "/images/**", "/favicon.ico", "/favicon")
+                .excludePathPatterns(
+                        "/login",
+                        "/admin/login",
+                        "/404",
+                        "/**/*.html",
+                        "/js/**",
+                        "/css/**",
+                        "/images/**",
+                        "/page/**",
+                        "/templates/**",
+                        "/favicon.ico",
+                        "/favicon"
+                )
                 .addPathPatterns("/**");
     }
 

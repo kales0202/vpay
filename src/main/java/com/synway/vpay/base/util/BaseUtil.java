@@ -1,11 +1,13 @@
 package com.synway.vpay.base.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 public class BaseUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -14,7 +16,7 @@ public class BaseUtil {
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("", e);
         }
         return null;
     }
@@ -23,7 +25,7 @@ public class BaseUtil {
         try {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("", e);
         }
         return null;
     }
@@ -36,7 +38,7 @@ public class BaseUtil {
         try {
             return OBJECT_MAPPER.convertValue(obj, Map.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("", e);
         }
         return null;
     }
@@ -45,7 +47,7 @@ public class BaseUtil {
         try {
             return OBJECT_MAPPER.convertValue(map, clazz);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("", e);
         }
         return null;
     }

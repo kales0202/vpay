@@ -37,24 +37,14 @@ public class AdminController {
     private Account account;
 
     /**
-     * 登录接口(测试)
-     */
-    @GetMapping("/login")
-    public void login1(String name, String pass) {
-        LoginInfo loginInfo = new LoginInfo();
-        loginInfo.setName(name);
-        loginInfo.setPass(pass);
-        this.login(loginInfo);
-    }
-
-    /**
      * 登录接口
      *
      * @param loginInfo 登录用户名和密码
+     * @return nothing
      * @since 0.1
      */
     @PostMapping("/login")
-    public void login(@RequestBody @Valid LoginInfo loginInfo) {
+    public Result<String> login(@RequestBody @Valid LoginInfo loginInfo) {
         Account a = adminService.login(loginInfo.getName(), loginInfo.getPass());
         account.setId(a.getId());
         account.setName(a.getName());
@@ -65,6 +55,7 @@ public class AdminController {
         account.setPayQf(a.getPayQf());
         account.setClose(a.getClose());
         account.setSessionId(session.getId());
+        return Result.success();
     }
 
     /**

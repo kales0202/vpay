@@ -1,7 +1,9 @@
 package com.synway.vpay.util;
 
 import com.synway.vpay.bean.AccountState;
+import com.synway.vpay.bean.TemplateConfig;
 import com.synway.vpay.enums.MonitorState;
+import com.synway.vpay.spring.TemplateRunner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.Advised;
 import org.springframework.util.DigestUtils;
@@ -27,6 +29,10 @@ public class VpayUtil {
      */
     public static String md5(String text) {
         return DigestUtils.md5DigestAsHex(text.getBytes());
+    }
+
+    public static TemplateConfig getTemplateConfig() {
+        return TemplateRunner.CONFIGS.get(VpayConstant.ACTIVE);
     }
 
     /**

@@ -13,6 +13,7 @@ import java.util.UUID;
  */
 public class VpayConstant {
 
+    public static final String ACTIVE = "active";
 
     /**
      * 超级管理员账户名
