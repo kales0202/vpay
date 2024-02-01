@@ -1,6 +1,7 @@
 package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
+import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.service.AdminService;
 import com.synway.vpay.util.VpayUtil;
@@ -75,6 +76,17 @@ public class AdminController {
     @GetMapping("/account")
     public Result<Account> account() {
         return Result.success(VpayUtil.getTargetBean(account));
+    }
+
+    /**
+     * 获取账户状态信息
+     *
+     * @return AccountState 监控端账户状态信息
+     * @since 0.1
+     */
+    @GetMapping("/state")
+    public Result<AccountState> accountState() {
+        return Result.success(VpayUtil.getAccountState(account.getId().toString()));
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.synway.vpay.base.handler;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.base.exception.AuthorizedException;
 import com.synway.vpay.base.exception.BusinessException;
@@ -20,6 +22,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 统一异常处理器
@@ -30,17 +34,22 @@ import java.util.Optional;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Cache<String, Boolean> INTERFACE_CACHE = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .maximumSize(500)
+            .build();
+
     @ExceptionHandler(value = {NoResourceFoundException.class, NoHandlerFoundException.class})
-    public Object businessException(HttpServletRequest request, Exception e) {
+    public Object businessException(HttpServletRequest request, Exception e) throws ExecutionException {
         this.commonHandle(request, e);
-        if (this.jsonRequest(request)) {
+        if (this.isInterface(request)) {
             return this.jsonResult(NotFoundException.CODE, NotFoundException.MESSAGE);
         }
         return "/404.html";
     }
 
     @ExceptionHandler(value = AuthorizedException.class)
-    public Object authorizedException(HttpServletRequest request, AuthorizedException e) {
+    public Object authorizedException(HttpServletRequest request, AuthorizedException e) throws ExecutionException {
         this.commonHandle(request, e);
         // 判断accept是否是json请求
         if (this.isInterface(request)) {
@@ -67,9 +76,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public Result<Object> exception(HttpServletRequest request, MethodArgumentNotValidException e) {
         this.commonHandle(request, e);
-        String msg = Optional.ofNullable(e.getBindingResult().getFieldError())
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .orElse(IllegalArgumentException.MESSAGE);
+        String msg = Optional.ofNullable(e.getBindingResult().getFieldError()).map(error -> error.getField() + ": " + error.getDefaultMessage()).orElse(IllegalArgumentException.MESSAGE);
         return Result.error(msg);
     }
 
@@ -85,10 +92,6 @@ public class GlobalExceptionHandler {
         log.error(String.format("%s ---> [%s] %s", e.getClass().getSimpleName(), request.getMethod(), request.getRequestURI()));
     }
 
-    private boolean jsonRequest(HttpServletRequest request) {
-        return request.getHeader("accept").contains("application/json");
-    }
-
     private ModelAndView jsonResult(int code, String msg) {
         ModelAndView modelAndView = new ModelAndView(new MappingJackson2JsonView());
         modelAndView.addObject("code", code);
@@ -96,15 +99,19 @@ public class GlobalExceptionHandler {
         return modelAndView;
     }
 
-    private boolean isInterface(HttpServletRequest request) {
-        // 通过debug调试可以看出request中含有该对象。
-        HandlerMethod handlerMethod = (HandlerMethod) request.
-                getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingHandler");
-        // getBeanType()拿到发送请求得类模板（Class），getDeclaredAnnotationsByType(指定注解类模板)通过指定得注解，得到一个数组。
-        RestController[] annotations1 = handlerMethod.getBeanType().getDeclaredAnnotationsByType(RestController.class);
-        ResponseBody[] annotations2 = handlerMethod.getBeanType().getDeclaredAnnotationsByType(ResponseBody.class);
-        ResponseBody[] annotations3 = handlerMethod.getMethod().getAnnotationsByType(ResponseBody.class);
-        // 判断当类上含有@RestController或是@ResponseBody或是方法上有@ResponseBody时，则表明该异常是一个接口请求发生的
-        return annotations1.length > 0 || annotations2.length > 0 || annotations3.length > 0;
+    private boolean isInterface(HttpServletRequest request) throws ExecutionException {
+        return INTERFACE_CACHE.get(request.getRequestURI(), () -> {
+            // 通过debug调试可以看出request中含有该对象。
+            Object attribute = request.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingHandler");
+            if (attribute instanceof HandlerMethod handler) {
+                // getBeanType()拿到发送请求得类模板（Class），getDeclaredAnnotationsByType(指定注解类模板)通过指定得注解，得到一个数组。
+                RestController[] annotations1 = handler.getBeanType().getDeclaredAnnotationsByType(RestController.class);
+                ResponseBody[] annotations2 = handler.getBeanType().getDeclaredAnnotationsByType(ResponseBody.class);
+                ResponseBody[] annotations3 = handler.getMethod().getAnnotationsByType(ResponseBody.class);
+                // 判断当类上含有@RestController或是@ResponseBody或是方法上有@ResponseBody时，则表明该异常是一个接口请求发生的
+                return annotations1.length > 0 || annotations2.length > 0 || annotations3.length > 0;
+            }
+            return false;
+        });
     }
 }

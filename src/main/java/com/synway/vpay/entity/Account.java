@@ -37,7 +37,7 @@ public class Account extends BaseEntity {
      *
      * @since 0.1
      */
-    @NotNull
+    @JsonIgnore
     private String password;
 
     /**
@@ -60,28 +60,6 @@ public class Account extends BaseEntity {
      * @since 0.1
      */
     private String returnUrl;
-
-    /**
-     * 监控端最后心跳
-     *
-     * @since 0.1
-     */
-    private String lastHeart;
-
-    /**
-     * 监控端最后收款
-     *
-     * @since 0.1
-     */
-    private String lastPay;
-
-    /**
-     * 监控端状态
-     *
-     * @mock -1
-     * @since 0.1
-     */
-    private int jkState = -1;
 
     /**
      * 微信通用收款码
