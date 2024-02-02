@@ -3,15 +3,15 @@
 <html>
 <head>
     <title>V免签</title>
-    <meta name="keywords" content=""/>
-    <meta name="description" content=""/>
+    <meta content="" name="keywords"/>
+    <meta content="" name="description"/>
     <meta charset="utf-8"/>
-    <link rel="shortcut icon" href="/favicon.ico"/>
-    <link rel="bookmark" href="/favicon.ico"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-    <link rel="stylesheet" href="./assets/css/main.css"/>
+    <link href="/favicon.ico" rel="shortcut icon"/>
+    <link href="/favicon.ico" rel="bookmark"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="./assets/css/main.css" rel="stylesheet"/>
     <noscript>
-        <link rel="stylesheet" href="./assets/css/noscript.css"/>
+        <link href="./assets/css/noscript.css" rel="stylesheet"/>
     </noscript>
 </head>
 <body>
@@ -44,31 +44,31 @@
             <p>2、V免签为开源免费产品，请勿二次出售。</p>
             <p>3、V免签仅供交流学习使用，请勿用于商业用途。</p>
             <p>4、请遵守相关法律法规，请勿用于非法用途。</p>
-            <p><input type="submit" value="获取V免签" class=""
-                      onclick="window.location.href='https://github.com/szvone/vmqphp';"/></p>
+            <p><input class="" onclick="window.location.href='https://github.com/szvone/vmqphp';" type="submit"
+                      value="获取V免签"/></p>
         </article>
 
 
         <article id="login">
             <h2 class="major">登录</h2>
-            <form method="post" action="javascript:login();">
+            <form action="javascript:login();" method="post">
                 <div class="field half first">
                     <label for="name">账号</label>
-                    <input type="text" name="name" id="name"/>
+                    <input id="name" name="name" type="text"/>
                 </div>
                 <div class="field half">
                     <label for="pass">密码</label>
-                    <input type="password" name="pass" id="pass"/>
+                    <input id="pass" name="pass" type="password"/>
                 </div>
 
                 <ul class="actions">
-                    <li><input id="login2" type="submit" value="登录" class="special"/></li>
+                    <li><input class="special" id="login2" type="submit" value="登录"/></li>
                     <li><input type="reset" value="清空"/></li>
                 </ul>
             </form>
             <br>
             <div id="result" role="dialog">
-                <p color class="h5 margin-top-sm text-black-hint" id="msg"></p>
+                <p class="h5 margin-top-sm text-black-hint" color id="msg"></p>
             </div>
         </article>
 
@@ -95,14 +95,14 @@
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({"name": $("#name").val(), "pass": $("#pass").val()}),
-            success: function(data) {
+            success: function (data) {
                 if (data.code !== 0) {
                     layer.msg(data.msg);
                     return;
                 }
                 window.location.href = "/templates/vmq/aaa.html";
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 // 处理错误响应
             }
         });

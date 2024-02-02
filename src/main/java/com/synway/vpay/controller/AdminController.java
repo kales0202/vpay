@@ -77,7 +77,9 @@ public class AdminController {
      */
     @GetMapping("/state")
     public Result<AccountState> accountState() {
-        return Result.success(VpayUtil.getAccountState(account.getId().toString()));
+        AccountState accountState = VpayUtil.getAccountState(account.getId().toString());
+        accountState.setKeyword(account.getKeyword());
+        return Result.success(accountState);
     }
 
     /**

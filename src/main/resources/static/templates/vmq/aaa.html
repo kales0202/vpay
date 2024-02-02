@@ -3,16 +3,20 @@
 <head>
     <meta charset="utf-8">
     <title>后台管理</title>
-    <meta name="renderer" content="webkit">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="format-detection" content="telephone=no">
+    <meta content="webkit" name="renderer">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport"/>
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="telephone=no" name="format-detection">
 
-    <link rel="stylesheet" href="layui/css/layui.css"  media="all">
-    <link rel="stylesheet" href="css/global.css?t=1531663423583-6" media="all">
-    <style type="text/css">ins.adsbygoogle{display:none!important;display:none}</style></head>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <link href="css/global.css?t=1531663423583-6" media="all" rel="stylesheet">
+    <style type="text/css">ins.adsbygoogle {
+        display: none !important;
+        display: none
+    }</style>
+</head>
 <body>
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header header header-demo" summer>
@@ -22,7 +26,7 @@
             <ul class="layui-nav layui-layout-right">
                 <li class="layui-nav-item">
                     <a href="javascript:;">
-                      
+
                         管理员
                     </a>
                     <dl class="layui-nav-child">
@@ -47,54 +51,44 @@
 
         </div>
     </div>
-        <div class="layui-body layui-tab-content site-demo site-demo-body">
-            <div class="layui-tab-item layui-show">
-                <div class="layui-main">
-                    <div id="LAY_preview">
+    <div class="layui-body layui-tab-content site-demo site-demo-body">
+        <div class="layui-tab-item layui-show">
+            <div class="layui-main">
+                <div id="LAY_preview">
 
 
-
-
-
-
-                        
-
-
-
-
-
-                    </div>
                 </div>
             </div>
-
-
         </div>
+
+
     </div>
-    <div class="site-tree-mobile layui-hide" style="opacity: 0.4;">
-        <i class="layui-icon">&#xe602;</i>
-    </div>
-    <div class="site-mobile-shade"></div>
-    <script src="layui/layui.js?t=1531663423583" charset="utf-8"></script>
-    <script>
-        window.global = {
-            pageType: 'demo'
-            ,preview: function(){
-                var preview = document.getElementById('LAY_preview');
-                return preview ? preview.innerHTML : '';
-            }()
-        };
-        layui.config({
-            base: 'js/'
-            ,version: '1531663423583'
-        }).use('global');
-    </script>
+</div>
+<div class="site-tree-mobile layui-hide" style="opacity: 0.4;">
+    <i class="layui-icon">&#xe602;</i>
+</div>
+<div class="site-mobile-shade"></div>
+<script charset="utf-8" src="layui/layui.js?t=1531663423583"></script>
+<script>
+    window.global = {
+        pageType: 'demo'
+        , preview: function () {
+            var preview = document.getElementById('LAY_preview');
+            return preview ? preview.innerHTML : '';
+        }()
+    };
+    layui.config({
+        base: 'js/'
+        , version: '1531663423583'
+    }).use('global');
+</script>
 </div>
 <script>
 
 
-    layui.use(['layer','element'], function(){
+    layui.use(['layer', 'element'], function () {
         var $ = layui.$
-            ,setIframe = function(){
+            , setIframe = function () {
             var height = $(window).height() - 370;
             $('#demoAdmin').height(height);
         };
@@ -103,47 +97,60 @@
         $(window).on('resize', setIframe);
 
 
-
     });
 </script>
 <script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript" src="https://unpkg.com/wangeditor@3.1.1/release/wangEditor.min.js"></script>
+<script src="https://unpkg.com/wangeditor@3.1.1/release/wangEditor.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.4/umd/zxing-browser.min.js"></script>
+
 <script type="text/javascript">
 
+    $("#LAY_preview").load("main.html")
 
-$("#LAY_preview").load("main.html")
+    window.ZXingReader = new ZXingBrowser.BrowserQRCodeReader();
+    window.ZxingWriter = new ZXingBrowser.BrowserQRCodeSvgWriter();
 
-$.get("/menu/tree",function (data) {
-    if (data == null || data == "") {
-        window.location.href = "/";
+    function decodeQRCode(url, callback) {
+        window.ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
+            console.error(err)
+        })
     }
-    console.log(data);
-    var out_menu = "";
-    for (var i = 0;i<data.length;i++){
-        if (data[i].type=="menu"){
-            out_menu+='<li class="layui-nav-item layui-nav-itemed">';
-            out_menu+='<a class="" href="javascript:;">'+data[i].name+'</a>';
-            out_menu+='<dl class="layui-nav-child">';
 
-            for (var ii = 0;ii<data[i].node.length;ii++){
-                out_menu+='<dd><a onclick="$(\'#LAY_preview\').load(\''+data[i].node[ii].url+'\');">'+data[i].node[ii].name+'</a></dd>';
-            }
-            out_menu+='</dl>';
-            out_menu+='</li>';
-        } else{
-            out_menu+='<li class="layui-nav-item"><a onclick="$(\'#LAY_preview\').load(\''+data[i].url+'\');">'+data[i].name+'</a></li>';
+    function encodeQRCode($container, text) {
+        if (!$container || $container.length === 0 || !text) {
+            return;
         }
+        var element = window.ZxingWriter.write(text, 300, 300, null);
+        $container.attr("data-code", text);
+        $container.html(element);
     }
-    $("#v_menu").append(out_menu);
-    if (layui.element)
-        layui.element.render();
 
+    $.get("/menu/tree", function (data) {
+        if (data == null || data == "") {
+            window.location.href = "/";
+        }
+        console.log(data);
+        var out_menu = "";
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].type == "menu") {
+                out_menu += '<li class="layui-nav-item layui-nav-itemed">';
+                out_menu += '<a class="" href="javascript:;">' + data[i].name + '</a>';
+                out_menu += '<dl class="layui-nav-child">';
 
-});
+                for (var ii = 0; ii < data[i].node.length; ii++) {
+                    out_menu += '<dd><a onclick="$(\'#LAY_preview\').load(\'' + data[i].node[ii].url + '\');">' + data[i].node[ii].name + '</a></dd>';
+                }
+                out_menu += '</dl>';
+                out_menu += '</li>';
+            } else {
+                out_menu += '<li class="layui-nav-item"><a onclick="$(\'#LAY_preview\').load(\'' + data[i].url + '\');">' + data[i].name + '</a></li>';
+            }
+        }
+        $("#v_menu").append(out_menu);
+        if (layui.element)
+            layui.element.render();
+    });
 </script>
-
-
-
 
 
 </body>

@@ -23,6 +23,13 @@ public class AccountState {
     private String id;
 
     /**
+     * 通讯密钥
+     *
+     * @since 0.1
+     */
+    private String keyword;
+
+    /**
      * 监控端最后心跳
      *
      * @since 0.1
