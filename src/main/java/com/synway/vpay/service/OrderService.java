@@ -8,9 +8,7 @@ import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.repository.OrderRepository;
 import jakarta.annotation.Resource;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -19,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -54,19 +53,15 @@ public class OrderService {
      */
     public PageData<Order> findAll(OrderQueryBO bo) {
         Specification<Order> specification = (root, query, criteriaBuilder) -> {
-            Predicate predicate = criteriaBuilder.conjunction();
-            List<Expression<Boolean>> expressions = predicate.getExpressions();
+            List<Predicate> pl = new ArrayList<>();
             if (Objects.nonNull(bo.getType())) {
-                expressions.add(criteriaBuilder.equal(root.get("type"), bo.getType()));
+                pl.add(criteriaBuilder.equal(root.get("type"), bo.getType()));
             }
             if (Objects.nonNull(bo.getState())) {
-                expressions.add(criteriaBuilder.equal(root.get("state"), bo.getState()));
+                pl.add(criteriaBuilder.equal(root.get("state"), bo.getState()));
             }
-            query.where(predicate);
-            return predicate;
+            return query.where(pl.toArray(new Predicate[0])).getRestriction();
         };
-
-        Example<Order> of = Example.of(new Order());
 
         Page<Order> orders = orderRepository.findAll(specification, bo.getPageable());
         return new PageData<>(orders.getTotalElements(), bo.getPage(), bo.getSize(), orders.getContent());

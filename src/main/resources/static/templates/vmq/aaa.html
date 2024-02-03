@@ -107,27 +107,41 @@
 
     $("#LAY_preview").load("main.html")
 
-    window.ZXingReader = new ZXingBrowser.BrowserQRCodeReader();
-    window.ZxingWriter = new ZXingBrowser.BrowserQRCodeSvgWriter();
+    var ZXingReader = new ZXingBrowser.BrowserQRCodeReader();
+    var ZxingWriter = new ZXingBrowser.BrowserQRCodeSvgWriter();
 
     function decodeQRCode(url, callback) {
-        window.ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
+        ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
             console.error(err)
         })
     }
 
     function encodeQRCode($container, text) {
         if (!$container || $container.length === 0 || !text) {
+            $container.attr("data-code", "");
+            $container.html("");
             return;
         }
-        var element = window.ZxingWriter.write(text, 300, 300, null);
+        var element = ZxingWriter.write(text, 300, 300, null);
         $container.attr("data-code", text);
         $container.html(element);
     }
 
+    function getObjectURL(file) {
+        let url = null;
+        if (window.createObjectURL !== undefined) { // basic
+            url = window.createObjectURL(file);
+        } else if (window.webkitURL !== undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file);
+        } else if (window.URL !== undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file);
+        }
+        return url;
+    }
+
     $.get("/menu/tree", function (data) {
-        if (data == null || data == "") {
-            window.location.href = "/";
+        if (data.code === -2) {
+            window.location.href = "/login";
         }
         console.log(data);
         var out_menu = "";

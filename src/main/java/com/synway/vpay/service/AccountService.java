@@ -1,10 +1,12 @@
 package com.synway.vpay.service;
 
+import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalOperationException;
 import com.synway.vpay.base.exception.NotFoundException;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.util.VpayConstant;
+import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -22,14 +24,23 @@ public class AccountService {
     @Resource
     private AccountRepository accountRepository;
 
+    @Resource
+    private Account account;
+
     /**
      * 保存设置
      *
-     * @param account 设置
+     * @param param 设置
      * @since 0.1
      */
-    public void save(Account account) {
-        accountRepository.save(account);
+    public void save(Account param) {
+        Account db = accountRepository.findByName(param.getName());
+        if (Objects.isNull(db)) {
+            throw new BusinessException("账号不存在！");
+        }
+        VpayUtil.copyProperties(param, db);
+        db = accountRepository.save(db);
+        account.copyFrom(db);
     }
 
     /**

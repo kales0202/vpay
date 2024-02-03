@@ -1,6 +1,8 @@
 package com.synway.vpay.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.synway.vpay.base.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -10,6 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * 账户信息
@@ -37,7 +40,7 @@ public class Account extends BaseEntity {
      *
      * @since 0.1
      */
-    @JsonIgnore
+    @JsonProperty(access = Access.WRITE_ONLY)
     private String password;
 
     /**
@@ -66,6 +69,7 @@ public class Account extends BaseEntity {
      *
      * @since 0.1
      */
+    @NotNull
     private String wxPay;
 
     /**
@@ -73,6 +77,7 @@ public class Account extends BaseEntity {
      *
      * @since 0.1
      */
+    @NotNull
     private String aliPay;
 
     /**
@@ -81,7 +86,7 @@ public class Account extends BaseEntity {
      * @mock 0
      * @since 0.1
      */
-    private int payQf = 1;
+    private int payQf = 0;
 
     /**
      * 订单有效时间，单位分钟，默认是5
@@ -99,4 +104,25 @@ public class Account extends BaseEntity {
     @Transient
     @JsonIgnore
     private String sessionId;
+
+    /**
+     * 拷贝Account数据
+     *
+     * @param from 源
+     * @since 0.1
+     */
+    public void copyFrom(Account from) {
+        this.setId(from.getId());
+        this.setName(from.getName());
+        this.setPassword(from.getPassword());
+        this.setKeyword(from.getKeyword());
+        this.setNotifyUrl(from.getNotifyUrl());
+        this.setReturnUrl(from.getReturnUrl());
+        this.setWxPay(from.getWxPay());
+        this.setAliPay(from.getAliPay());
+        this.setPayQf(from.getPayQf());
+        this.setClose(from.getClose());
+        this.setCreateTime(from.getCreateTime());
+        this.setUpdateTime(from.getUpdateTime());
+    }
 }

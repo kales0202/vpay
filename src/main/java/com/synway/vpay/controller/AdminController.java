@@ -3,6 +3,7 @@ package com.synway.vpay.controller;
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.service.AccountService;
 import com.synway.vpay.service.AdminService;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -31,6 +32,9 @@ public class AdminController {
     private AdminService adminService;
 
     @Resource
+    private AccountService accountService;
+
+    @Resource
     private HttpSession session;
 
     @Resource
@@ -45,15 +49,8 @@ public class AdminController {
      */
     @PostMapping("/login")
     public Result<String> login(@RequestBody @Valid LoginInfo loginInfo) {
-        Account a = adminService.login(loginInfo.getName(), loginInfo.getPass());
-        account.setId(a.getId());
-        account.setName(a.getName());
-        account.setPassword(a.getPassword());
-        account.setKeyword(a.getKeyword());
-        account.setWxPay(a.getWxPay());
-        account.setAliPay(a.getAliPay());
-        account.setPayQf(a.getPayQf());
-        account.setClose(a.getClose());
+        Account db = adminService.login(loginInfo.getName(), loginInfo.getPass());
+        account.copyFrom(db);
         account.setSessionId(session.getId());
         return Result.success();
     }
@@ -66,6 +63,18 @@ public class AdminController {
      */
     @GetMapping("/account")
     public Result<Account> account() {
+        return Result.success(VpayUtil.getTargetBean(account));
+    }
+
+    /**
+     * 保存配置信息
+     *
+     * @return Account 配置信息，找不到则返回null
+     * @since 0.1
+     */
+    @PostMapping("/account")
+    public Result<Account> saveAccount(@RequestBody @Valid Account param) {
+        accountService.save(param);
         return Result.success(VpayUtil.getTargetBean(account));
     }
 

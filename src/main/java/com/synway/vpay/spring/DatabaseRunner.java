@@ -62,6 +62,8 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayConstant.SUPER_ACCOUNT);
         account.setKeyword(VpayUtil.md5(new Date().toString()));
+        account.setWxPay("");
+        account.setAliPay("");
         accountRepository.save(account);
     }
 

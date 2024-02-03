@@ -6,11 +6,18 @@ import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.spring.TemplateRunner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.ObjectUtils;
 
+import java.beans.PropertyDescriptor;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * vpay工具类
@@ -66,6 +73,33 @@ public class VpayUtil {
             }
         }
         return targetBean;
+    }
+
+    public static String[] getEmptyPropertyNames(Object source) {
+        BeanWrapper wrapper = new BeanWrapperImpl(source);
+        PropertyDescriptor[] descriptors = wrapper.getPropertyDescriptors();
+
+        Set<String> emptyNames = new HashSet<>();
+        for (PropertyDescriptor descriptor : descriptors) {
+            Object srcValue = wrapper.getPropertyValue(descriptor.getName());
+            if (ObjectUtils.isEmpty(srcValue)) {
+                emptyNames.add(descriptor.getName());
+            }
+        }
+        String[] result = new String[emptyNames.size()];
+        return emptyNames.toArray(result);
+    }
+
+    public static void copyProperties(Object source, Object target) {
+        copyProperties(source, target, true);
+    }
+
+    public static void copyProperties(Object source, Object target, boolean ignoreNull) {
+        if (ignoreNull) {
+            BeanUtils.copyProperties(source, target, getEmptyPropertyNames(source));
+        } else {
+            BeanUtils.copyProperties(source, target);
+        }
     }
 
     /**

@@ -10,8 +10,18 @@
     <div class="layui-form-item">
         <label class="layui-form-label">后台密码</label>
         <div class="layui-input-block">
-            <input autocomplete="off" class="layui-input" id="pass" lay-verify="required" placeholder="请输入管理员密码"
-                   type="text">
+            <input autocomplete="off" class="layui-input" id="password" lay-verify="required"
+                   placeholder="请输入管理员密码"
+                   type="password">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">确认密码</label>
+        <div class="layui-input-block">
+            <input autocomplete="off" class="layui-input" id="pass-confirm" lay-verify="required"
+                   placeholder="请再次输入密码"
+                   type="password">
         </div>
     </div>
 
@@ -26,7 +36,8 @@
     <div class="layui-form-item">
         <label class="layui-form-label">异步回调</label>
         <div class="layui-input-block">
-            <input autocomplete="off" class="layui-input" id="notifyUrl" lay-verify="required" placeholder="请输入异步回调地址"
+            <input autocomplete="off" class="layui-input" id="notifyUrl" lay-verify="required"
+                   placeholder="请输入异步回调地址"
                    type="text">
         </div>
     </div>
@@ -42,7 +53,8 @@
     <div class="layui-form-item">
         <label class="layui-form-label">通讯密钥</label>
         <div class="layui-input-block">
-            <input autocomplete="off" class="layui-input" id="key" lay-verify="required" placeholder="请输入通讯密钥"
+            <input autocomplete="off" class="layui-input" id="keyword" lay-verify="required"
+                   placeholder="请输入通讯密钥"
                    type="text">
         </div>
     </div>
@@ -67,7 +79,7 @@
                 （此处上传的是无金额的收款二维码）
                 <input id="wxup-input" style="display: none" type="file">
                 <div class="layui-upload-list">
-                    <p id="wxqrcode"></p>
+                    <p id="wxPay"></p>
                     <p id="wxcs"></p>
                 </div>
             </div>
@@ -77,12 +89,12 @@
         <label class="layui-form-label">支付宝码</label>
         <div class="layui-input-block">
             <div class="layui-upload">
-                <button class="layui-btn" id="zfbup" type="button">上传收款二维码</button>
+                <button class="layui-btn" id="aliup" type="button">上传收款二维码</button>
                 （此处上传的是无金额的收款二维码）
-                <input id="zfbup-input" style="display: none" type="file">
+                <input id="aliup-input" style="display: none" type="file">
                 <div class="layui-upload-list">
-                    <p id="zfbqrcode"></p>
-                    <p id="zfbcs"></p>
+                    <p id="aliPay"></p>
+                    <p id="alics"></p>
                 </div>
             </div>
         </div>
@@ -90,146 +102,145 @@
 
 
     <div class="layui-form-item" style="text-align: right;">
-        <button class="layui-btn" onclick="save()">保存</button>
+        <button id="btn-save" class="layui-btn">保存</button>
     </div>
-
-
-    <!--<div class="layui-form-item layui-form-text">-->
-    <!--<label class="layui-form-label">设置进入网站的提示</label>-->
-    <!--<div class="layui-input-block">-->
-    <!--<textarea placeholder="请输入公告内容" id="xz" class="layui-textarea"></textarea>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--<div class="layui-form-item">-->
-    <!--<button class="layui-btn" onclick="editxz()">保存</button>-->
-    <!--</div>-->
 </div>
 
 
 <script>
-    window.$WXQRCode = $("#wxqrcode");
-    window.$ZFBQRCode = $("#zfbqrcode");
+    $(function () {
 
-    function getObjectURL(file) {
-        let url = null;
-        if (window.createObjectURL !== undefined) { // basic
-            url = window.createObjectURL(file);
-        } else if (window.webkitURL !== undefined) { // webkit or chrome
-            url = window.webkitURL.createObjectURL(file);
-        } else if (window.URL !== undefined) { // mozilla(firefox)
-            url = window.URL.createObjectURL(file);
-        }
-        return url;
-    }
+        var $wxPay = $("#wxPay");
+        var $aliPay = $("#aliPay");
 
-    layui.use(['form', 'layer', 'upload'], function () {
-        var form = layui.form, upload = layui.upload;
+        layui.use(['form', 'layer', 'upload'], function () {
+            var form = layui.form, upload = layui.upload;
 
-        $("#wxup-input").on("change", function () {
-            window.$WXQRCode.attr("data-code", "");
-            window.$WXQRCode.html("");
-            if (this.files.length > 0) {
-                let objectURL = getObjectURL(this.files[0]);
-                decodeQRCode(objectURL, function (result) {
-                    encodeQRCode(window.$WXQRCode, result.text);
-                });
+            $("#wxup-input").on("change", function () {
+                if (this.files.length > 0) {
+                    let objectURL = getObjectURL(this.files[0]);
+                    decodeQRCode(objectURL, function (result) {
+                        encodeQRCode($wxPay, result.text);
+                    });
+                }
+            });
+            $("#wxup").on("click", function () {
+                $("#wxup-input").click();
+            });
+
+            $("#aliup-input").on("change", function () {
+                if (this.files.length > 0) {
+                    let objectURL = getObjectURL(this.files[0]);
+                    decodeQRCode(objectURL, function (result) {
+                        encodeQRCode($aliPay, result.text);
+                    });
+                }
+            });
+            $("#aliup").on("click", function () {
+                $("#aliup-input").click();
+            });
+
+            form.render();
+
+        });
+
+        function save() {
+            var name = $("#name").val();
+            var password = $("#password").val();
+            var passConfirm = $("#pass-confirm").val();
+            var notifyUrl = $("#notifyUrl").val();
+            var returnUrl = $("#returnUrl").val();
+            var keyword = $("#keyword").val();
+            var close = $("#close").val();
+            var payQf = $("#payQf").val();
+            if (!name) {
+                layer.msg("请输入管理员账号");
+                return;
             }
-        });
-        $("#wxup").on("click", function () {
-            $("#wxup-input").click();
-        });
-
-        $("#zfbup-input").on("change", function () {
-            window.$ZFBQRCode.attr("data-code", "");
-            window.$ZFBQRCode.html("");
-            if (this.files.length > 0) {
-                let objectURL = getObjectURL(this.files[0]);
-                decodeQRCode(objectURL, function (result) {
-                    encodeQRCode(window.$ZFBQRCode, result.text);
-                });
+            if ((password || passConfirm) && password !== passConfirm) {
+                layer.msg("两次输入的管理员密码不一致");
+                return;
             }
-        });
-        $("#zfbup").on("click", function () {
-            $("#zfbup-input").click();
-        });
+            if (!keyword) {
+                layer.msg("请输入通讯密钥");
+                return;
+            }
+            if (!notifyUrl) {
+                layer.msg("请输入异步回调地址");
+                return;
+            }
+            if (!returnUrl) {
+                layer.msg("请输入支付完成后跳转地址");
+                return;
+            }
 
-        form.render();
+            if (!close) {
+                layer.msg("请输入创建的订单几分钟后失效");
+                return;
+            }
+            var wxPay = $wxPay.attr("data-code");
+            if (!wxPay) {
+                layer.msg("请上传微信无金额的收款二维码");
+                return;
+            }
+            var aliPay = $aliPay.attr("data-code");
+            if (!aliPay) {
+                layer.msg("请上传支付宝无金额的收款二维码");
+                return;
+            }
+            var param = {
+                name: name,
+                password: password,
+                notifyUrl: notifyUrl,
+                returnUrl: returnUrl,
+                keyword: keyword,
+                close: close,
+                payQf: payQf,
+                wxPay: wxPay,
+                aliPay: aliPay
+            }
 
-    });
-
-
-    function save() {
-        var name = $("#name").val();
-        var pass = $("#pass").val();
-        var notifyUrl = $("#notifyUrl").val();
-        var returnUrl = $("#returnUrl").val();
-        var key = $("#key").val();
-        var close = $("#close").val();
-        var payQf = $("#payQf").val();
-        if (!name) {
-            layer.msg("请输入管理员账号");
-            return;
-        }
-        if (!pass) {
-            layer.msg("请输入管理员密码");
-            return;
-        }
-        if (!key) {
-            layer.msg("请输入通讯密钥");
-            return;
-        }
-        if (!notifyUrl) {
-            layer.msg("请输入异步回调地址");
-            return;
-        }
-        if (!returnUrl) {
-            layer.msg("请输入支付完成后跳转地址");
-            return;
-        }
-
-        if (!close) {
-            layer.msg("请输入创建的订单几分钟后失效");
-            return;
-        }
-        var wxqrcode = $("#wxqrcode").data("code");
-        if (!wxqrcode) {
-            layer.msg("请上传微信无金额的收款二维码");
-            return;
-        }
-        var zfbqrcode = $("#zfbqrcode").data("code");
-        if (!zfbqrcode) {
-            layer.msg("请上传支付宝无金额的收款二维码");
-            return;
-        }
-        $.post("/admin/saveSetting", "name=" + name + "&pass=" + pass + "&notifyUrl=" + notifyUrl + "&returnUrl=" + returnUrl + "&key=" + key + "&wxpay=" + wximg + "&zfbpay=" + zfbimg + "&close=" + close + "&payQf=" + payQf, function (data) {
-            if (data.code === 0) {
-                $.get("/admin/account", function (data) {
-                    if (data.code === 0) {
-                        renderSetting(data.data);
+            $.ajax({
+                url: '/admin/account',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(param),
+                success: function (data) {
+                    if (data.code !== 0) {
+                        layer.msg(data.msg);
+                        return;
                     }
-                });
-            }
-            layer.msg(data.msg);
-        });
-    }
-
-    $.get("/admin/account", function (data) {
-        if (data.code === 0) {
-            renderSetting(data.data);
-            layui.form.render();
+                    renderSetting(data.data);
+                    layer.msg("保存成功！");
+                },
+                error: function (xhr, status, error) {
+                    // 处理错误响应
+                }
+            });
         }
-    });
 
-    function renderSetting(data) {
-        console.log("renderSetting", data);
-        $("#name").val(data.name);
-        $("#pass").val(data.pass);
-        $("#notifyUrl").val(data.notifyUrl);
-        $("#returnUrl").val(data.returnUrl);
-        $("#key").val(data.keyword);
-        $("#close").val(data.close);
-        $("#payQf").val(data.payQf);
-        encodeQRCode(window.$WXQRCode, data.wxpay);
-        encodeQRCode(window.$ZFBQRCode, data.zfbpay);
-    }
+        function renderSetting(data) {
+            console.log("renderSetting", data);
+            $("#name").val(data.name);
+            $("#password").val("");
+            $("#notifyUrl").val(data.notifyUrl);
+            $("#returnUrl").val(data.returnUrl);
+            $("#keyword").val(data.keyword);
+            $("#close").val(data.close);
+            $("#payQf").val(data.payQf);
+            encodeQRCode($wxPay, data.wxPay);
+            encodeQRCode($aliPay, data.aliPay);
+        }
+
+        $.get("/admin/account", function (data) {
+            if (data.code === 0) {
+                renderSetting(data.data);
+                layui.form.render();
+            }
+        });
+
+        $("#btn-save").on("click", function () {
+            save();
+        })
+    });
 </script>

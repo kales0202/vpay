@@ -38,6 +38,6 @@ public class OrderQueryBO extends BasePageBO {
 
     @Override
     public Pageable getPageable() {
-        return PageRequest.of(this.getPage(), this.getSize(), DESC_BY_CREATE_TIME);
+        return PageRequest.of(this.getPage() - 1, this.getSize(), DESC_BY_CREATE_TIME);
     }
 }

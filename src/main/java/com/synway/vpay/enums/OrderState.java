@@ -16,21 +16,28 @@ public enum OrderState implements IBaseEnum {
      *
      * @since 0.1
      */
-    EXPIRED(0, "订单已过期"),
+    EXPIRED(-1, "订单已过期"),
 
     /**
      * 等待支付
      *
      * @since 0.1
      */
-    WAIT(1, "等待支付"),
+    WAIT(0, "等待支付"),
 
     /**
      * 支付成功
      *
      * @since 0.1
      */
-    SUCCESS(2, "支付成功");
+    SUCCESS(1, "支付成功"),
+
+    /**
+     * 通知失败
+     *
+     * @since 0.1
+     */
+    NOTIFY_FAILED(2, "通知失败");
 
     /**
      * 枚举值
