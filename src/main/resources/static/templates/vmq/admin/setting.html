@@ -3,8 +3,8 @@
     <div class="layui-form-item">
         <label class="layui-form-label">后台账号</label>
         <div class="layui-input-block">
-            <input autocomplete="off" class="layui-input" id="name" lay-verify="required" placeholder="请输入管理员账号"
-                   type="text">
+            <input autocomplete="off" class="layui-input" disabled id="name" lay-verify="required"
+                   placeholder="请输入管理员账号" type="text">
         </div>
     </div>
     <div class="layui-form-item">
@@ -65,7 +65,7 @@
             <div class="layui-upload">
                 <select id="payQf">
                     <option value="1">金额递增</option>
-                    <option value="2">金额递减</option>
+                    <option value="0">金额递减</option>
                 </select>
             </div>
         </div>
@@ -102,7 +102,7 @@
 
 
     <div class="layui-form-item" style="text-align: right;">
-        <button id="btn-save" class="layui-btn">保存</button>
+        <button class="layui-btn" id="btn-save">保存</button>
     </div>
 </div>
 
@@ -157,7 +157,7 @@
                 layer.msg("请输入管理员账号");
                 return;
             }
-            if ((password || passConfirm) && password !== passConfirm) {
+            if (passConfirm && password !== passConfirm) {
                 layer.msg("两次输入的管理员密码不一致");
                 return;
             }
@@ -190,7 +190,6 @@
             }
             var param = {
                 name: name,
-                password: password,
                 notifyUrl: notifyUrl,
                 returnUrl: returnUrl,
                 keyword: keyword,
@@ -198,6 +197,9 @@
                 payQf: payQf,
                 wxPay: wxPay,
                 aliPay: aliPay
+            }
+            if (passConfirm) {
+                param.password = password;
             }
 
             $.ajax({

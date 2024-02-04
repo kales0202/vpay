@@ -4,10 +4,8 @@ import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalOperationException;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.enums.PayType;
-import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +22,7 @@ import java.util.Objects;
 public class AdminService {
 
     @Resource
-    private AccountRepository accountRepository;
-
-    @Resource
-    private HttpServletRequest request;
+    private AccountService accountService;
 
     @Resource
     private Account account;
@@ -37,14 +32,11 @@ public class AdminService {
             throw new BusinessException("请输入账号和密码！");
         }
 
-        Account account = accountRepository.findByName(name);
-        if (Objects.isNull(account)) {
-            throw new BusinessException("账号不存在！");
-        }
-        if (!Objects.equals(name, account.getName()) || !Objects.equals(pass, account.getPassword())) {
+        Account db = accountService.findByName(name);
+        if (!Objects.equals(name, db.getName()) || !Objects.equals(pass, db.getPassword())) {
             throw new BusinessException("账号或密码不正确！");
         }
-        return account;
+        return db;
     }
 
     public void verifySign(@NotBlank String payId,

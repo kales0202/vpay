@@ -3,6 +3,7 @@ package com.synway.vpay.controller;
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.OrderCreateBO;
+import com.synway.vpay.bean.OrderDeleteBO;
 import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.bean.OrderStatisticsVO;
 import com.synway.vpay.entity.Order;
@@ -59,22 +60,31 @@ public class OrderController {
     }
 
     /**
+     * 批量删除订单数据
+     *
+     * @param bo 订单删除入参
+     * @return 删除条数
+     * @since 0.1
+     */
+    @DeleteMapping
+    public Result<Integer> delete(@RequestBody OrderDeleteBO bo) {
+        return Result.success(orderService.delete(bo));
+    }
+
+    /**
      * 新建订单
      *
-     * @param createBO 订单创建入参信息
+     * @param bo 订单创建入参信息
      * @since 0.1
      */
     @PostMapping
-    public Result<Order> create(
-            HttpServletResponse response,
-            @RequestBody @Valid OrderCreateBO createBO
-    ) throws IOException {
+    public Result<Order> create(HttpServletResponse response, @RequestBody @Valid OrderCreateBO bo) throws IOException {
         // 验证签名
         // adminService.verifySign(createBO.getPayId(), createBO.getParam(),
         //         createBO.getType(), createBO.getPrice(), createBO.getSign());
 
-        Order order = orderService.save(createBO);
-        if (createBO.openHtml()) {
+        Order order = orderService.save(bo);
+        if (bo.openHtml()) {
             response.sendRedirect("/pay?order=" + order.getOrderId());
         }
         return Result.success(order);
@@ -83,12 +93,12 @@ public class OrderController {
     /**
      * 分页获取订单数据列表
      *
-     * @param orderQueryBO 订单查询参数
+     * @param bo 订单查询参数
      * @since 0.1
      */
     @PostMapping("/list")
-    public Result<PageData<Order>> list(@RequestBody OrderQueryBO orderQueryBO) {
-        return Result.success(orderService.findAll(orderQueryBO));
+    public Result<PageData<Order>> list(@RequestBody OrderQueryBO bo) {
+        return Result.success(orderService.findAll(bo));
     }
 
     /**

@@ -1,9 +1,8 @@
 package com.synway.vpay.service;
 
-import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalOperationException;
-import com.synway.vpay.base.exception.NotFoundException;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.exception.AccountNotFoundException;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
@@ -34,10 +33,10 @@ public class AccountService {
      * @since 0.1
      */
     public void save(Account param) {
-        Account db = accountRepository.findByName(param.getName());
-        if (Objects.isNull(db)) {
-            throw new BusinessException("账号不存在！");
+        if (!Objects.equals(account.getName(), param.getName())) {
+            throw new IllegalOperationException("不允许修改账户名");
         }
+        Account db = this.findByName(account.getName());
         VpayUtil.copyProperties(param, db);
         db = accountRepository.save(db);
         account.copyFrom(db);
@@ -77,7 +76,7 @@ public class AccountService {
      * @since 0.1
      */
     public Account findById(@NotNull UUID id) {
-        return accountRepository.findById(id).orElseThrow(NotFoundException::new);
+        return accountRepository.findById(id).orElseThrow(AccountNotFoundException::new);
     }
 
     /**
@@ -88,6 +87,10 @@ public class AccountService {
      * @since 0.1
      */
     public Account findByName(@NotNull String name) {
-        return accountRepository.findByName(name);
+        Account result = accountRepository.findByName(name);
+        if (Objects.isNull(result)) {
+            throw new AccountNotFoundException();
+        }
+        return result;
     }
 }

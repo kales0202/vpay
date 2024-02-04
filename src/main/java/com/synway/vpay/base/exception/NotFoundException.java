@@ -20,6 +20,7 @@ public class NotFoundException extends BusinessException {
         super(MESSAGE, cause);
     }
 
+    @Override
     public int getCode() {
         return CODE;
     }

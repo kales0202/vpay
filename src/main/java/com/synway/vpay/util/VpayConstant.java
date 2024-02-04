@@ -14,21 +14,18 @@ import java.util.UUID;
 public class VpayConstant {
 
     public static final String ACTIVE = "active";
-
     /**
      * 超级管理员账户名
      *
      * @since 0.1
      */
     public static final String SUPER_ACCOUNT = "admin";
-
     /**
      * 超级管理员账户ID
      *
      * @since 0.1
      */
     public static UUID SUPER_ID = UUID.randomUUID();
-
     /**
      * 账户当前状态
      *

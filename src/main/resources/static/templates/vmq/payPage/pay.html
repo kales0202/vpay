@@ -42,7 +42,8 @@
                     <div class="ui-loading qrcode-loading" data-role="qrPayImgLoading" style="display: none;">加载中
                     </div>
                     <div style="position: relative;display: inline-block;">
-                        <img :src="'/enQrcode?url='+payUrl" alt="加载中..." height="210" id='show_qrcode' style="display: block;"
+                        <img :src="'/enQrcode?url='+payUrl" alt="加载中..." height="210" id='show_qrcode'
+                             style="display: block;"
                              width="210">
                         <!--<img onclick="$('#use').hide()" id="use" src="use_1.png" v-if="payType==1"
                              style="position: absolute;top: 50%;left: 50%;width:32px;height:32px;margin-left: -16px;margin-top: -16px">
@@ -214,7 +215,7 @@
     }
 
     $.post("/getOrder", "orderId=" + getQueryString("orderId"), function (data) {
-        if (data.code == 1) {
+        if (data.code === 0) {
             var time = new Date().getTime() - data.data.date;
             time = time / 1000;
             time = data.data.timeOut * 60 - time;
@@ -244,7 +245,7 @@
     function check() {
         $.post("/checkOrder", "orderId=" + getQueryString("orderId"), function (data) {
             console.log(data);
-            if (data.code == 1) {
+            if (data.code === 0) {
                 window.location.href = data.data;
             } else {
                 if (data.data == "订单已过期") {

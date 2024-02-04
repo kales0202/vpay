@@ -31,7 +31,8 @@ public class WebConfigurer implements WebMvcConfigurer {
                         "/page/**",
                         "/templates/**",
                         "/favicon.ico",
-                        "/favicon"
+                        "/favicon",
+                        "/getState"
                 )
                 .addPathPatterns("/**");
     }

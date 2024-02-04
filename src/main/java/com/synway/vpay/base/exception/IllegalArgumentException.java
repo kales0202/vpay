@@ -21,6 +21,7 @@ public class IllegalArgumentException extends BusinessException {
         super(MESSAGE, cause);
     }
 
+    @Override
     public int getCode() {
         return CODE;
     }

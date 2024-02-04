@@ -37,26 +37,40 @@
 
     </div>
 </script>
-<table id="demo" lay-filter="test"></table>
+<table id="table-order" lay-filter="table-filter"></table>
 
-<script id="barDemo" type="text/html">
+<script id="table-bar" type="text/html">
     <a class="layui-btn layui-btn-xs" lay-event="bd">补单</a>
     <a class="layui-btn layui-btn-xs" lay-event="info">详情</a>
     <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>
-
 </script>
 
-
 <script>
-
     var myTable, table, form;
     layui.use(['form', 'table', 'laydate'], function () {
         table = layui.table;
         form = layui.form;
 
+        function reloadTable() {
+            myTable.reload({
+                where: {
+                    state: $("#state").val() || null,
+                    type: $("#type").val() || null,
+                }
+            });
+        }
+
+        function deleteOrder(params) {
+            API.deleteOrder(params, function (data) {
+                if (!data && data !== 0) return;
+                layer.msg("成功删除" + data + "个订单", {icon: 1});
+                reloadTable();
+            })
+        }
+
         //第一个实例
         myTable = table.render({
-            elem: '#demo',
+            elem: '#table-order',
             height: 'full-160',
             url: '/order/list',
             method: "post",
@@ -113,35 +127,27 @@
                         }
                     }
                 },
-                {title: '操作', minWidth: 120, align: 'center', toolbar: '#barDemo'}
+                {title: '操作', minWidth: 120, align: 'center', toolbar: '#table-bar'}
             ]]
         });
 
         //监听行工具事件
-        table.on('tool(test)', function (obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
-            var data = obj.data //获得当前行数据
-                , layEvent = obj.event; //获得 lay-event 对应的值
+        table.on('tool(table-filter)', function (obj) { //注：tool 是工具条事件名，table-filter 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data, layEvent = obj.event;
+            console.log("layEvent", layEvent);
             if (layEvent === 'info') {
-                var out = "<p>创建时间：" + data.createTime + "</p>";
-                out += "<p>支付时间：" + data.payTime + "</p>";
-                out += "<p>关闭时间：" + data.closeTime + "</p>";
-                out += "<p>自定义参数：" + data.param + "</p>";
+                var out = "<p>创建时间：" + (data.createTime || '') + "</p>";
+                out += "<p>支付时间：" + (data.payTime || '') + "</p>";
+                out += "<p>关闭时间：" + (data.closeTime || '') + "</p>";
+                out += "<p>自定义参数：" + (data.param || '') + "</p>";
                 layer.alert(out);
             } else if (layEvent === 'bd') {
                 layer.confirm('确定要补单吗？该操作将会将该订单标记为已支付，并向您的服务器发送订单完成通知', function (index) {
-                    layer.msg('操作中', {
-                        icon: 16
-                        , shade: 0.01
-                    });
+                    layer.msg('操作中', {icon: 16, shade: 0.01});
                     $.post("/admin/setBd", "id=" + data.id, function (data) {
                         if (data.code === 1) {
                             layer.msg("操作成功！");
-                            myTable.reload({
-                                where: {
-                                    state: $("#state").val() || null,
-                                    type: $("#type").val() || null
-                                }
-                            });
+                            reloadTable();
                         } else if (data.code === -2) {
                             layer.confirm('补单失败，异步通知返回错误，是否查看通知返回数据？', {
                                 btn: ['查看', '取消'] //按钮
@@ -153,118 +159,46 @@
                             layer.msg(data.msg);
                         }
                     });
-
-                    console.log(data.id);
                 });
             } else if (layEvent === 'del') {
                 layer.confirm('确定要删除订单吗？', function (index) {
-                    layer.msg('操作中', {
-                        icon: 16
-                        , shade: 0.01
-                    });
-
-                    $.post("/admin/delOrder", "id=" + data.id, function (data) {
-                        if (data.code == 1) {
-                            layer.msg("操作成功！");
-                            myTable.reload({
-                                where: {
-                                    state: $("#state").val() || null,
-                                    type: $("#type").val() || null,
-                                }
-                            });
-                        } else {
-                            layer.msg(data.msg);
-                        }
-
-
-                    });
-
-                    console.log(data.id);
+                    layer.msg('操作中', {icon: 16, shade: 0.01});
+                    deleteOrder({ids: [data.id]});
                 });
             }
         });
-        form.on('select(state)', function (data) {
-            myTable.reload({
-                where: {
-                    state: $("#state").val() || null,
-                    type: $("#type").val() || null
-                }
-            });
 
+        form.on('select(state)', function (data) {
+            reloadTable();
         });
 
         form.on('select(type)', function (data) {
-            myTable.reload({
-                where: {
-                    state: $("#state").val() || null,
-                    type: $("#type").val() || null
-                }
-            });
-
+            reloadTable();
         });
 
-
-        //头工具栏事件
-        table.on('toolbar(test)', function (obj) {
-            var checkStatus = table.checkStatus(obj.config.id);
+        // 头工具栏事件
+        table.on('toolbar(table-filter)', function (obj) {
+            table.checkStatus(obj.config.id);
             switch (obj.event) {
                 case 'delGq':
                     layer.confirm('确定要删除所有过期订单吗？', function (index) {
-                        layer.msg('操作中', {
-                            icon: 16
-                            , shade: 0.01
-                        });
-
-                        $.post("/admin/delGqOrder", function (data) {
-                            if (data.code == 1) {
-                                layer.msg("操作成功！");
-                                myTable.reload({
-                                    where: {
-                                        state: $("#state").val() || null,
-                                        type: $("#type").val() || null
-                                    }
-                                });
-                            } else {
-                                layer.msg(data.msg);
-                            }
-
-                        });
-
+                        layer.msg('操作中...', {icon: 16, shade: 0.01});
+                        deleteOrder({state: -1});
                     });
 
                     break;
                 case 'delLast':
                     layer.confirm('确定要删除七天前的所有订单吗？', function (index) {
-                        layer.msg('操作中', {
-                            icon: 16
-                            , shade: 0.01
-                        });
-
-                        $.post("/admin/delLastOrder", function (data) {
-                            if (data.code == 1) {
-                                layer.msg("操作成功！");
-                                myTable.reload({
-                                    where: {
-                                        state: $("#state").val() || null,
-                                        type: $("#type").val() || null
-                                    }
-                                });
-                            } else {
-                                layer.msg(data.msg);
-                            }
-
-                        });
-
+                        layer.msg('操作中...', {icon: 16, shade: 0.01});
+                        var startTime = "1970-01-01 00:00:00";
+                        var endTime = new Date().getTime() - 7 * 24 * 60 * 60 * 1000;
+                        endTime = Util.formatTime(endTime).substring(0, 10) + " 00:00:00";
+                        deleteOrder({startTime: startTime, endTime: endTime});
                     });
                     break;
             }
-            ;
         });
 
-
         form.render();
-
     });
-
-
 </script>

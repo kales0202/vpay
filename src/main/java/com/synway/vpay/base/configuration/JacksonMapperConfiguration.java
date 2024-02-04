@@ -1,11 +1,13 @@
 package com.synway.vpay.base.configuration;
 
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -16,16 +18,17 @@ import java.time.format.DateTimeFormatter;
 @Configuration
 public class JacksonMapperConfiguration {
 
-    public static final String DATE_FORMAT = "yyyy-MM-dd";
-
-    public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    @Value("${spring.jackson.date-format:yyyy-MM-dd HH:mm:ss}")
+    private String pattern;
 
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return builder -> {
-            builder.simpleDateFormat(DATETIME_FORMAT);
-            builder.serializers(new LocalDateSerializer(DateTimeFormatter.ofPattern(DATE_FORMAT)));
-            builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATETIME_FORMAT)));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            // 返回时间数据序列化
+            builder.serializerByType(LocalDateTime.class, new LocalDateTimeSerializer(formatter));
+            // 接收时间数据反序列化
+            builder.deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer(formatter));
         };
     }
 }

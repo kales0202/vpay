@@ -15,8 +15,10 @@ import org.springframework.util.ObjectUtils;
 import java.beans.PropertyDescriptor;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -154,5 +156,12 @@ public class VpayUtil {
     public static void updateMonitorState(String id, MonitorState monitorState) {
         AccountState accountState = getAccountState(id);
         accountState.setMonitorState(monitorState);
+    }
+
+    public static Long toTimestamp(LocalDateTime localDateTime) {
+        if (Objects.isNull(localDateTime)) {
+            return null;
+        }
+        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 }

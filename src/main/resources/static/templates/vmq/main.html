@@ -138,13 +138,12 @@
 </style>
 
 <script>
-    $.get("/order/statistics", function (data) {
-        $("#todayOrder").html(data.data.todayTotal);
-        $("#todaySuccessOrder").html(data.data.todaySuccess);
-        $("#todayCloseOrder").html(data.data.todayFailure);
-        $("#todayMoney").html(data.data.todayIncome);
-        $("#countOrder").html(data.data.totalSuccess);
-        $("#countMoney").html(data.data.totalIncome);
-
+    API.statisticsOrder(function (data) {
+        $("#todayOrder").html(data.todayTotal);
+        $("#todaySuccessOrder").html(data.todaySuccess);
+        $("#todayCloseOrder").html(data.todayFailure);
+        $("#todayMoney").html(data.todayIncome);
+        $("#countOrder").html(data.totalSuccess);
+        $("#countMoney").html(data.totalIncome);
     });
 </script>

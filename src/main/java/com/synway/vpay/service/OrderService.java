@@ -2,16 +2,23 @@ package com.synway.vpay.service;
 
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.bean.OrderCreateBO;
+import com.synway.vpay.bean.OrderDeleteBO;
 import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.bean.OrderStatisticsVO;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.repository.OrderRepository;
 import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,14 +37,56 @@ public class OrderService {
     @Resource
     private TempPriceService tempPriceService;
 
+    @Resource
+    private EntityManager entityManager;
+
     public Order findById(UUID id) {
         return orderRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void deleteById(UUID id) {
         orderRepository.deleteById(id);
     }
 
+    @Transactional
+    public int deleteByIds(List<UUID> ids) {
+        if (ObjectUtils.isEmpty(ids)) {
+            return 0;
+        }
+        return this.delete(new OrderDeleteBO(ids));
+    }
+
+    @Transactional
+    public int delete(OrderDeleteBO bo) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaDelete<Order> criteriaDelete = criteriaBuilder.createCriteriaDelete(Order.class);
+        Root<Order> root = criteriaDelete.from(Order.class);
+        // 如果传入了订单ID，则直接根据ID删除数据，忽略其它条件
+        if (!ObjectUtils.isEmpty(bo.getIds())) {
+            criteriaDelete.where(criteriaBuilder.in(root.get("id")).value(bo.getIds()));
+            return entityManager.createQuery(criteriaDelete).executeUpdate();
+        }
+        // 根据时间范围删除数据
+        if (Objects.nonNull(bo.getStartTime()) && Objects.nonNull(bo.getEndTime())) {
+            criteriaDelete.where(criteriaBuilder.between(root.get("createTime"), bo.getStartTime(), bo.getEndTime()));
+        }
+        // 根据订单状态删除数据
+        if (Objects.nonNull(bo.getState())) {
+            criteriaDelete.where(criteriaBuilder.equal(root.get("state"), bo.getState()));
+        }
+        // 根据支付类型删除数据
+        if (Objects.nonNull(bo.getType())) {
+            criteriaDelete.where(criteriaBuilder.equal(root.get("type"), bo.getType()));
+        }
+        // 无删除条件时，不执行删除操作（不允许全量删除订单）
+        if (Objects.isNull(criteriaDelete.getRestriction())) {
+            return 0;
+        }
+        return entityManager.createQuery(criteriaDelete).executeUpdate();
+    }
+
+    @Transactional
     public Order save(OrderCreateBO createBO) {
         Order order = createBO.toOrder();
         order.setRealPrice(tempPriceService.getRealPrice(order.getPrice()));
