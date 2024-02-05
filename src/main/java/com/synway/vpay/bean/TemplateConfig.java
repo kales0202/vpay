@@ -52,6 +52,8 @@ public class TemplateConfig {
 
     /**
      * 支付页地址
+     *
+     * @since 0.1
      */
     private String pay;
 

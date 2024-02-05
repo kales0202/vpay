@@ -21,7 +21,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     @SuppressWarnings("NullableProblems")
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (Strings.isNotBlank(account.getName())) {
-            log.debug("登录校验成功，登录用户：{}", account.getName());
+            log.debug("登录校验成功，登录账户：{}", account.getName());
             return true;
         }
         log.debug("登录校验失败...");

@@ -63,7 +63,7 @@ public class DatabaseRunner implements ApplicationRunner {
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
         order.setPrice(new BigDecimal("2.11"));
         order.setState(OrderState.SUCCESS);
-        order.setType(PayType.WECHAT);
+        order.setPayType(PayType.WECHAT);
         orderRepository.save(order);
 
         VpayUtil.updateLastHeart(VpayConstant.SUPER_ID.toString(), LocalDateTime.now());

@@ -1,16 +1,24 @@
 package com.synway.vpay.repository;
 
-import com.synway.vpay.base.repository.BaseRepository;
 import com.synway.vpay.entity.TempPrice;
-import jakarta.persistence.EntityManager;
+import com.synway.vpay.enums.PayType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Repository
-public class TempPriceRepository extends BaseRepository<TempPrice, UUID> {
+public interface TempPriceRepository extends JpaRepository<TempPrice, UUID>, JpaSpecificationExecutor<TempPrice> {
 
-    public TempPriceRepository(EntityManager entityManager) {
-        super(TempPrice.class, entityManager);
-    }
+    /**
+     * 根据支付方式和支付金额删除订单
+     *
+     * @param payType 支付方式
+     * @param price   支付金额
+     * @return int 删除的数量
+     * @since 0.1
+     */
+    int deleteByTypeAndPrice(PayType payType, BigDecimal price);
 }

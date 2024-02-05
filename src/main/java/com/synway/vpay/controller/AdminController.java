@@ -7,7 +7,6 @@ import com.synway.vpay.service.AccountService;
 import com.synway.vpay.service.AdminService;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -35,15 +34,12 @@ public class AdminController {
     private AccountService accountService;
 
     @Resource
-    private HttpSession session;
-
-    @Resource
     private Account account;
 
     /**
      * 登录接口
      *
-     * @param loginInfo 登录用户名和密码
+     * @param loginInfo 登录账户名和密码
      * @return nothing
      * @since 0.1
      */
@@ -51,7 +47,6 @@ public class AdminController {
     public Result<String> login(@RequestBody @Valid LoginInfo loginInfo) {
         Account db = adminService.login(loginInfo.getName(), loginInfo.getPass());
         account.copyFrom(db);
-        account.setSessionId(session.getId());
         return Result.success();
     }
 
@@ -74,8 +69,7 @@ public class AdminController {
      */
     @PostMapping("/account")
     public Result<Account> saveAccount(@RequestBody @Valid Account param) {
-        accountService.save(param);
-        return Result.success(VpayUtil.getTargetBean(account));
+        return Result.success(accountService.save(param));
     }
 
     /**
@@ -92,7 +86,7 @@ public class AdminController {
     }
 
     /**
-     * 登录用户名和密码
+     * 登录账户名和密码
      *
      * @since 0.1
      */
@@ -100,7 +94,7 @@ public class AdminController {
     private static class LoginInfo {
 
         /**
-         * 用户名
+         * 账户名
          *
          * @since 0.1
          */

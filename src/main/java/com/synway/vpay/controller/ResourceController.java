@@ -4,16 +4,14 @@ package com.synway.vpay.controller;
 import com.synway.vpay.util.VpayUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * 静态页面
+ * 静态页面、无需登录的接口
  *
  * @since 0.1
  */
 @Controller
-@RequestMapping("/")
 public class ResourceController {
 
     /**
@@ -22,7 +20,7 @@ public class ResourceController {
      * @return 首页
      * @since 0.1
      */
-    @GetMapping()
+    @GetMapping("/")
     public String index() {
         return "redirect:/" + VpayUtil.getTemplateConfig().getIndex();
     }
@@ -39,7 +37,19 @@ public class ResourceController {
     }
 
     /**
-     * 登录页
+     * 支付页地址
+     *
+     * @param order 订单ID
+     * @return 支付页地址
+     * @since 0.1
+     */
+    @GetMapping("/pay")
+    public String pay(String order) {
+        return "redirect:/" + VpayUtil.getTemplateConfig().getPay() + "?order=" + order;
+    }
+
+    /**
+     * 404
      *
      * @return 登录页
      * @since 0.1
@@ -47,11 +57,6 @@ public class ResourceController {
     @GetMapping({"404"})
     public String notFound() {
         return "redirect:/" + VpayUtil.getTemplateConfig().getNotFound();
-    }
-
-    @GetMapping("/pay")
-    public String pay(String order) {
-        return "redirect:/" + VpayUtil.getTemplateConfig().getPay() + "?order=" + order;
     }
 
     /**

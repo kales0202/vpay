@@ -1,11 +1,10 @@
 package com.synway.vpay.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.synway.vpay.base.entity.BaseEntity;
+import com.synway.vpay.enums.PayType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -96,15 +95,6 @@ public class Account extends BaseEntity {
     private int close = 5;
 
     /**
-     * 会话ID
-     *
-     * @since 0.1
-     */
-    @Transient
-    @JsonIgnore
-    private String sessionId;
-
-    /**
      * 拷贝Account数据
      *
      * @param from 源
@@ -123,5 +113,21 @@ public class Account extends BaseEntity {
         this.setClose(from.getClose());
         this.setCreateTime(from.getCreateTime());
         this.setUpdateTime(from.getUpdateTime());
+    }
+
+    /**
+     * 根据支付方式，获取支付地址
+     *
+     * @param payType 支付方式
+     * @return 支付地址
+     * @since 0.1
+     */
+    public String getPayUrl(PayType payType) {
+        if (payType == PayType.WECHAT) {
+            return wxPay;
+        } else if (payType == PayType.ALIPAY) {
+            return aliPay;
+        }
+        return null;
     }
 }

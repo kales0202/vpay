@@ -27,7 +27,7 @@ public class OrderQueryBO extends BasePageBO {
      *
      * @since 0.1
      */
-    private PayType type;
+    private PayType payType;
 
     /**
      * 订单状态

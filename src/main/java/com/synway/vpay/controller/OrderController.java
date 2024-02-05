@@ -2,15 +2,12 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.bean.Result;
-import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderDeleteBO;
 import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.bean.OrderStatisticsVO;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.service.OrderService;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -71,24 +67,6 @@ public class OrderController {
         return Result.success(orderService.delete(bo));
     }
 
-    /**
-     * 新建订单
-     *
-     * @param bo 订单创建入参信息
-     * @since 0.1
-     */
-    @PostMapping
-    public Result<Order> create(HttpServletResponse response, @RequestBody @Valid OrderCreateBO bo) throws IOException {
-        // 验证签名
-        // adminService.verifySign(createBO.getPayId(), createBO.getParam(),
-        //         createBO.getType(), createBO.getPrice(), createBO.getSign());
-
-        Order order = orderService.save(bo);
-        if (bo.openHtml()) {
-            response.sendRedirect("/pay?order=" + order.getOrderId());
-        }
-        return Result.success(order);
-    }
 
     /**
      * 分页获取订单数据列表
@@ -109,5 +87,16 @@ public class OrderController {
     @GetMapping("/statistics")
     public Result<OrderStatisticsVO> statistics() {
         return Result.success(orderService.statistics());
+    }
+
+    /**
+     * 补单
+     *
+     * @return 补单失败时的异常信息
+     * @since 0.1
+     */
+    @GetMapping("/fulfill")
+    public Result<String> fulfill(UUID id) {
+        return Result.success(orderService.fulfill(id));
     }
 }

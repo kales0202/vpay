@@ -1,5 +1,7 @@
 package com.synway.vpay.bean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.synway.vpay.enums.MonitorState;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +29,7 @@ public class AccountState {
      *
      * @since 0.1
      */
+    @JsonProperty(access = Access.WRITE_ONLY)
     private String keyword;
 
     /**

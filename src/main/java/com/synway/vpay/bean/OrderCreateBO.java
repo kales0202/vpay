@@ -1,5 +1,7 @@
 package com.synway.vpay.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.util.VpayUtil;
@@ -18,6 +20,19 @@ import java.util.Objects;
  */
 @Data
 public class OrderCreateBO {
+
+    /**
+     * 账户名
+     *
+     * @since 0.1
+     */
+    private String accountName;
+
+    /**
+     * 业务缓存，账户信息
+     */
+    @JsonIgnore
+    private Account account;
 
     /**
      * 商户订单号
@@ -40,7 +55,7 @@ public class OrderCreateBO {
      * @since 0.1
      */
     @NotNull
-    private PayType type;
+    private PayType payType;
 
     /**
      * 订单价格
@@ -78,10 +93,10 @@ public class OrderCreateBO {
      *
      * @since 0.1
      */
-    private String isHtml;
+    private int isHtml;
 
     public boolean openHtml() {
-        return !Objects.equals(isHtml, "1");
+        return !Objects.equals(isHtml, 1);
     }
 
     public Order toOrder() {
@@ -89,7 +104,7 @@ public class OrderCreateBO {
         order.setOrderId(VpayUtil.generateOrderId());
         order.setPayId(payId);
         order.setParam(param);
-        order.setType(type);
+        order.setPayType(payType);
         order.setPrice(price);
         order.setNotifyUrl(notifyUrl);
         order.setReturnUrl(returnUrl);

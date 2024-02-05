@@ -55,7 +55,7 @@
             myTable.reload({
                 where: {
                     state: $("#state").val() || null,
-                    type: $("#type").val() || null,
+                    payType: $("#type").val() || null,
                 }
             });
         }
@@ -90,7 +90,7 @@
             toolbar: '#toolbarDemo',
             where: {
                 state: $("#state").val() || null,
-                type: $("#type").val() || null
+                payType: $("#type").val() || null
             },
             page: true,
             cols: [[ // 表头

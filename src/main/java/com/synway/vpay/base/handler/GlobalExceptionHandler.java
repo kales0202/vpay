@@ -76,7 +76,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public Result<Object> exception(HttpServletRequest request, MethodArgumentNotValidException e) {
         this.commonHandle(request, e);
-        String msg = Optional.ofNullable(e.getBindingResult().getFieldError()).map(error -> error.getField() + ": " + error.getDefaultMessage()).orElse(IllegalArgumentException.MESSAGE);
+        String msg = Optional.ofNullable(e.getBindingResult().getFieldError())
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .orElse(IllegalArgumentException.MESSAGE);
         return Result.error(msg);
     }
 
@@ -89,7 +91,8 @@ public class GlobalExceptionHandler {
     }
 
     private void commonHandle(HttpServletRequest request, Exception e) {
-        log.error(String.format("%s ---> [%s] %s", e.getClass().getSimpleName(), request.getMethod(), request.getRequestURI()));
+        log.error(String.format("[%s] %s ---> %s: %s",
+                request.getMethod(), request.getRequestURI(), e.getClass().getSimpleName(), e.getMessage()));
     }
 
     private ModelAndView jsonResult(int code, String msg) {
@@ -105,11 +108,17 @@ public class GlobalExceptionHandler {
             Object attribute = request.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingHandler");
             if (attribute instanceof HandlerMethod handler) {
                 // getBeanType()拿到发送请求得类模板（Class），getDeclaredAnnotationsByType(指定注解类模板)通过指定得注解，得到一个数组。
-                RestController[] annotations1 = handler.getBeanType().getDeclaredAnnotationsByType(RestController.class);
-                ResponseBody[] annotations2 = handler.getBeanType().getDeclaredAnnotationsByType(ResponseBody.class);
-                ResponseBody[] annotations3 = handler.getMethod().getAnnotationsByType(ResponseBody.class);
                 // 判断当类上含有@RestController或是@ResponseBody或是方法上有@ResponseBody时，则表明该异常是一个接口请求发生的
-                return annotations1.length > 0 || annotations2.length > 0 || annotations3.length > 0;
+                RestController[] annotations1 = handler.getBeanType().getDeclaredAnnotationsByType(RestController.class);
+                if (annotations1.length > 0) {
+                    return true;
+                }
+                ResponseBody[] annotations2 = handler.getBeanType().getDeclaredAnnotationsByType(ResponseBody.class);
+                if (annotations2.length > 0) {
+                    return true;
+                }
+                ResponseBody[] annotations3 = handler.getMethod().getAnnotationsByType(ResponseBody.class);
+                return annotations3.length > 0;
             }
             return false;
         });

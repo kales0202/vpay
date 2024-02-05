@@ -9,6 +9,10 @@ import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -18,6 +22,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @Validated
+@CacheConfig(cacheNames = "account")
 public class AccountService {
 
     @Resource
@@ -32,7 +37,8 @@ public class AccountService {
      * @param param 设置
      * @since 0.1
      */
-    public void save(Account param) {
+    @CachePut(key = "#result.id")
+    public Account save(Account param) {
         if (!Objects.equals(account.getName(), param.getName())) {
             throw new IllegalOperationException("不允许修改账户名");
         }
@@ -40,6 +46,7 @@ public class AccountService {
         VpayUtil.copyProperties(param, db);
         db = accountRepository.save(db);
         account.copyFrom(db);
+        return db;
     }
 
     /**
@@ -48,6 +55,7 @@ public class AccountService {
      * @param account 设置
      * @since 0.1
      */
+    @CacheEvict(key = "#account.id")
     public void delete(Account account) {
         if (Objects.equals(VpayConstant.SUPER_ID, account.getId())) {
             throw new IllegalOperationException("不允许删除超级管理员！");
@@ -61,6 +69,7 @@ public class AccountService {
      * @param id 设置ID
      * @since 0.1
      */
+    @CacheEvict(key = "#id")
     public void delete(@NotNull UUID id) {
         if (Objects.equals(VpayConstant.SUPER_ID, id)) {
             throw new IllegalOperationException("不允许删除超级管理员！");
@@ -75,17 +84,20 @@ public class AccountService {
      * @return Account
      * @since 0.1
      */
+    @Cacheable(key = "#id")
     public Account findById(@NotNull UUID id) {
-        return accountRepository.findById(id).orElseThrow(AccountNotFoundException::new);
+        return accountRepository.findById(id)
+                .orElseThrow(AccountNotFoundException::new);
     }
 
     /**
      * 获取账户信息
      *
-     * @param name 用户名
+     * @param name 账户名
      * @return Account
      * @since 0.1
      */
+    @Cacheable(key = "#result.id")
     public Account findByName(@NotNull String name) {
         Account result = accountRepository.findByName(name);
         if (Objects.isNull(result)) {

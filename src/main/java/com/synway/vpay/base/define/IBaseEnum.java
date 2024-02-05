@@ -13,6 +13,19 @@ import java.util.Objects;
  */
 public interface IBaseEnum {
 
+    static <T extends IBaseEnum> T fromValue(Class<T> enumType, Integer value) {
+        if (Objects.isNull(value)) {
+            return null;
+        }
+        T[] enums = enumType.getEnumConstants();
+        for (T item : enums) {
+            if (Objects.equals(item.getValue(), value)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     /**
      * @return 枚举显示名称
      * @since 0.1

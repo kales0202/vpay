@@ -1,19 +1,27 @@
 package com.synway.vpay.service;
 
 import com.synway.vpay.base.bean.PageData;
+import com.synway.vpay.base.exception.BusinessException;
+import com.synway.vpay.base.exception.IllegalArgumentException;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderDeleteBO;
 import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.bean.OrderStatisticsVO;
+import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.OrderState;
+import com.synway.vpay.enums.PayQRCodeType;
+import com.synway.vpay.exception.FulfillException;
 import com.synway.vpay.repository.OrderRepository;
+import com.synway.vpay.util.HttpUtil;
+import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -25,7 +33,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,6 +49,36 @@ public class OrderService {
 
     @Resource
     private EntityManager entityManager;
+
+    @Resource
+    private Account account;
+
+    /**
+     * 保存订单
+     *
+     * @param bo 订单信息
+     * @return 订单数据
+     * @since 0.1
+     */
+    public Order save(OrderCreateBO bo) {
+        if (this.countByPayId(bo.getPayId()) > 0) {
+            throw new BusinessException("商户订单号已存在");
+        }
+
+        String payUrl = account.getPayUrl(bo.getPayType());
+        if (Strings.isBlank(payUrl)) {
+            throw new BusinessException("请您先配置支付地址");
+        }
+
+        Order order = bo.toOrder();
+        order.setAccountId(account.getId());
+        order.setRealPrice(tempPriceService.saveRealPrice(order.getAccountId(), order.getPayType(), order.getPrice()));
+        order.setPayUrl(payUrl);
+        order.setIsAuto(PayQRCodeType.GENERIC);
+        order.setState(OrderState.WAIT);
+
+        return orderRepository.save(order);
+    }
 
     public Order findById(UUID id) {
         return orderRepository.findById(id).orElse(null);
@@ -76,21 +116,14 @@ public class OrderService {
             criteriaDelete.where(criteriaBuilder.equal(root.get("state"), bo.getState()));
         }
         // 根据支付类型删除数据
-        if (Objects.nonNull(bo.getType())) {
-            criteriaDelete.where(criteriaBuilder.equal(root.get("type"), bo.getType()));
+        if (Objects.nonNull(bo.getPayType())) {
+            criteriaDelete.where(criteriaBuilder.equal(root.get("payType"), bo.getPayType()));
         }
         // 无删除条件时，不执行删除操作（不允许全量删除订单）
         if (Objects.isNull(criteriaDelete.getRestriction())) {
             return 0;
         }
         return entityManager.createQuery(criteriaDelete).executeUpdate();
-    }
-
-    @Transactional
-    public Order save(OrderCreateBO createBO) {
-        Order order = createBO.toOrder();
-        order.setRealPrice(tempPriceService.getRealPrice(order.getPrice()));
-        return orderRepository.save(order);
     }
 
     /**
@@ -103,8 +136,8 @@ public class OrderService {
     public PageData<Order> findAll(OrderQueryBO bo) {
         Specification<Order> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> pl = new ArrayList<>();
-            if (Objects.nonNull(bo.getType())) {
-                pl.add(criteriaBuilder.equal(root.get("type"), bo.getType()));
+            if (Objects.nonNull(bo.getPayType())) {
+                pl.add(criteriaBuilder.equal(root.get("payType"), bo.getPayType()));
             }
             if (Objects.nonNull(bo.getState())) {
                 pl.add(criteriaBuilder.equal(root.get("state"), bo.getState()));
@@ -208,4 +241,59 @@ public class OrderService {
         return orderRepository.sumPrice();
     }
 
+    /**
+     * 补单
+     *
+     * @return 补单失败时的异常信息
+     * @since 0.1
+     */
+    public String fulfill(UUID id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if (Objects.isNull(order)) {
+            throw new IllegalArgumentException("订单不存在");
+        }
+
+        String url = order.getNotifyUrl();
+        if (url == null || url.equals("")) {
+            url = account.getNotifyUrl();
+            if (url == null || url.equals("")) {
+                throw new BusinessException("您还未配置异步通知地址，请现在系统配置中配置");
+            }
+        }
+
+        Map<String, String> params = new HashMap<>();
+        String sign = order.getPayId() + order.getParam() + order.getPayType()
+                + order.getPrice() + order.getRealPrice() + account.getKeyword();
+        params.put("payId", order.getPayId());
+        params.put("param", order.getParam());
+        params.put("type", String.valueOf(order.getPayType().getValue()));
+        params.put("price", order.getPrice().toString());
+        params.put("reallyPrice", order.getRealPrice().toString());
+        params.put("sign", VpayUtil.md5(sign));
+
+        url = HttpUtil.map2GetParam(url, params);
+
+        String res = HttpUtil.get(url);
+        if (res != null && res.equals("success")) {
+            if (order.getState() == OrderState.WAIT) {
+                tempPriceService.deleteByTypeAndPrice(order.getPayType(), order.getRealPrice());
+            }
+            order.setState(OrderState.SUCCESS);
+            orderRepository.save(order);
+        } else {
+            throw new FulfillException(res);
+        }
+        return res;
+    }
+
+    /**
+     * 根据支付商户订单号统计订单数量
+     *
+     * @param payId 支付商户订单号
+     * @return 统计的订单数量
+     * @since 0.1
+     */
+    public long countByPayId(String payId) {
+        return orderRepository.countByPayId(payId);
+    }
 }

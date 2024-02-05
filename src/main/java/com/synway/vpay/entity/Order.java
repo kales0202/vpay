@@ -12,6 +12,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * 订单
@@ -25,6 +26,13 @@ import java.time.LocalDateTime;
 public class Order extends BaseEntity {
 
     /**
+     * 账户ID
+     *
+     * @since 0.1
+     */
+    private UUID accountId;
+
+    /**
      * 支付云端唯一订单号
      *
      * @since 0.1
@@ -36,6 +44,7 @@ public class Order extends BaseEntity {
      *
      * @since 0.1
      */
+    @Column(unique = true)
     private String payId;
 
     /**
@@ -64,7 +73,7 @@ public class Order extends BaseEntity {
      *
      * @since 0.1
      */
-    private PayType type;
+    private PayType payType;
 
     /**
      * 订单价格

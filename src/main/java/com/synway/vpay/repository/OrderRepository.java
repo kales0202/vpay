@@ -50,6 +50,15 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     long countByState(OrderState state);
 
     /**
+     * 根据支付商户订单号统计订单数量
+     *
+     * @param payId 支付商户订单号
+     * @return 统计的订单数量
+     * @since 0.1
+     */
+    long countByPayId(String payId);
+
+    /**
      * 根据时间范围统计交易成功的订单总额
      *
      * @param startTime 开始时间
