@@ -45,10 +45,12 @@ public enum PayQRCodeType implements IBaseEnum {
         this.name = name;
     }
 
+    @Override
     public int getValue() {
         return value;
     }
 
+    @Override
     public String getName() {
         return name;
     }

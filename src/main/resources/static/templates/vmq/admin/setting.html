@@ -234,12 +234,10 @@
             encodeQRCode($aliPay, data.aliPay);
         }
 
-        $.get("/admin/account", function (data) {
-            if (data.code === 0) {
-                renderSetting(data.data);
-                layui.form.render();
-            }
-        });
+        API.account(function (data) {
+            renderSetting(data);
+            layui.form.render();
+        })
 
         $("#btn-save").on("click", function () {
             save();

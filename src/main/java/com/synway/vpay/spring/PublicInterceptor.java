@@ -42,8 +42,10 @@ public class PublicInterceptor implements HandlerInterceptor {
         }
         LocalDateTime dateTime = VpayUtil.toDatetime(time);
         // 如果时间小于或者超过当前时间5分钟，则抛出异常
-        if (dateTime.isBefore(LocalDateTime.now().minusMinutes(5)) || dateTime.isAfter(LocalDateTime.now().plusMinutes(5))) {
+        long difference = VpayUtil.getDatetimeDifference(dateTime, LocalDateTime.now());
+        if (difference > 5 * 60 * 1000) {
             throw new SignatureException("签名时间认证失败...");
+
         }
         Account db = accountService.findByName(name);
         sign = sign.toUpperCase();

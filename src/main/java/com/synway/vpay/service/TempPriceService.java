@@ -34,7 +34,7 @@ public class TempPriceService {
      * @return 保存的实际支付金额
      * @since 0.1
      */
-    public BigDecimal saveRealPrice(UUID accountId, PayType payType, BigDecimal price) {
+    public BigDecimal saveReallyPrice(UUID accountId, PayType payType, BigDecimal price) {
         TempPrice tempPrice = new TempPrice(accountId, payType, price);
         while (true) {
             try {
@@ -43,7 +43,7 @@ public class TempPriceService {
             } catch (Exception e) {
                 // do nothing
             }
-            // realPrice +/- 0.01
+            // reallyPrice +/- 0.01
             if (account.getPayQf() == 0) {
                 tempPrice.setPrice(tempPrice.getPrice().add(RATIO));
             } else {

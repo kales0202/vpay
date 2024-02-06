@@ -35,13 +35,13 @@ import java.util.function.Consumer;
 public class VmqController {
 
     @Resource
-    private Account account;
-
-    @Resource
     private AccountService accountService;
 
     @Resource
     private OrderService orderService;
+
+    @Resource
+    private Account account;
 
     /**
      * 创建订单（仅超级管理员）
@@ -87,11 +87,11 @@ public class VmqController {
             }
         });
 
-        Order order = orderService.save(bo);
+        Order order = orderService.create(bo);
         if (isHtml == 0) {
-            return BaseUtil.object2Json(Result.success(order));
+            return BaseUtil.object2Json(this.success(order));
         }
-        return "<script>window.location.href = '/payPage/pay.html?orderId=" + order.getOrderId() + "'</script>";
+        return "<script>window.location.href = '/pay?orderId=" + order.getOrderId() + "'</script>";
     }
 
     /**
@@ -120,13 +120,13 @@ public class VmqController {
         });
 
         // 获取账户状态
-        AccountState state = VpayUtil.getAccountState(VpayConstant.SUPER_ID.toString());
+        AccountState state = VpayUtil.getAccountState(VpayConstant.SUPER_ID);
 
         Map<String, Object> data = new HashMap<>();
         data.put("lastpay", VpayUtil.toTimestamp(state.getLastPay()));
         data.put("lastheart", VpayUtil.toTimestamp(state.getLastHeart()));
         data.put("state", state.getMonitorState().getValue());
-        return Result.success(data);
+        return this.success(data);
     }
 
     /**
@@ -144,14 +144,66 @@ public class VmqController {
         }
         this.simulatedLogin((ac) -> {
         });
+        return this.success(orderService.findByOrderId(orderId));
+    }
 
-        // return publicService.getOrder(orderId);
-        return Result.success();
+    /**
+     * 查询订单状态（仅超级管理员）
+     *
+     * @param orderId 订单ID
+     * @return 订单支付完成后的跳转地址（带回调参数）
+     * @see PublicController#checkOrder
+     * @since 0.1
+     */
+    @RequestMapping("/checkOrder")
+    public Result<String> checkOrder(String orderId) {
+        if (orderId == null) {
+            return Result.error("请传入订单编号");
+        }
+        this.simulatedLogin((ac) -> {
+        });
+        return this.success(orderService.checkOrder(orderId));
+    }
+
+    /**
+     * 关闭订单（仅超级管理员）
+     *
+     * @param orderId 订单ID
+     * @see PublicController#closeOrder
+     * @since 0.1
+     */
+    @RequestMapping("/closeOrder")
+    public Result<Void> closeOrder(String orderId, String sign) {
+        if (orderId == null) {
+            return Result.error("请传入订单编号");
+        }
+        if (sign == null) {
+            return Result.error("请传入sign");
+        }
+
+        // 校验签名
+        this.simulatedLogin((ac) -> {
+            if (!Objects.equals(VpayUtil.md5(orderId + ac.getKeyword()), sign)) {
+                throw new SignatureException();
+            }
+        });
+        orderService.closeOrder(orderId);
+        return this.success();
     }
 
     public void simulatedLogin(Consumer<Account> consumer) {
         Account ac = accountService.findById(VpayConstant.SUPER_ID);
         consumer.accept(ac);
         account.copyFrom(ac);
+    }
+
+    private <T> Result<T> success() {
+        return this.success(null);
+    }
+
+    private <T> Result<T> success(T data) {
+        Result<T> success = Result.success(data);
+        success.setCode(1); // vmq接口返回1表示成功
+        return success;
     }
 }

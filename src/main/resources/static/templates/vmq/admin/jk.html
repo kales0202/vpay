@@ -77,12 +77,9 @@
         form.render();
     });
 
-    $.get("/admin/state", function (data) {
-        console.log(data);
-        if (data.code === 0) {
-            renderJK(data.data);
-        }
-    });
+    API.state(function (data) {
+        renderJK(data);
+    })
 
     function renderJK(data) {
         if (data.monitorState === -1) {

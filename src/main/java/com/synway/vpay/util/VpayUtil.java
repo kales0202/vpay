@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.beans.PropertyDescriptor;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -21,6 +22,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * vpay工具类
@@ -112,7 +114,7 @@ public class VpayUtil {
      * @return 账户状态信息
      * @since 0.1
      */
-    public static AccountState getAccountState(String id) {
+    public static AccountState getAccountState(UUID id) {
         AccountState accountState;
         if (VpayConstant.ACCOUNT_STATE_MAP.containsKey(id)) {
             accountState = VpayConstant.ACCOUNT_STATE_MAP.get(id);
@@ -124,25 +126,13 @@ public class VpayUtil {
     }
 
     /**
-     * 更新账户信息：最后心跳
-     *
-     * @param id        账户ID
-     * @param lastHeart 最后心跳
-     * @since 0.1
-     */
-    public static void updateLastHeart(String id, LocalDateTime lastHeart) {
-        AccountState accountState = getAccountState(id);
-        accountState.setLastHeart(lastHeart);
-    }
-
-    /**
      * 更新账户信息：最后支付时间
      *
      * @param id      账户ID
      * @param lastPay 最后支付时间
      * @since 0.1
      */
-    public static void updateLastPay(String id, LocalDateTime lastPay) {
+    public static void updateLastPay(UUID id, LocalDateTime lastPay) {
         AccountState accountState = getAccountState(id);
         accountState.setLastPay(lastPay);
     }
@@ -154,9 +144,10 @@ public class VpayUtil {
      * @param monitorState 监控端状态
      * @since 0.1
      */
-    public static void updateMonitorState(String id, MonitorState monitorState) {
+    public static void updateMonitorState(UUID id, MonitorState monitorState, LocalDateTime lastHeart) {
         AccountState accountState = getAccountState(id);
         accountState.setMonitorState(monitorState);
+        accountState.setLastHeart(lastHeart);
     }
 
     /**
@@ -184,5 +175,20 @@ public class VpayUtil {
         long timestamp = Long.parseLong(time);
         Instant instant = Instant.ofEpochMilli(timestamp);
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }
+
+
+    /**
+     * 获取两个LocalDateTime的相差毫秒数（总是返回正数）
+     *
+     * @param dateTime1 时间1
+     * @param dateTime2 时间2
+     * @return 相差毫秒数
+     * @since 0.1
+     */
+    public static long getDatetimeDifference(LocalDateTime dateTime1, LocalDateTime dateTime2) {
+        Instant instant1 = dateTime1.atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant2 = dateTime2.atZone(ZoneId.systemDefault()).toInstant();
+        return Duration.between(instant1, instant2).abs().toMillis();
     }
 }

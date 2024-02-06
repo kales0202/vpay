@@ -50,7 +50,7 @@ public class OrderController {
      * @since 0.1
      */
     @DeleteMapping("/{id}")
-    public Result<Order> delete(@PathVariable UUID id) {
+    public Result<Void> delete(@PathVariable UUID id) {
         orderService.deleteById(id);
         return Result.success();
     }

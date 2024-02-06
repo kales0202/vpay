@@ -31,5 +31,5 @@ public class VpayConstant {
      *
      * @since 0.1
      */
-    public static Map<String, AccountState> ACCOUNT_STATE_MAP = new HashMap<>();
+    public static Map<UUID, AccountState> ACCOUNT_STATE_MAP = new HashMap<>();
 }

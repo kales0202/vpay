@@ -39,13 +39,13 @@ public class ResourceController {
     /**
      * 支付页地址
      *
-     * @param order 订单ID
+     * @param orderId 订单ID
      * @return 支付页地址
      * @since 0.1
      */
     @GetMapping("/pay")
-    public String pay(String order) {
-        return "redirect:/" + VpayUtil.getTemplateConfig().getPay() + "?order=" + order;
+    public String pay(String orderId) {
+        return "redirect:/" + VpayUtil.getTemplateConfig().getPay() + "?orderId=" + orderId;
     }
 
     /**

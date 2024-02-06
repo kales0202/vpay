@@ -1,12 +1,11 @@
 package com.synway.vpay.bean;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.synway.vpay.enums.MonitorState;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * 账户状态信息
@@ -22,30 +21,25 @@ public class AccountState {
      *
      * @since 0.1
      */
-    private String id;
-
+    private UUID id;
     /**
      * 通讯密钥
      *
      * @since 0.1
      */
-    @JsonProperty(access = Access.WRITE_ONLY)
     private String keyword;
-
     /**
      * 监控端最后心跳
      *
      * @since 0.1
      */
     private LocalDateTime lastHeart;
-
     /**
      * 监控端最后收款
      *
      * @since 0.1
      */
     private LocalDateTime lastPay;
-
     /**
      * 监控端状态
      *
@@ -53,7 +47,15 @@ public class AccountState {
      */
     private MonitorState monitorState = MonitorState.UNBOUND;
 
-    public AccountState(String id) {
+    @SuppressWarnings("CopyConstructorMissesField")
+    public AccountState(AccountState another) {
+        this.id = another.getId();
+        this.lastHeart = another.getLastHeart();
+        this.lastPay = another.getLastPay();
+        this.monitorState = another.getMonitorState();
+    }
+
+    public AccountState(UUID id) {
         this.id = id;
     }
 }

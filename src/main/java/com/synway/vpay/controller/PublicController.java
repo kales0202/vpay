@@ -41,7 +41,10 @@ public class PublicController {
     /**
      * 创建订单
      *
-     * @param bo 订单创建入参信息
+     * @param response HttpServletResponse
+     * @param bo       订单创建入参
+     * @return 生成的订单信息
+     * @throws IOException IOException
      * @since 0.1
      */
     @PostMapping("/order/create")
@@ -50,11 +53,50 @@ public class PublicController {
         if (Strings.isBlank(bo.getAccountName())) {
             bo.setAccountName(VpayConstant.SUPER_ACCOUNT);
         }
-        Order order = orderService.save(bo);
+        Order order = orderService.create(bo);
         if (bo.openHtml()) {
-            response.sendRedirect("/pay?order=" + order.getOrderId());
+            response.sendRedirect("/pay?orderId=" + order.getOrderId());
         }
         return Result.success(order);
+    }
+
+    /**
+     * 查询订单信息
+     *
+     * @param orderId 订单ID
+     * @return 生成的订单信息
+     * @since 0.1
+     */
+    @GetMapping("/order/get")
+    @ResponseBody
+    public Result<Order> getOrder(String orderId) {
+        return Result.success(orderService.findByOrderId(orderId));
+    }
+
+    /**
+     * 查询订单状态（仅超级管理员）
+     *
+     * @param orderId 订单ID
+     * @return 订单支付完成后的跳转地址（带回调参数）
+     * @since 0.1
+     */
+    @GetMapping("/order/check")
+    @ResponseBody
+    public Result<String> checkOrder(String orderId) {
+        return Result.success(orderService.checkOrder(orderId));
+    }
+
+    /**
+     * 关闭订单
+     *
+     * @param orderId 订单ID
+     * @since 0.1
+     */
+    @GetMapping("/order/close")
+    @ResponseBody
+    public Result<Void> closeOrder(String orderId) {
+        orderService.closeOrder(orderId);
+        return Result.success();
     }
 
     /**
@@ -65,6 +107,6 @@ public class PublicController {
     @GetMapping("/account/state")
     @ResponseBody
     public Result<AccountState> getAccountState() {
-        return Result.success(VpayUtil.getAccountState(account.getId().toString()));
+        return Result.success(VpayUtil.getAccountState(account.getId()));
     }
 }

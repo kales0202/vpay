@@ -77,4 +77,13 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
      */
     @Query("select sum(o.price) from pay_order o where o.state = 2")
     BigDecimal sumPrice();
+
+    /**
+     * 通过订单ID获取订单信息
+     *
+     * @param orderId 订单ID
+     * @return 订单信息
+     * @since 0.1
+     */
+    Order findByOrderId(String orderId);
 }

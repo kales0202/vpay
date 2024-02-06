@@ -2,8 +2,10 @@ package com.synway.vpay.base.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.util.ObjectUtils;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,6 +13,38 @@ import java.util.Objects;
 public class BaseUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    public static boolean initialized(Object value) {
+        if (value instanceof String s) {
+            return Strings.isNotBlank(s);
+        }
+        return !ObjectUtils.isEmpty(value);
+    }
+
+    public static boolean uninitialized(Object value) {
+        return !initialized(value);
+    }
+
+    /**
+     * 从给定的参数中找出第一个初始化的值，如果均未初始化，返回null
+     *
+     * @param values 可变参数
+     * @param <T>    参数类型
+     * @return 第一个初始化的值，如果均未初始化，返回null
+     * @since 0.1
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T firstInitialized(T... values) {
+        if (ObjectUtils.isEmpty(values)) {
+            return null;
+        }
+        for (T value : values) {
+            if (initialized(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
 
     public static String object2Json(Object object) {
         try {
@@ -33,14 +67,14 @@ public class BaseUtil {
     @SuppressWarnings("unchecked")
     public static Map<String, Object> object2Map(Object obj) {
         if (Objects.isNull(obj)) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
         try {
             return OBJECT_MAPPER.convertValue(obj, Map.class);
         } catch (Exception e) {
             log.error("", e);
         }
-        return null;
+        return new HashMap<>();
     }
 
     public static <T> T map2Object(Map<String, Object> map, Class<T> clazz) {

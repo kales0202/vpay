@@ -3,6 +3,7 @@ package com.synway.vpay.service;
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
+import com.synway.vpay.base.util.BaseUtil;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderDeleteBO;
 import com.synway.vpay.bean.OrderQueryBO;
@@ -60,7 +61,7 @@ public class OrderService {
      * @return 订单数据
      * @since 0.1
      */
-    public Order save(OrderCreateBO bo) {
+    public Order create(OrderCreateBO bo) {
         if (this.countByPayId(bo.getPayId()) > 0) {
             throw new BusinessException("商户订单号已存在");
         }
@@ -72,7 +73,7 @@ public class OrderService {
 
         Order order = bo.toOrder();
         order.setAccountId(account.getId());
-        order.setRealPrice(tempPriceService.saveRealPrice(order.getAccountId(), order.getPayType(), order.getPrice()));
+        order.setReallyPrice(tempPriceService.saveReallyPrice(order.getAccountId(), order.getPayType(), order.getPrice()));
         order.setPayUrl(payUrl);
         order.setIsAuto(PayQRCodeType.GENERIC);
         order.setState(OrderState.WAIT);
@@ -82,6 +83,21 @@ public class OrderService {
 
     public Order findById(UUID id) {
         return orderRepository.findById(id).orElse(null);
+    }
+
+    /**
+     * 通过订单ID获取订单信息
+     *
+     * @param orderId 订单ID
+     * @return 订单信息
+     * @since 0.1
+     */
+    public Order findByOrderId(String orderId) {
+        Order order = orderRepository.findByOrderId(orderId);
+        if (Objects.isNull(order)) {
+            throw new IllegalArgumentException("订单不存在");
+        }
+        return order;
     }
 
     @Transactional
@@ -253,30 +269,17 @@ public class OrderService {
             throw new IllegalArgumentException("订单不存在");
         }
 
-        String url = order.getNotifyUrl();
-        if (url == null || url.equals("")) {
-            url = account.getNotifyUrl();
-            if (url == null || url.equals("")) {
-                throw new BusinessException("您还未配置异步通知地址，请现在系统配置中配置");
-            }
+        String url = BaseUtil.firstInitialized(order.getNotifyUrl(), account.getNotifyUrl());
+        if (Strings.isBlank(url)) {
+            throw new BusinessException("您还未配置异步通知地址，请先在系统中配置");
         }
 
-        Map<String, String> params = new HashMap<>();
-        String sign = order.getPayId() + order.getParam() + order.getPayType()
-                + order.getPrice() + order.getRealPrice() + account.getKeyword();
-        params.put("payId", order.getPayId());
-        params.put("param", order.getParam());
-        params.put("type", String.valueOf(order.getPayType().getValue()));
-        params.put("price", order.getPrice().toString());
-        params.put("reallyPrice", order.getRealPrice().toString());
-        params.put("sign", VpayUtil.md5(sign));
-
-        url = HttpUtil.map2GetParam(url, params);
+        url = this.mackOrderUrl(url, order);
 
         String res = HttpUtil.get(url);
-        if (res != null && res.equals("success")) {
+        if (Strings.isNotBlank(res) && res.equals("success")) {
             if (order.getState() == OrderState.WAIT) {
-                tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getRealPrice());
+                tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getReallyPrice());
             }
             order.setState(OrderState.SUCCESS);
             orderRepository.save(order);
@@ -295,5 +298,52 @@ public class OrderService {
      */
     public long countByPayId(String payId) {
         return orderRepository.countByPayId(payId);
+    }
+
+    public String checkOrder(String orderId) {
+        Order order = this.findByOrderId(orderId);
+        if (Objects.isNull(order)) {
+            throw new BusinessException("订单ID不存在");
+        }
+        if (order.getState() == OrderState.WAIT || order.getState() == OrderState.EXPIRED) {
+            throw new BusinessException(OrderState.WAIT.getName());
+        }
+
+        String url = BaseUtil.firstInitialized(order.getReturnUrl(), account.getReturnUrl());
+        if (Strings.isBlank(url)) {
+            throw new BusinessException("您还未配置同步通知地址，请先在系统中配置");
+        }
+
+        return this.mackOrderUrl(url, order);
+    }
+
+    /**
+     * 关闭订单
+     *
+     * @param orderId 订单ID
+     * @since 0.1
+     */
+    public void closeOrder(String orderId) {
+        Order order = this.findByOrderId(orderId);
+        if (order.getState() != OrderState.WAIT) {
+            throw new BusinessException("订单状态不允许关闭");
+        }
+        tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getReallyPrice());
+        order.setCloseTime(LocalDateTime.now());
+        order.setState(OrderState.EXPIRED);
+        orderRepository.save(order);
+    }
+
+    private String mackOrderUrl(String url, Order order) {
+        Map<String, String> params = new HashMap<>();
+        String sign = order.getPayId() + order.getParam() + order.getPayType()
+                + order.getPrice() + order.getReallyPrice() + account.getKeyword();
+        params.put("payId", order.getPayId());
+        params.put("param", order.getParam());
+        params.put("type", String.valueOf(order.getPayType().getValue()));
+        params.put("price", order.getPrice().toString());
+        params.put("reallyPrice", order.getReallyPrice().toString());
+        params.put("sign", VpayUtil.md5(sign));
+        return HttpUtil.map2GetParam(url, params);
     }
 }

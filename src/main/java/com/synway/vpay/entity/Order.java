@@ -89,7 +89,7 @@ public class Order extends BaseEntity {
      * @since 0.1
      */
     @Column(columnDefinition = "decimal(18,2)")
-    private BigDecimal realPrice;
+    private BigDecimal reallyPrice;
 
     /**
      * 异步通知地址，如果为空则使用系统后台设置的地址

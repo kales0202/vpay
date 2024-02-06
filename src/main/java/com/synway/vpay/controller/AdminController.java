@@ -44,7 +44,7 @@ public class AdminController {
      * @since 0.1
      */
     @PostMapping("/login")
-    public Result<String> login(@RequestBody @Valid LoginInfo loginInfo) {
+    public Result<Void> login(@RequestBody @Valid LoginInfo loginInfo) {
         Account db = adminService.login(loginInfo.getName(), loginInfo.getPass());
         account.copyFrom(db);
         return Result.success();
@@ -80,9 +80,10 @@ public class AdminController {
      */
     @GetMapping("/state")
     public Result<AccountState> accountState() {
-        AccountState accountState = VpayUtil.getAccountState(account.getId().toString());
-        accountState.setKeyword(account.getKeyword());
-        return Result.success(accountState);
+        AccountState accountState = VpayUtil.getAccountState(account.getId());
+        AccountState state = new AccountState(accountState);
+        state.setKeyword(account.getKeyword());
+        return Result.success(state);
     }
 
     /**
@@ -91,7 +92,7 @@ public class AdminController {
      * @since 0.1
      */
     @Data
-    private static class LoginInfo {
+    public static class LoginInfo {
 
         /**
          * 账户名

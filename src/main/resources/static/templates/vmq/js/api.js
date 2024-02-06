@@ -23,27 +23,28 @@
         factory(window[moduleName] = {});
     }
 }(function (self, server) {
-    function get(url, data, callback) {
+    function get(url, data, success, error) {
         if ($.isFunction(data)) {
-            callback = data;
+            error = success;
+            success = data;
             data = undefined;
         }
         $.get(url, data, function (res) {
-            resolve(res, callback);
+            resolve(res, success, error);
         });
     }
 
-    function post(url, data, callback) {
-        ajaxBody(url, data, callback, 'POST');
+    function post(url, data, success) {
+        ajaxBody(url, data, success, 'POST');
     }
 
-    function del(url, data, callback) {
-        ajaxBody(url, data, callback, 'DELETE');
+    function del(url, data, success) {
+        ajaxBody(url, data, success, 'DELETE');
     }
 
-    function ajaxBody(url, data, callback, method) {
+    function ajaxBody(url, data, success, method) {
         if ($.isFunction(data)) {
-            callback = data;
+            success = data;
             data = undefined;
         }
         $.ajax({
@@ -52,7 +53,7 @@
             contentType: 'application/json',
             data: JSON.stringify(data),
             success: function (res) {
-                resolve(res, callback);
+                resolve(res, success);
             },
             error: function (xhr, status, error) {
                 // 处理错误响应
@@ -60,7 +61,7 @@
         });
     }
 
-    function resolve(res, callback) {
+    function resolve(res, success, error) {
         if (res.code !== 0) {
             switch (res.code) {
                 case -2: // 未登录
@@ -68,17 +69,35 @@
                     break;
                 default:
             }
-            layer.msg(res.msg);
+            if (error) {
+                error(res);
+            } else {
+                layer.msg(res.msg);
+            }
             return;
         }
-        callback && callback(res.data);
+        success && success(res.data);
+    }
+
+    // 补单失败时执行的回调
+    function fulfillOrderError(res) {
+        if (res.code === -5) { // 补单失败执行回调
+            layer.alert(res.data || 'null', {icon: 1}, function (i) {
+                layer.close(i);
+            });
+            return;
+        }
+        // 其它异常直接提示即可
+        layer.msg(res.msg);
     }
 
     self.get = get;
     self.post = post;
     self.del = del;
-
-    self.login = (params, callback) => post('/admin/login', params, callback);
-    self.statisticsOrder = (callback) => get('/order/statistics', callback);
-    self.deleteOrder = (params, callback) => del('/order', params, callback);
+    self.login = (params, success) => post('/admin/login', params, success);
+    self.account = (success) => get('/admin/account', success);
+    self.state = (success) => get('/admin/state', success);
+    self.statisticsOrder = (success) => get('/order/statistics', success);
+    self.deleteOrder = (params, success) => del('/order', params, success);
+    self.fulfillOrder = (params, success) => get('/order/fulfill', params, success, fulfillOrderError);
 });

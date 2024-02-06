@@ -1,6 +1,7 @@
 package com.synway.vpay.spring;
 
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.AccountRepository;
@@ -51,22 +52,28 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setId(VpayConstant.SUPER_ID);
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayConstant.SUPER_ACCOUNT);
-        // TODO... 暂时使用固定密钥
         // account.setKeyword(VpayUtil.md5(new Date().toString()));
+        // TODO... 测试数据
         account.setKeyword("f3ba2ab83fc2465dd567e70129772d3a");
-        account.setWxPay("");
-        account.setAliPay("");
+        account.setNotifyUrl("http://localhost:8080/fakeNotifyUrl");
+        account.setReturnUrl("http://localhost:8080/fakeReturnUrl");
+        account.setWxPay("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
+        account.setAliPay("https://qr.alipay.com/dhsjkahdujkashdjkhasj");
         accountRepository.save(account);
     }
 
     // 生成一些假数据
     private void generateSomeFakeData() {
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
+        order.setOrderId(VpayUtil.generateOrderId());
         order.setPrice(new BigDecimal("2.11"));
+        order.setReallyPrice(new BigDecimal("2.11"));
         order.setState(OrderState.SUCCESS);
         order.setPayType(PayType.WECHAT);
+        order.setPayId("191f06f2-8c84-481e-8e9c-3f6beb9c1551");
+        order.setPayTime(LocalDateTime.now());
+        order.setCloseTime(LocalDateTime.now());
         orderRepository.save(order);
-
-        VpayUtil.updateLastHeart(VpayConstant.SUPER_ID.toString(), LocalDateTime.now());
+        VpayUtil.updateMonitorState(VpayConstant.SUPER_ID, MonitorState.ONLINE, LocalDateTime.now());
     }
 }
