@@ -547,7 +547,7 @@ var _gsScope = "undefined" != typeof module && module.exports && "undefined" != 
             return o || a.wake(), this._totalTime
         };
         var I = v("TweenLite", function (e, i, s) {
-            if (C.call(this, i, s), this.render = I.prototype.render, null == e) throw"Cannot tween a null target.";
+            if (C.call(this, i, s), this.render = I.prototype.render, null == e) throw "Cannot tween a null target.";
             this.target = e = "string" != typeof e ? e : I.selector(e) || e;
             var n, r, a,
                 o = e.jquery || e.length && e !== t && e[0] && (e[0] === t || e[0].nodeType && e[0].style && !e.nodeType),
@@ -807,7 +807,7 @@ var _gsScope = "undefined" != typeof module && module.exports && "undefined" != 
             for (var e = t.length; --e > -1;) t[e].API === J.API && (U[(new t[e])._propName] = t[e]);
             return !0
         }, d.plugin = function (t) {
-            if (!(t && t.propName && t.init && t.API)) throw"illegal plugin definition.";
+            if (!(t && t.propName && t.init && t.API)) throw "illegal plugin definition.";
             var e, i = t.propName, s = t.priority || 0, n = t.overwriteProps, r = {
                 init: "_onInitTween",
                 set: "setRatio",

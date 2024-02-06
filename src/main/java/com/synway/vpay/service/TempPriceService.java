@@ -64,7 +64,7 @@ public class TempPriceService {
      * @return int 删除的数量
      * @since 0.1
      */
-    public int deleteByTypeAndPrice(PayType payType, BigDecimal price) {
-        return tempPriceRepository.deleteByTypeAndPrice(payType, price);
+    public int deleteByPayTypeAndPrice(PayType payType, BigDecimal price) {
+        return tempPriceRepository.deleteByPayTypeAndPrice(payType, price);
     }
 }

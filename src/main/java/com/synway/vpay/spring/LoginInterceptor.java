@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 @Slf4j
 @Component
@@ -26,5 +27,25 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
         log.debug("登录校验失败...");
         throw new AuthorizedException();
+    }
+
+    public void registry(InterceptorRegistry registry) {
+        registry.addInterceptor(this)
+                .excludePathPatterns(
+                        "/login",
+                        "/admin/login",
+                        "/public/**",
+                        "/404",
+                        "/**/*.html",
+                        "/js/**",
+                        "/css/**",
+                        "/images/**",
+                        "/page/**",
+                        "/templates/**",
+                        "/favicon.ico",
+                        "/favicon",
+                        "/getState"
+                )
+                .addPathPatterns("/**");
     }
 }

@@ -12,12 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Slf4j
 @Component
-public class PubInterceptor implements HandlerInterceptor {
+public class PublicInterceptor implements HandlerInterceptor {
 
     @Resource
     private Account account;
@@ -29,9 +31,6 @@ public class PubInterceptor implements HandlerInterceptor {
     @Override
     @SuppressWarnings("NullableProblems")
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!request.getRequestURI().startsWith("/public/") || Strings.isNotBlank(account.getName())) {
-            return true;
-        }
         String name = request.getHeader("vpay-name");
         String time = request.getHeader("vpay-time");
         String sign = request.getHeader("vpay-sign");
@@ -41,12 +40,23 @@ public class PubInterceptor implements HandlerInterceptor {
         if (Strings.isBlank(time) || Strings.isBlank(sign)) {
             throw new SignatureException();
         }
+        LocalDateTime dateTime = VpayUtil.toDatetime(time);
+        // 如果时间小于或者超过当前时间5分钟，则抛出异常
+        if (dateTime.isBefore(LocalDateTime.now().minusMinutes(5)) || dateTime.isAfter(LocalDateTime.now().plusMinutes(5))) {
+            throw new SignatureException("签名时间认证失败...");
+        }
         Account db = accountService.findByName(name);
-        String checkSign = VpayUtil.md5(time + db.getKeyword());
+        sign = sign.toUpperCase();
+        String checkSign = VpayUtil.md5(time + db.getKeyword()).toUpperCase();
         if (!Objects.equals(sign, checkSign)) {
             throw new SignatureException();
         }
         account.copyFrom(db);
         return true;
+    }
+
+    public void registry(InterceptorRegistry registry) {
+        registry.addInterceptor(this)
+                .addPathPatterns("/public/**");
     }
 }

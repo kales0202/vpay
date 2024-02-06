@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * 初始化数据库
@@ -42,7 +41,7 @@ public class DatabaseRunner implements ApplicationRunner {
         }
         log.info("检测到系统为首次启动，初始化数据库中...");
         initAccount();
-        // TODO... 先搞点假数据
+        // TODO... 先搞点模拟数据
         generateSomeFakeData();
         log.info("初始化数据库完成...");
     }
@@ -52,7 +51,9 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setId(VpayConstant.SUPER_ID);
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayConstant.SUPER_ACCOUNT);
-        account.setKeyword(VpayUtil.md5(new Date().toString()));
+        // TODO... 暂时使用固定密钥
+        // account.setKeyword(VpayUtil.md5(new Date().toString()));
+        account.setKeyword("f3ba2ab83fc2465dd567e70129772d3a");
         account.setWxPay("");
         account.setAliPay("");
         accountRepository.save(account);

@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -37,12 +36,16 @@ public class AccountService {
      * @param param 设置
      * @since 0.1
      */
-    @CachePut(key = "#result.id")
+    @CacheEvict(cacheNames = "account")
     public Account save(Account param) {
         if (!Objects.equals(account.getName(), param.getName())) {
             throw new IllegalOperationException("不允许修改账户名");
         }
-        Account db = this.findByName(account.getName());
+        Account db = accountRepository.findByName(account.getName());
+        if (Objects.isNull(db)) {
+            throw new AccountNotFoundException();
+        }
+
         VpayUtil.copyProperties(param, db);
         db = accountRepository.save(db);
         account.copyFrom(db);
@@ -55,7 +58,7 @@ public class AccountService {
      * @param account 设置
      * @since 0.1
      */
-    @CacheEvict(key = "#account.id")
+    @CacheEvict(cacheNames = "account")
     public void delete(Account account) {
         if (Objects.equals(VpayConstant.SUPER_ID, account.getId())) {
             throw new IllegalOperationException("不允许删除超级管理员！");
@@ -69,7 +72,7 @@ public class AccountService {
      * @param id 设置ID
      * @since 0.1
      */
-    @CacheEvict(key = "#id")
+    @CacheEvict(cacheNames = "account")
     public void delete(@NotNull UUID id) {
         if (Objects.equals(VpayConstant.SUPER_ID, id)) {
             throw new IllegalOperationException("不允许删除超级管理员！");
@@ -97,7 +100,7 @@ public class AccountService {
      * @return Account
      * @since 0.1
      */
-    @Cacheable(key = "#result.id")
+    @Cacheable(key = "#name")
     public Account findByName(@NotNull String name) {
         Account result = accountRepository.findByName(name);
         if (Objects.isNull(result)) {

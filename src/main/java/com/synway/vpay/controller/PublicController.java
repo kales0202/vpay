@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,7 +62,7 @@ public class PublicController {
      *
      * @since 0.1
      */
-    @PostMapping("/account/state")
+    @GetMapping("/account/state")
     @ResponseBody
     public Result<AccountState> getAccountState() {
         return Result.success(VpayUtil.getAccountState(account.getId().toString()));

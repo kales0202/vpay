@@ -17,24 +17,13 @@ public class WebConfigurer implements WebMvcConfigurer {
     @Resource
     private LoginInterceptor loginInterceptor;
 
+    @Resource
+    private PublicInterceptor publicInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loginInterceptor)
-                .excludePathPatterns(
-                        "/login",
-                        "/admin/login",
-                        "/404",
-                        "/**/*.html",
-                        "/js/**",
-                        "/css/**",
-                        "/images/**",
-                        "/page/**",
-                        "/templates/**",
-                        "/favicon.ico",
-                        "/favicon",
-                        "/getState"
-                )
-                .addPathPatterns("/**");
+        loginInterceptor.registry(registry);
+        publicInterceptor.registry(registry);
     }
 
     @Override

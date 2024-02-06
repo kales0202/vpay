@@ -20,5 +20,5 @@ public interface TempPriceRepository extends JpaRepository<TempPrice, UUID>, Jpa
      * @return int 删除的数量
      * @since 0.1
      */
-    int deleteByTypeAndPrice(PayType payType, BigDecimal price);
+    int deleteByPayTypeAndPrice(PayType payType, BigDecimal price);
 }

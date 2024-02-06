@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.beans.PropertyDescriptor;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -158,10 +159,30 @@ public class VpayUtil {
         accountState.setMonitorState(monitorState);
     }
 
-    public static Long toTimestamp(LocalDateTime localDateTime) {
-        if (Objects.isNull(localDateTime)) {
+    /**
+     * LocalDateTime转时间戳
+     *
+     * @param time LocalDateTime
+     * @return 时间戳
+     * @since 0.1
+     */
+    public static Long toTimestamp(LocalDateTime time) {
+        if (Objects.isNull(time)) {
             return null;
         }
-        return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        return time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
+
+    /**
+     * 时间戳转LocalDateTime
+     *
+     * @param time 时间戳
+     * @return LocalDateTime
+     * @since 0.1
+     */
+    public static LocalDateTime toDatetime(String time) {
+        long timestamp = Long.parseLong(time);
+        Instant instant = Instant.ofEpochMilli(timestamp);
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
 }

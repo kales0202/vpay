@@ -276,7 +276,7 @@ public class OrderService {
         String res = HttpUtil.get(url);
         if (res != null && res.equals("success")) {
             if (order.getState() == OrderState.WAIT) {
-                tempPriceService.deleteByTypeAndPrice(order.getPayType(), order.getRealPrice());
+                tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getRealPrice());
             }
             order.setState(OrderState.SUCCESS);
             orderRepository.save(order);
