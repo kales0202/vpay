@@ -65,7 +65,7 @@
         if (res.code !== 0) {
             switch (res.code) {
                 case -2: // 未登录
-                    window.location.href = "/login";
+                    API.navigate2Login();
                     break;
                 default:
             }
@@ -94,10 +94,14 @@
     self.get = get;
     self.post = post;
     self.del = del;
-    self.login = (params, success) => post('/admin/login', params, success);
-    self.account = (success) => get('/admin/account', success);
-    self.state = (success) => get('/admin/state', success);
+    self.navigate2Login = () => window.location.href = '/login';
+    self.navigate2Index = () => window.location.href = '/';
+    self.login = (params, success) => post('/account/login', params, success);
+    self.getAccount = (success) => get('/account', success);
+    self.saveAccount = (params, success) => post('/account', params, success);
+    self.state = (success) => get('/account/state', success);
     self.statisticsOrder = (success) => get('/order/statistics', success);
     self.deleteOrder = (params, success) => del('/order', params, success);
+    self.getOrder = (params, success) => get('/public/order/get', params, success);
     self.fulfillOrder = (params, success) => get('/order/fulfill', params, success, fulfillOrderError);
 });

@@ -4,7 +4,6 @@ import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.service.AccountService;
-import com.synway.vpay.service.AdminService;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -24,11 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Validated
 @RestController
-@RequestMapping("/admin")
-public class AdminController {
-
-    @Resource
-    private AdminService adminService;
+@RequestMapping("/account")
+public class AccountController {
 
     @Resource
     private AccountService accountService;
@@ -45,7 +41,7 @@ public class AdminController {
      */
     @PostMapping("/login")
     public Result<Void> login(@RequestBody @Valid LoginInfo loginInfo) {
-        Account db = adminService.login(loginInfo.getName(), loginInfo.getPass());
+        Account db = accountService.login(loginInfo.getName(), loginInfo.getPass());
         account.copyFrom(db);
         return Result.success();
     }
@@ -56,8 +52,8 @@ public class AdminController {
      * @return Account 配置信息，找不到则返回null
      * @since 0.1
      */
-    @GetMapping("/account")
-    public Result<Account> account() {
+    @GetMapping
+    public Result<Account> get() {
         return Result.success(VpayUtil.getTargetBean(account));
     }
 
@@ -67,8 +63,8 @@ public class AdminController {
      * @return Account 配置信息，找不到则返回null
      * @since 0.1
      */
-    @PostMapping("/account")
-    public Result<Account> saveAccount(@RequestBody @Valid Account param) {
+    @PostMapping
+    public Result<Account> save(@RequestBody @Valid Account param) {
         return Result.success(accountService.save(param));
     }
 
@@ -79,8 +75,8 @@ public class AdminController {
      * @since 0.1
      */
     @GetMapping("/state")
-    public Result<AccountState> accountState() {
-        AccountState accountState = VpayUtil.getAccountState(account.getId());
+    public Result<AccountState> state() {
+        AccountState accountState = accountService.getAccountState();
         AccountState state = new AccountState(accountState);
         state.setKeyword(account.getKeyword());
         return Result.success(state);

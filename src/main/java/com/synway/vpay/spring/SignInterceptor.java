@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-public class PublicInterceptor implements HandlerInterceptor {
+public class SignInterceptor implements HandlerInterceptor {
 
     @Resource
     private Account account;
@@ -41,11 +41,10 @@ public class PublicInterceptor implements HandlerInterceptor {
             throw new SignatureException();
         }
         LocalDateTime dateTime = VpayUtil.toDatetime(time);
-        // 如果时间小于或者超过当前时间5分钟，则抛出异常
+        // 如果时间小于或者超过当前时间3分钟，则抛出异常
         long difference = VpayUtil.getDatetimeDifference(dateTime, LocalDateTime.now());
-        if (difference > 5 * 60 * 1000) {
-            throw new SignatureException("签名时间认证失败...");
-
+        if (difference > 3 * 60 * 1000) {
+            throw new SignatureException("请求已过期...");
         }
         Account db = accountService.findByName(name);
         sign = sign.toUpperCase();
@@ -59,6 +58,6 @@ public class PublicInterceptor implements HandlerInterceptor {
 
     public void registry(InterceptorRegistry registry) {
         registry.addInterceptor(this)
-                .addPathPatterns("/public/**");
+                .addPathPatterns("/sign/**");
     }
 }

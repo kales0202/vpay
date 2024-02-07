@@ -96,7 +96,8 @@ public class OrderController {
      * @since 0.1
      */
     @GetMapping("/fulfill")
-    public Result<String> fulfill(UUID id) {
-        return Result.success(orderService.fulfill(id));
+    public Result<Void> fulfill(UUID id) {
+        orderService.sendNotify(orderService.findById(id));
+        return Result.success();
     }
 }

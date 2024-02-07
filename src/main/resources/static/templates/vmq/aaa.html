@@ -109,26 +109,6 @@
 
     $("#LAY_preview").load("main.html")
 
-    var ZXingReader = new ZXingBrowser.BrowserQRCodeReader();
-    var ZxingWriter = new ZXingBrowser.BrowserQRCodeSvgWriter();
-
-    function decodeQRCode(url, callback) {
-        ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
-            console.error(err)
-        })
-    }
-
-    function encodeQRCode($container, text) {
-        if (!$container || $container.length === 0 || !text) {
-            $container.attr("data-code", "");
-            $container.html("");
-            return;
-        }
-        var element = ZxingWriter.write(text, 200, 200, null);
-        $container.attr("data-code", text);
-        $container.html(element);
-    }
-
     function getObjectURL(file) {
         let url = null;
         if (window.createObjectURL !== undefined) { // basic

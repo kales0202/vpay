@@ -119,8 +119,8 @@
             $("#wxup-input").on("change", function () {
                 if (this.files.length > 0) {
                     let objectURL = getObjectURL(this.files[0]);
-                    decodeQRCode(objectURL, function (result) {
-                        encodeQRCode($wxPay, result.text);
+                    Util.decodeQRCode(objectURL, function (result) {
+                        Util.encodeQRCode($wxPay, result.text);
                     });
                 }
             });
@@ -131,8 +131,8 @@
             $("#aliup-input").on("change", function () {
                 if (this.files.length > 0) {
                     let objectURL = getObjectURL(this.files[0]);
-                    decodeQRCode(objectURL, function (result) {
-                        encodeQRCode($aliPay, result.text);
+                    Util.decodeQRCode(objectURL, function (result) {
+                        Util.encodeQRCode($aliPay, result.text);
                     });
                 }
             });
@@ -202,22 +202,9 @@
                 param.password = password;
             }
 
-            $.ajax({
-                url: '/admin/account',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(param),
-                success: function (data) {
-                    if (data.code !== 0) {
-                        layer.msg(data.msg);
-                        return;
-                    }
-                    renderSetting(data.data);
-                    layer.msg("保存成功！");
-                },
-                error: function (xhr, status, error) {
-                    // 处理错误响应
-                }
+            API.saveAccount(param, function (data) {
+                layer.msg("保存成功！");
+                renderSetting(data);
             });
         }
 
@@ -230,11 +217,11 @@
             $("#keyword").val(data.keyword);
             $("#close").val(data.close);
             $("#payQf").val(data.payQf);
-            encodeQRCode($wxPay, data.wxPay);
-            encodeQRCode($aliPay, data.aliPay);
+            Util.encodeQRCode($wxPay, data.wxPay);
+            Util.encodeQRCode($aliPay, data.aliPay);
         }
 
-        API.account(function (data) {
+        API.getAccount(function (data) {
             renderSetting(data);
             layui.form.render();
         })

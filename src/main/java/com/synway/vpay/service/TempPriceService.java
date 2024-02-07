@@ -65,6 +65,6 @@ public class TempPriceService {
      * @since 0.1
      */
     public int deleteByPayTypeAndPrice(PayType payType, BigDecimal price) {
-        return tempPriceRepository.deleteByPayTypeAndPrice(payType, price);
+        return tempPriceRepository.deleteByAccountIdAndPayTypeAndPrice(account.getId(), payType, price);
     }
 }

@@ -1,13 +1,11 @@
 package com.synway.vpay.spring;
 
 import com.synway.vpay.entity.Account;
-import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.repository.OrderRepository;
 import com.synway.vpay.util.VpayConstant;
-import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -17,7 +15,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * 初始化数据库
@@ -65,15 +62,14 @@ public class DatabaseRunner implements ApplicationRunner {
     // 生成一些假数据
     private void generateSomeFakeData() {
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
-        order.setOrderId(VpayUtil.generateOrderId());
-        order.setPrice(new BigDecimal("2.11"));
-        order.setReallyPrice(new BigDecimal("2.11"));
-        order.setState(OrderState.SUCCESS);
-        order.setPayType(PayType.WECHAT);
+        order.setOrderId("202402071918485874");
+        order.setAccountId(VpayConstant.SUPER_ID);
         order.setPayId("191f06f2-8c84-481e-8e9c-3f6beb9c1551");
-        order.setPayTime(LocalDateTime.now());
-        order.setCloseTime(LocalDateTime.now());
+        order.setPrice(new BigDecimal("2.11"));
+        order.setReallyPrice(new BigDecimal("2.12"));
+        order.setState(OrderState.WAIT);
+        order.setPayType(PayType.WECHAT);
+        order.setPayUrl("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
         orderRepository.save(order);
-        VpayUtil.updateMonitorState(VpayConstant.SUPER_ID, MonitorState.ONLINE, LocalDateTime.now());
     }
 }

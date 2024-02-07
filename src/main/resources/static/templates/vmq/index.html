@@ -94,6 +94,7 @@
     function login() {
         API.login({"name": $("#name").val(), "pass": $("#pass").val()}, function () {
             window.location.href = "/";
+            API.navigate2Index();
         });
     }
 </script>

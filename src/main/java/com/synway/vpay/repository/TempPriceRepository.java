@@ -15,10 +15,11 @@ public interface TempPriceRepository extends JpaRepository<TempPrice, UUID>, Jpa
     /**
      * 根据支付方式和支付金额删除订单
      *
-     * @param payType 支付方式
-     * @param price   支付金额
+     * @param accountId 账户ID
+     * @param payType   支付方式
+     * @param price     支付金额
      * @return int 删除的数量
      * @since 0.1
      */
-    int deleteByPayTypeAndPrice(PayType payType, BigDecimal price);
+    int deleteByAccountIdAndPayTypeAndPrice(UUID accountId, PayType payType, BigDecimal price);
 }

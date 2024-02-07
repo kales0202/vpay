@@ -33,8 +33,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         registry.addInterceptor(this)
                 .excludePathPatterns(
                         "/login",
-                        "/admin/login",
-                        "/public/**",
+                        "/account/login",
                         "/404",
                         "/**/*.html",
                         "/js/**",
@@ -44,7 +43,17 @@ public class LoginInterceptor implements HandlerInterceptor {
                         "/templates/**",
                         "/favicon.ico",
                         "/favicon",
-                        "/getState"
+                        // 以下为新版地址
+                        "/public/**",
+                        "/sign/**",
+                        // 以下为vmq旧版地址
+                        "/createOrder",
+                        "/getState",
+                        "/getOrder",
+                        "/checkOrder",
+                        "/closeOrder",
+                        "/appHeart",
+                        "/appPush"
                 )
                 .addPathPatterns("/**");
     }

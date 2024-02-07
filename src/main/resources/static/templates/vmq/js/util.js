@@ -31,5 +31,56 @@
         return time.toISOString().slice(0, 19).replace('T', ' ');
     }
 
+    /**
+     * 将指定格式的日期时间字符串转换为时间戳
+     * @param {string} time - 日期时间字符串，格式为"yyyy-MM-dd HH:mm:ss"
+     * @return {number} 时间戳 (单位：毫秒)
+     */
+    function toTimestamp(time) {
+        // 检查输入字符串是否符合预期格式
+        var regex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+        if (!regex.test(time)) {
+            throw new Error('日期时间字符串格式不正确，应为"yyyy-MM-dd HH:mm:ss"');
+        }
+
+        // 解析日期时间字符串为Date对象
+        var parts = time.split(/[- :]/);
+        var year = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10) - 1; // 月份是从0开始的
+        var day = parseInt(parts[2], 10);
+        var hour = parseInt(parts[3], 10);
+        var minute = parseInt(parts[4], 10);
+        var second = parseInt(parts[5], 10);
+
+        var date = new Date(year, month, day, hour, minute, second);
+
+        // 返回时间戳
+        return date.getTime();
+    }
+
+
+    var ZXingReader = new window.ZXingBrowser.BrowserQRCodeReader();
+    var ZxingWriter = new window.ZXingBrowser.BrowserQRCodeSvgWriter();
+
+    function decodeQRCode(url, callback) {
+        ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
+            console.error(err)
+        })
+    }
+
+    function encodeQRCode($container, text) {
+        if (!$container || $container.length === 0 || !text) {
+            $container.attr("data-code", "");
+            $container.html("");
+            return;
+        }
+        var element = ZxingWriter.write(text, 200, 200, null);
+        $container.attr("data-code", text);
+        $container.html(element);
+    }
+
     self.formatTime = formatTime;
+    self.toTimestamp = toTimestamp;
+    self.decodeQRCode = decodeQRCode;
+    self.encodeQRCode = encodeQRCode;
 });

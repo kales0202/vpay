@@ -12,6 +12,7 @@ import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayQRCodeType;
+import com.synway.vpay.enums.PayType;
 import com.synway.vpay.exception.FulfillException;
 import com.synway.vpay.repository.OrderRepository;
 import com.synway.vpay.util.HttpUtil;
@@ -22,6 +23,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -40,6 +42,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class OrderService {
     @Resource
@@ -55,7 +58,7 @@ public class OrderService {
     private Account account;
 
     /**
-     * 保存订单
+     * 创建订单
      *
      * @param bo 订单信息
      * @return 订单数据
@@ -81,8 +84,21 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    /**
+     * 保存订单信息
+     *
+     * @param order 订单信息
+     * @return 订单数据
+     * @since 0.1
+     */
+    public Order save(Order order) {
+        return orderRepository.save(order);
+    }
+
     public Order findById(UUID id) {
-        return orderRepository.findById(id).orElse(null);
+        return orderRepository.findById(id)
+                .filter(order -> Objects.equals(account.getId(), order.getAccountId()))
+                .orElseThrow(() -> new IllegalArgumentException("订单不存在"));
     }
 
     /**
@@ -93,7 +109,7 @@ public class OrderService {
      * @since 0.1
      */
     public Order findByOrderId(String orderId) {
-        Order order = orderRepository.findByOrderId(orderId);
+        Order order = orderRepository.findByAccountIdAndOrderId(account.getId(), orderId);
         if (Objects.isNull(order)) {
             throw new IllegalArgumentException("订单不存在");
         }
@@ -102,7 +118,7 @@ public class OrderService {
 
     @Transactional
     public void deleteById(UUID id) {
-        orderRepository.deleteById(id);
+        orderRepository.deleteByAccountIdAndId(account.getId(), id);
     }
 
     @Transactional
@@ -118,6 +134,8 @@ public class OrderService {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaDelete<Order> criteriaDelete = criteriaBuilder.createCriteriaDelete(Order.class);
         Root<Order> root = criteriaDelete.from(Order.class);
+        // 带上账户ID作为条件
+        criteriaDelete.where(criteriaBuilder.equal(root.get("accountId"), account.getId()));
         // 如果传入了订单ID，则直接根据ID删除数据，忽略其它条件
         if (!ObjectUtils.isEmpty(bo.getIds())) {
             criteriaDelete.where(criteriaBuilder.in(root.get("id")).value(bo.getIds()));
@@ -136,7 +154,7 @@ public class OrderService {
             criteriaDelete.where(criteriaBuilder.equal(root.get("payType"), bo.getPayType()));
         }
         // 无删除条件时，不执行删除操作（不允许全量删除订单）
-        if (Objects.isNull(criteriaDelete.getRestriction())) {
+        if (criteriaDelete.getRestriction().getExpressions().size() == 1) {
             return 0;
         }
         return entityManager.createQuery(criteriaDelete).executeUpdate();
@@ -152,6 +170,8 @@ public class OrderService {
     public PageData<Order> findAll(OrderQueryBO bo) {
         Specification<Order> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> pl = new ArrayList<>();
+            // 带上账户ID作为条件
+            pl.add(criteriaBuilder.equal(root.get("accountId"), account.getId()));
             if (Objects.nonNull(bo.getPayType())) {
                 pl.add(criteriaBuilder.equal(root.get("payType"), bo.getPayType()));
             }
@@ -197,7 +217,7 @@ public class OrderService {
      * @since 0.1
      */
     public long countTotal(LocalDateTime startTime, LocalDateTime endTime) {
-        return orderRepository.countByCreateTimeBetween(startTime, endTime);
+        return orderRepository.countByAccountIdAndCreateTimeBetween(account.getId(), startTime, endTime);
     }
 
     /**
@@ -209,7 +229,7 @@ public class OrderService {
      * @since 0.1
      */
     public long countSuccess(LocalDateTime startTime, LocalDateTime endTime) {
-        return orderRepository.countByStateAndCreateTimeBetween(OrderState.SUCCESS, startTime, endTime);
+        return orderRepository.countByAccountIdAndStateAndCreateTimeBetween(account.getId(), OrderState.SUCCESS, startTime, endTime);
     }
 
     /**
@@ -221,7 +241,7 @@ public class OrderService {
      * @since 0.1
      */
     public long countFailure(LocalDateTime startTime, LocalDateTime endTime) {
-        return orderRepository.countByStateAndCreateTimeBetween(OrderState.EXPIRED, startTime, endTime);
+        return orderRepository.countByAccountIdAndStateAndCreateTimeBetween(account.getId(), OrderState.EXPIRED, startTime, endTime);
     }
 
     /**
@@ -232,7 +252,7 @@ public class OrderService {
      * @since 0.1
      */
     public long countByState(OrderState state) {
-        return orderRepository.countByState(state);
+        return orderRepository.countByAccountIdAndState(account.getId(), state);
     }
 
     /**
@@ -244,7 +264,11 @@ public class OrderService {
      * @since 0.1
      */
     private BigDecimal sumPrice(LocalDateTime startTime, LocalDateTime endTime) {
-        return orderRepository.sumPrice(startTime, endTime);
+        BigDecimal price = orderRepository.sumPrice(account.getId(), startTime, endTime);
+        if (price == null) {
+            price = BigDecimal.ZERO;
+        }
+        return price;
     }
 
     /**
@@ -254,39 +278,11 @@ public class OrderService {
      * @since 0.1
      */
     private BigDecimal sumPrice() {
-        return orderRepository.sumPrice();
-    }
-
-    /**
-     * 补单
-     *
-     * @return 补单失败时的异常信息
-     * @since 0.1
-     */
-    public String fulfill(UUID id) {
-        Order order = orderRepository.findById(id).orElse(null);
-        if (Objects.isNull(order)) {
-            throw new IllegalArgumentException("订单不存在");
+        BigDecimal price = orderRepository.sumPrice(account.getId());
+        if (price == null) {
+            price = BigDecimal.ZERO;
         }
-
-        String url = BaseUtil.firstInitialized(order.getNotifyUrl(), account.getNotifyUrl());
-        if (Strings.isBlank(url)) {
-            throw new BusinessException("您还未配置异步通知地址，请先在系统中配置");
-        }
-
-        url = this.mackOrderUrl(url, order);
-
-        String res = HttpUtil.get(url);
-        if (Strings.isNotBlank(res) && res.equals("success")) {
-            if (order.getState() == OrderState.WAIT) {
-                tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getReallyPrice());
-            }
-            order.setState(OrderState.SUCCESS);
-            orderRepository.save(order);
-        } else {
-            throw new FulfillException(res);
-        }
-        return res;
+        return price;
     }
 
     /**
@@ -297,14 +293,11 @@ public class OrderService {
      * @since 0.1
      */
     public long countByPayId(String payId) {
-        return orderRepository.countByPayId(payId);
+        return orderRepository.countByAccountIdAndPayId(account.getId(), payId);
     }
 
     public String checkOrder(String orderId) {
         Order order = this.findByOrderId(orderId);
-        if (Objects.isNull(order)) {
-            throw new BusinessException("订单ID不存在");
-        }
         if (order.getState() == OrderState.WAIT || order.getState() == OrderState.EXPIRED) {
             throw new BusinessException(OrderState.WAIT.getName());
         }
@@ -334,9 +327,69 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    private String mackOrderUrl(String url, Order order) {
+    /**
+     * 根据推送时间检查订单是否已经被推送
+     *
+     * @param time 订单时间
+     * @since 0.1
+     */
+    public void checkTimeIfPaid(LocalDateTime time) {
+        Order order = orderRepository.findByAccountIdAndPayTime(account.getId(), time);
+        if (Objects.nonNull(order)) {
+            throw new BusinessException("重复推送");
+        }
+    }
+
+    /**
+     * 通过实际支付金额、支付类型获取未支付的订单信息
+     *
+     * @param reallyPrice 实际支付金额
+     * @param payType     支付方式
+     * @return 订单信息
+     * @since 0.1
+     */
+    public Order findUnpaidOrder(BigDecimal reallyPrice, PayType payType) {
+        return orderRepository.findByAccountIdAndReallyPriceAndStateAndPayType(
+                account.getId(), reallyPrice, OrderState.WAIT, payType);
+    }
+
+    /**
+     * 接收到支付完成的消息后，给商家发送订单已处理完成的通知
+     *
+     * @param order 订单信息
+     * @since 0.1
+     */
+    public void sendNotify(Order order) {
+        String url = BaseUtil.firstInitialized(order.getNotifyUrl(), account.getNotifyUrl());
+        if (Strings.isBlank(url)) {
+            throw new BusinessException("您还未配置异步通知地址，请先在系统中配置");
+        }
+        url = this.mackOrderUrl(order.getNotifyUrl(), order);
+
+        String res = null;
+        try {
+            res = HttpUtil.get(url);
+        } catch (Exception e) {
+            log.error("", e);
+        }
+
+        if (Strings.isNotBlank(res) && res.equals("success")) {
+            if (order.getState() == OrderState.WAIT) {
+                tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getReallyPrice());
+            }
+            order.setCloseTime(LocalDateTime.now());
+            order.setState(OrderState.SUCCESS);
+            orderRepository.save(order);
+        } else {
+            order.setState(OrderState.NOTIFY_FAILED);
+            orderRepository.save(order);
+            throw new FulfillException(res);
+        }
+    }
+
+    public String mackOrderUrl(String url, Order order) {
         Map<String, String> params = new HashMap<>();
-        String sign = order.getPayId() + order.getParam() + order.getPayType()
+        String sign = order.getPayId() + order.getParam() + order.getPayType().getValue()
                 + order.getPrice() + order.getReallyPrice() + account.getKeyword();
         params.put("payId", order.getPayId());
         params.put("param", order.getParam());

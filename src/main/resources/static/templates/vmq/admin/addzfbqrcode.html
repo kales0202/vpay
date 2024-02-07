@@ -106,7 +106,7 @@
             });
             return;
         }
-        $.post("/admin/addPayQrcode", "type=2&payUrl=" + encodeURIComponent(obj[index].url) + "&price=" + obj[index].money, function (data) {
+        $.post("/account/addPayQrcode", "type=2&payUrl=" + encodeURIComponent(obj[index].url) + "&price=" + obj[index].money, function (data) {
             up(obj, index + 1)
         });
     }

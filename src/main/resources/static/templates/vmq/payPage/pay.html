@@ -17,19 +17,16 @@
     <meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
           name="viewport">
     <title>扫码支付</title>
+    <link href="//unpkg.com/layui@2.9.6/dist/css/layui.css" rel="stylesheet">
     <link href="pay.css" media="screen" rel="stylesheet">
-    <script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
 <body>
 <div class="body" id="body">
     <h1 class="mod-title">
-
-        <span class="ico_log ico-1" v-if="payType == 1"></span>
-        <span class="ico_log ico-2" v-if="payType == 2"></span>
-
+        <span class="ico_log ico-1" v-if="payType === 1"></span>
+        <span class="ico_log ico-2" v-if="payType === 2"></span>
     </h1>
-
     <div class="mod-ct">
         <div class="order">
         </div>
@@ -41,33 +38,15 @@
                 <div class="qrcode-img-area" data-role="qrPayImg">
                     <div class="ui-loading qrcode-loading" data-role="qrPayImgLoading" style="display: none;">加载中
                     </div>
-                    <div style="position: relative;display: inline-block;">
-                        <img :src="'/enQrcode?url='+payUrl" alt="加载中..." height="210" id='show_qrcode'
-                             style="display: block;"
-                             width="210">
-                        <!--<img onclick="$('#use').hide()" id="use" src="use_1.png" v-if="payType==1"
-                             style="position: absolute;top: 50%;left: 50%;width:32px;height:32px;margin-left: -16px;margin-top: -16px">
-                        <img onclick="$('#use').hide()" id="use" src="use_2.png" v-if="payType==2"
-                             style="position: absolute;top: 50%;left: 50%;width:32px;height:32px;margin-left: -16px;margin-top: -16px">-->
-                    </div>
+                    <div id="pay-url" style="position: relative;display: inline-block;"></div>
                 </div>
-
-
             </div>
             <div class="time-item">
-
-
                 <div class="time-item" id="msg">
-                    <h1 v-if="price != reallyPrice">
-                        <span style="color:red">为了您正常支付 请务必付款 {{ reallyPrice
-                            }} 元 <br>备注说明无需填写</span><br>
-
-
+                    <h1 v-if="price !== reallyPrice">
+                        <span style="color:red">为了您正常支付 请务必付款 {{ reallyPrice}} 元 <br>备注说明无需填写</span><br>
                     </h1>
-
                 </div>
-
-
                 <strong id="hour_show">0时</strong>
                 <strong id="minute_show">0分</strong>
                 <strong id="second_show">0秒</strong>
@@ -77,10 +56,8 @@
                 <div class="ico-scan"></div>
                 <div class="tip-text">
                     <p>请使用{{payType1}}扫一扫</p>
-
-                    <p v-if="isAuto == 0">扫描二维码完成支付</p>
-                    <p v-if="isAuto == 1">扫码后输入金额支付</p>
-
+                    <p v-if="isAuto === 0">扫描二维码完成支付</p>
+                    <p v-if="isAuto === 1">扫码后输入金额支付</p>
                 </div>
             </div>
 
@@ -91,21 +68,14 @@
                     <dt>商户订单：</dt>
                     <dd>{{payId}}</dd>
                     <dt>创建时间：</dt>
-                    <dd>{{formatDate(date)}}</dd>
+                    <dd>{{createTime}}</dd>
                     <dt>状态</dt>
                     <dd>等待支付</dd>
                 </dl>
-
                 <a class="arrow" href="javascript:void(0)" onclick="aaa()"><i class="ico-arrow"></i></a>
             </div>
         </div>
-
-
-        <div class="tip-text">
-
-        </div>
-
-
+        <div class="tip-text"></div>
     </div>
     <div class="foot">
         <div class="inner">
@@ -113,13 +83,15 @@
             <p>在{{payType1}}扫一扫中选择“相册”即可</p>
         </div>
     </div>
-
 </div>
-<div class="copyRight">
+<div class="copyRight"></div>
 
-</div>
-
+<script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="//unpkg.com/layui@2.9.6/dist/layui.js"></script>
 <script src="https://lib.baomitu.com/vue/2.5.21/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.4/umd/zxing-browser.min.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/api.js"></script>
 
 <script>
 
@@ -135,20 +107,11 @@
         }
     }
 
-    function formatDate(now) {
-        now = new Date(now)
-        return now.getFullYear()
-            + "-" + (now.getMonth() > 8 ? (now.getMonth() + 1) : "0" + (now.getMonth() + 1))
-            + "-" + (now.getDate() > 9 ? now.getDate() : "0" + now.getDate())
-            + " " + (now.getHours() > 9 ? now.getHours() : "0" + now.getHours())
-            + ":" + (now.getMinutes() > 9 ? now.getMinutes() : "0" + now.getMinutes())
-            + ":" + (now.getSeconds() > 9 ? now.getSeconds() : "0" + now.getSeconds());
-
-    }
-
     var myTimer;
 
-    function timer(intDiff) {
+    var intDiff = 0;
+
+    function timer() {
         var i = 0;
         i++;
         var day = 0,
@@ -214,44 +177,56 @@
         return null;
     }
 
-    $.post("/getOrder", "orderId=" + getQueryString("orderId"), function (data) {
-        if (data.code === 0) {
-            var time = new Date().getTime() - data.data.date;
+    API.getOrder({orderId: getQueryString("orderId")},
+        function (data) {
+            var time = new Date().getTime() - Util.toTimestamp(data.createTime);
             time = time / 1000;
-            time = data.data.timeOut * 60 - time;
-            if (data.data.state == -1) {
-                time = 0;
+            intDiff = data.close * 60 - time;
+            if (data.state === -1) {
+                intDiff = 0;
             }
-            timer(time);
+            timer();
 
-            if (data.data.payType == 1) {
-                data.data.payType1 = "微信";
-            } else if (data.data.payType == 2) {
-                data.data.payType1 = "支付宝";
+            if (data.payType === 1) {
+                data.payType1 = "微信";
+            } else if (data.payType === 2) {
+                data.payType1 = "支付宝";
             }
 
 
             new Vue({
                 el: '#body',
-                data: data.data
+                data: data,
+                mounted() {
+                    this.encodeQRCode();
+                },
+                methods: {
+                    encodeQRCode: function () {
+                        Util.encodeQRCode($("#pay-url"), data.payUrl);
+                    }
+                }
             })
 
             check();
-        } else {
-            timer(0)
+        },
+        function (res) {
+            layer.msg(res.msg);
+            timer();
         }
-    });
+    )
 
     function check() {
         $.post("/checkOrder", "orderId=" + getQueryString("orderId"), function (data) {
             console.log(data);
+            var checkOrderCycle;
             if (data.code === 0) {
                 window.location.href = data.data;
             } else {
-                if (data.data == "订单已过期") {
+                if (data.data === "订单已过期") {
                     intDiff = 0;
+                    checkOrderCycle && clearTimeout(checkOrderCycle);
                 } else {
-                    setTimeout("check()", 1500);
+                    checkOrderCycle = setTimeout(check, 1500);
                 }
             }
         })

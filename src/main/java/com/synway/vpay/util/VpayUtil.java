@@ -1,8 +1,6 @@
 package com.synway.vpay.util;
 
-import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.bean.TemplateConfig;
-import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.spring.TemplateRunner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.Advised;
@@ -22,7 +20,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * vpay工具类
@@ -105,49 +102,6 @@ public class VpayUtil {
         } else {
             BeanUtils.copyProperties(source, target);
         }
-    }
-
-    /**
-     * 获取账户状态
-     *
-     * @param id 账户ID
-     * @return 账户状态信息
-     * @since 0.1
-     */
-    public static AccountState getAccountState(UUID id) {
-        AccountState accountState;
-        if (VpayConstant.ACCOUNT_STATE_MAP.containsKey(id)) {
-            accountState = VpayConstant.ACCOUNT_STATE_MAP.get(id);
-        } else {
-            accountState = new AccountState(id);
-            VpayConstant.ACCOUNT_STATE_MAP.put(id, accountState);
-        }
-        return accountState;
-    }
-
-    /**
-     * 更新账户信息：最后支付时间
-     *
-     * @param id      账户ID
-     * @param lastPay 最后支付时间
-     * @since 0.1
-     */
-    public static void updateLastPay(UUID id, LocalDateTime lastPay) {
-        AccountState accountState = getAccountState(id);
-        accountState.setLastPay(lastPay);
-    }
-
-    /**
-     * 更新账户信息：监控端状态
-     *
-     * @param id           账户ID
-     * @param monitorState 监控端状态
-     * @since 0.1
-     */
-    public static void updateMonitorState(UUID id, MonitorState monitorState, LocalDateTime lastHeart) {
-        AccountState accountState = getAccountState(id);
-        accountState.setMonitorState(monitorState);
-        accountState.setLastHeart(lastHeart);
     }
 
     /**
