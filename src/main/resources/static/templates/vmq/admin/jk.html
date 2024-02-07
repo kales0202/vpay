@@ -93,6 +93,6 @@
         $("#lastpay").val(data.lastPay);
         var code = window.location.host + "/" + data.keyword;
         $("#input").val(code);
-        encodeQRCode($("#pzqrcode"), code);
+        Util.encodeQRCode($("#pzqrcode"), code);
     }
 </script>

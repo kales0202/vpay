@@ -158,6 +158,17 @@
                         function () {
                             layer.msg("操作成功！");
                             reloadTable();
+                        },
+                        function (res) {
+                            if (res.code === -5) { // 补单失败执行回调
+                                layer.alert(res.data || 'null', {icon: 1}, function (i) {
+                                    layer.close(i);
+                                    obj.update({state: 2});
+                                });
+                                return;
+                            }
+                            // 其它异常直接提示即可
+                            layer.msg(res.msg);
                         }
                     );
                 });

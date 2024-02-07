@@ -79,18 +79,6 @@
         success && success(res.data);
     }
 
-    // 补单失败时执行的回调
-    function fulfillOrderError(res) {
-        if (res.code === -5) { // 补单失败执行回调
-            layer.alert(res.data || 'null', {icon: 1}, function (i) {
-                layer.close(i);
-            });
-            return;
-        }
-        // 其它异常直接提示即可
-        layer.msg(res.msg);
-    }
-
     self.get = get;
     self.post = post;
     self.del = del;
@@ -103,5 +91,5 @@
     self.statisticsOrder = (success) => get('/order/statistics', success);
     self.deleteOrder = (params, success) => del('/order', params, success);
     self.getOrder = (params, success) => get('/public/order/get', params, success);
-    self.fulfillOrder = (params, success) => get('/order/fulfill', params, success, fulfillOrderError);
+    self.fulfillOrder = (params, success, error) => get('/order/fulfill', params, success, error);
 });
