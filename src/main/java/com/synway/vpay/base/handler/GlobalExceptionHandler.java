@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
@@ -38,6 +39,11 @@ public class GlobalExceptionHandler {
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .maximumSize(500)
             .build();
+
+    @RequestMapping("/error")
+    public Result<Void> error() {
+        return Result.error();
+    }
 
     @ExceptionHandler(value = {NoResourceFoundException.class, NoHandlerFoundException.class})
     public Object businessException(HttpServletRequest request, Exception e) throws ExecutionException {

@@ -33,6 +33,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         registry.addInterceptor(this)
                 .excludePathPatterns(
                         "/login",
+                        "/error",
                         "/account/login",
                         "/404",
                         "/**/*.html",

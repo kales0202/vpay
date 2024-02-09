@@ -31,9 +31,9 @@ public class SignInterceptor implements HandlerInterceptor {
     @Override
     @SuppressWarnings("NullableProblems")
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String name = request.getHeader("vpay-name");
-        String time = request.getHeader("vpay-time");
-        String sign = request.getHeader("vpay-sign");
+        String name = request.getHeader("Vpay-Account");
+        String time = request.getHeader("Vpay-Time");
+        String sign = request.getHeader("Vpay-Sign");
         if (Strings.isBlank(name)) {
             name = VpayConstant.SUPER_ACCOUNT;
         }

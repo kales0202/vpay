@@ -15,13 +15,12 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -35,7 +34,7 @@ import java.util.UUID;
  * @since 0.1
  */
 @Validated
-@Controller
+@RestController
 @RequestMapping("/sign")
 public class SignController {
 
@@ -58,7 +57,6 @@ public class SignController {
      * @since 0.1
      */
     @PostMapping("/order/create")
-    @ResponseBody
     public Result<Order> createOrder(HttpServletResponse response, @RequestBody OrderCreateBO bo) throws IOException {
         if (Strings.isBlank(bo.getAccountName())) {
             bo.setAccountName(VpayConstant.SUPER_ACCOUNT);
@@ -77,7 +75,6 @@ public class SignController {
      * @since 0.1
      */
     @GetMapping("/order/close")
-    @ResponseBody
     public Result<Void> closeOrder(String orderId) {
         orderService.closeOrder(orderId);
         return Result.success();
@@ -89,11 +86,9 @@ public class SignController {
      * @since 0.1
      */
     @GetMapping("/account/state")
-    @ResponseBody
     public Result<AccountState> getAccountState() {
         return Result.success(accountService.getAccountState());
     }
-
 
     /**
      * 监控端调用：监控端心跳检测
