@@ -146,7 +146,7 @@ public class AccountService {
         if (ACCOUNT_STATE_MAP.containsKey(account.getId())) {
             accountState = ACCOUNT_STATE_MAP.get(account.getId());
         } else {
-            accountState = new AccountState(account.getId());
+            accountState = new AccountState(account.getId(), account.getName());
             ACCOUNT_STATE_MAP.put(account.getId(), accountState);
         }
         return accountState;

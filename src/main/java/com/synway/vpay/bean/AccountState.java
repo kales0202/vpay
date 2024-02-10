@@ -22,24 +22,35 @@ public class AccountState {
      * @since 0.1
      */
     private UUID id;
+
+    /**
+     * 账户名
+     *
+     * @since 0.1
+     */
+    private String name;
+
     /**
      * 通讯密钥
      *
      * @since 0.1
      */
     private String keyword;
+
     /**
      * 监控端最后心跳
      *
      * @since 0.1
      */
     private LocalDateTime lastHeart;
+
     /**
      * 监控端最后收款
      *
      * @since 0.1
      */
     private LocalDateTime lastPay;
+
     /**
      * 监控端状态
      *
@@ -50,12 +61,14 @@ public class AccountState {
     @SuppressWarnings("CopyConstructorMissesField")
     public AccountState(AccountState another) {
         this.id = another.getId();
+        this.name = another.getName();
         this.lastHeart = another.getLastHeart();
         this.lastPay = another.getLastPay();
         this.monitorState = another.getMonitorState();
     }
 
-    public AccountState(UUID id) {
+    public AccountState(UUID id, String name) {
         this.id = id;
+        this.name = name;
     }
 }

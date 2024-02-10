@@ -96,7 +96,7 @@ public class SignController {
      * @return void
      * @since 0.1
      */
-    @GetMapping("/heartbeat")
+    @GetMapping("/app/heartbeat")
     public Result<Void> heartbeat() {
         // 更新监控端状态
         accountService.updateMonitorState(MonitorState.ONLINE, LocalDateTime.now());
@@ -111,7 +111,7 @@ public class SignController {
      * @return Void
      * @since 0.1
      */
-    @GetMapping("/push")
+    @GetMapping("/app/push")
     public Result<Void> push(PayType payType, BigDecimal price) {
         LocalDateTime payTime = VpayUtil.toDatetime(request.getHeader("vpay-time"));
 

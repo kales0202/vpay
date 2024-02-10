@@ -91,7 +91,7 @@
         }
         $("#lastheart").val(data.lastHeart);
         $("#lastpay").val(data.lastPay);
-        var code = window.location.host + "/" + data.keyword;
+        var code = window.location.host + "/" + data.keyword + "/" + data.name;
         $("#input").val(code);
         Util.encodeQRCode($("#pzqrcode"), code);
     }
