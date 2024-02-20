@@ -91,9 +91,18 @@
         return url;
     }
 
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null)
+            return decodeURI(r[2]);
+        return null;
+    }
+
     self.formatTime = formatTime;
     self.toTimestamp = toTimestamp;
     self.decodeQRCode = decodeQRCode;
     self.encodeQRCode = encodeQRCode;
     self.getObjectURL = getObjectURL;
+    self.getQueryString = getQueryString;
 });

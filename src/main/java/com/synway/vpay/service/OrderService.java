@@ -299,7 +299,7 @@ public class OrderService {
     public String checkOrder(String orderId) {
         Order order = this.findByOrderId(orderId);
         if (order.getState() == OrderState.WAIT || order.getState() == OrderState.EXPIRED) {
-            throw new BusinessException(OrderState.WAIT.getName());
+            throw new BusinessException(order.getState().getName());
         }
 
         String url = BaseUtil.firstInitialized(order.getReturnUrl(), account.getReturnUrl());

@@ -92,5 +92,6 @@
     self.statisticsOrder = (success) => get('/order/statistics', success);
     self.deleteOrder = (params, success) => del('/order', params, success);
     self.getOrder = (params, success) => get('/public/order/get', params, success);
+    self.checkOrder = (params, success, error) => get('/public/order/check', params, success, error);
     self.fulfillOrder = (params, success, error) => get('/order/fulfill', params, success, error);
 });

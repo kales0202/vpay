@@ -162,9 +162,11 @@ body, .body {
     border-top: none
 }
 
-.mod-ct .order {
+#timeout {
+    padding-top: 20px;
     font-size: 20px;
-    padding-top: 10px
+    color: red;
+    display: none;
 }
 
 .mod-ct .amount {
