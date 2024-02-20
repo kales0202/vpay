@@ -85,6 +85,7 @@
     self.navigate2Login = () => window.location.href = '/login';
     self.navigate2Index = () => window.location.href = '/';
     self.login = (params, success) => post('/account/login', params, success);
+    self.changePassword = (params, success) => post('/account/password', params, success);
     self.getAccount = (success) => get('/account', success);
     self.saveAccount = (params, success) => post('/account', params, success);
     self.state = (success) => get('/account/state', success);

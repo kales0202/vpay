@@ -1,7 +1,6 @@
 package com.synway.vpay.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.synway.vpay.base.entity.BaseEntity;
 import com.synway.vpay.enums.PayType;
 import jakarta.persistence.Entity;
@@ -38,7 +37,7 @@ public class Account extends BaseEntity {
      *
      * @since 0.1
      */
-    @JsonProperty(access = Access.WRITE_ONLY)
+    @JsonIgnore
     private String password;
 
     /**

@@ -35,14 +35,26 @@ public class AccountController {
     /**
      * 登录接口
      *
-     * @param loginInfo 登录账户名和密码
+     * @param loginBO 登录账户名和密码
      * @return nothing
      * @since 0.1
      */
     @PostMapping("/login")
-    public Result<Void> login(@RequestBody @Valid LoginInfo loginInfo) {
-        Account db = accountService.login(loginInfo.getName(), loginInfo.getPass());
+    public Result<Void> login(@RequestBody @Valid LoginBO loginBO) {
+        Account db = accountService.login(loginBO.getName(), loginBO.getPass());
         account.copyFrom(db);
+        return Result.success();
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param bo 修改密码BO
+     * @since 0.1
+     */
+    @PostMapping("/password")
+    public Result<Void> password(@RequestBody @Valid PasswordBO bo) {
+        accountService.changePassword(bo.getOldPassword(), bo.getNewPassword());
         return Result.success();
     }
 
@@ -88,7 +100,7 @@ public class AccountController {
      * @since 0.1
      */
     @Data
-    public static class LoginInfo {
+    public static class LoginBO {
 
         /**
          * 账户名
@@ -96,7 +108,7 @@ public class AccountController {
          * @since 0.1
          */
         @NotNull
-        String name;
+        private String name;
 
         /**
          * 密码
@@ -104,6 +116,32 @@ public class AccountController {
          * @since 0.1
          */
         @NotNull
-        String pass;
+        private String pass;
     }
+
+    /**
+     * 修改密码BO
+     *
+     * @since 0.1
+     */
+    @Data
+    public static class PasswordBO {
+
+        /**
+         * 旧密码
+         *
+         * @since 0.1
+         */
+        @NotNull
+        private String oldPassword;
+
+        /**
+         * 新密码
+         *
+         * @since 0.1
+         */
+        @NotNull
+        private String newPassword;
+    }
+
 }

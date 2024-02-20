@@ -46,14 +46,30 @@ public class AccountService {
 
     public Account login(String name, String pass) {
         if (Strings.isBlank(name) || Strings.isBlank(pass)) {
-            throw new BusinessException("请输入账号和密码！");
+            throw new IllegalArgumentException("请输入账号和密码！");
         }
 
         Account db = accountRepository.findByName(name);
-        if (Objects.isNull(db) || !Objects.equals(pass, db.getPassword())) {
+        if (Objects.isNull(db) || !VpayUtil.jbVerify(pass, db.getPassword())) {
             throw new BusinessException("账号或密码不正确！");
         }
         return db;
+    }
+
+    @CacheEvict(cacheNames = "account")
+    public void changePassword(String oldPassword, String newPassword) {
+        if (Strings.isBlank(oldPassword) || Strings.isBlank(newPassword)) {
+            throw new IllegalArgumentException("请输入原密码和新密码！");
+        }
+
+        Account db = accountRepository.findByName(account.getName());
+        if (!VpayUtil.jbVerify(oldPassword, db.getPassword())) {
+            throw new IllegalOperationException("原密码输入错误！");
+        }
+        db.setPassword(VpayUtil.jbEncrypt(newPassword));
+        accountRepository.save(db);
+
+        account.setPassword(db.getPassword());
     }
 
     /**
@@ -72,8 +88,9 @@ public class AccountService {
             throw new AccountNotFoundException();
         }
 
-        VpayUtil.copyProperties(param, db);
+        VpayUtil.copyNonNullProperties(param, db);
         db = accountRepository.save(db);
+
         account.copyFrom(db);
         return db;
     }

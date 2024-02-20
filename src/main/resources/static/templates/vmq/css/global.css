@@ -1045,11 +1045,6 @@ body .site-demo-nav .layui-nav-item {
     line-height: 40px
 }
 
-.layui-nav-item .layui-icon {
-    position: relative;
-    font-size: 20px;
-}
-
 .layui-nav-item a cite {
     padding: 0 10px;
 }

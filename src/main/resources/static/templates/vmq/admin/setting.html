@@ -7,23 +7,6 @@
                    placeholder="请输入管理员账号" type="text">
         </div>
     </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">后台密码</label>
-        <div class="layui-input-block">
-            <input autocomplete="off" class="layui-input" id="password" lay-verify="required"
-                   placeholder="请输入管理员密码"
-                   type="password">
-        </div>
-    </div>
-
-    <div class="layui-form-item">
-        <label class="layui-form-label">确认密码</label>
-        <div class="layui-input-block">
-            <input autocomplete="off" class="layui-input" id="pass-confirm" lay-verify="required"
-                   placeholder="请再次输入密码"
-                   type="password">
-        </div>
-    </div>
 
     <div class="layui-form-item">
         <label class="layui-form-label">订单有效期</label>
@@ -118,7 +101,7 @@
 
             $("#wxup-input").on("change", function () {
                 if (this.files.length > 0) {
-                    let objectURL = getObjectURL(this.files[0]);
+                    let objectURL = Util.getObjectURL(this.files[0]);
                     Util.decodeQRCode(objectURL, function (result) {
                         Util.encodeQRCode($wxPay, result.text);
                     });
@@ -130,7 +113,7 @@
 
             $("#aliup-input").on("change", function () {
                 if (this.files.length > 0) {
-                    let objectURL = getObjectURL(this.files[0]);
+                    let objectURL = Util.getObjectURL(this.files[0]);
                     Util.decodeQRCode(objectURL, function (result) {
                         Util.encodeQRCode($aliPay, result.text);
                     });
@@ -146,8 +129,6 @@
 
         function save() {
             var name = $("#name").val();
-            var password = $("#password").val();
-            var passConfirm = $("#pass-confirm").val();
             var notifyUrl = $("#notifyUrl").val();
             var returnUrl = $("#returnUrl").val();
             var keyword = $("#keyword").val();
@@ -155,10 +136,6 @@
             var payQf = $("#payQf").val();
             if (!name) {
                 layer.msg("请输入管理员账号");
-                return;
-            }
-            if (passConfirm && password !== passConfirm) {
-                layer.msg("两次输入的管理员密码不一致");
                 return;
             }
             if (!keyword) {
@@ -198,9 +175,6 @@
                 wxPay: wxPay,
                 aliPay: aliPay
             }
-            if (passConfirm) {
-                param.password = password;
-            }
 
             API.saveAccount(param, function (data) {
                 layer.msg("保存成功！");
@@ -211,7 +185,6 @@
         function renderSetting(data) {
             console.log("renderSetting", data);
             $("#name").val(data.name);
-            $("#password").val("");
             $("#notifyUrl").val(data.notifyUrl);
             $("#returnUrl").val(data.returnUrl);
             $("#keyword").val(data.keyword);

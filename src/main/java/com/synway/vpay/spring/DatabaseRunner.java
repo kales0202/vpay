@@ -6,6 +6,7 @@ import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.repository.OrderRepository;
 import com.synway.vpay.util.VpayConstant;
+import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -48,7 +49,7 @@ public class DatabaseRunner implements ApplicationRunner {
         Account account = new Account();
         account.setId(VpayConstant.SUPER_ID);
         account.setName(VpayConstant.SUPER_ACCOUNT);
-        account.setPassword(VpayConstant.SUPER_ACCOUNT);
+        account.setPassword(VpayUtil.jbEncrypt(VpayConstant.SUPER_ACCOUNT));
         // account.setKeyword(VpayUtil.md5(new Date().toString()));
         // TODO... 测试数据
         account.setKeyword("f3ba2ab83fc2465dd567e70129772d3a");

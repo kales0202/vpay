@@ -3,6 +3,7 @@ package com.synway.vpay.util;
 import com.synway.vpay.bean.TemplateConfig;
 import com.synway.vpay.spring.TemplateRunner;
 import lombok.extern.slf4j.Slf4j;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -38,6 +39,27 @@ public class VpayUtil {
      */
     public static String md5(String text) {
         return DigestUtils.md5DigestAsHex(text.getBytes());
+    }
+
+    /**
+     * BCrypt加密
+     *
+     * @param text 待加密的文本
+     * @return 加密数据
+     */
+    public static String jbEncrypt(String text) {
+        return BCrypt.hashpw(text, BCrypt.gensalt());
+    }
+
+    /**
+     * BCrypt校验
+     *
+     * @param text   待验证的文本
+     * @param hashed 校验数据
+     * @return 校验结果
+     */
+    public static boolean jbVerify(String text, String hashed) {
+        return BCrypt.checkpw(text, hashed);
     }
 
     public static TemplateConfig getTemplateConfig() {
@@ -92,7 +114,7 @@ public class VpayUtil {
         return emptyNames.toArray(result);
     }
 
-    public static void copyProperties(Object source, Object target) {
+    public static void copyNonNullProperties(Object source, Object target) {
         copyProperties(source, target, true);
     }
 

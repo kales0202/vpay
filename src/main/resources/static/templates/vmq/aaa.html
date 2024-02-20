@@ -12,28 +12,25 @@
 
     <link href="//unpkg.com/layui@2.9.6/dist/css/layui.css" rel="stylesheet">
     <link href="css/global.css?t=1531663423583-6" media="all" rel="stylesheet">
-    <style type="text/css">ins.adsbygoogle {
-        display: none !important;
-        display: none
-    }</style>
+    <style type="text/css">
+        ins.adsbygoogle {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
 <div class="layui-layout layui-layout-admin">
     <div class="layui-header header header-demo" summer>
         <div class="layui-main">
-            <span style="color: white;font-size: 30px;font-weight:100;line-height: 58px;font-family:Microsoft JhengHei">后台管理</span>
-
+            <span style="color: white;font-size: 30px;font-weight:100;line-height: 58px;font-family:Microsoft JhengHei,serif">后台管理</span>
             <ul class="layui-nav layui-layout-right">
-                <li class="layui-nav-item">
-                    <a href="javascript:;">
-
-                        管理员
-                    </a>
+                <li class="layui-nav-item layui-hide layui-show-sm-inline-block">
+                    <a href="javascript:" style="font-size: 14px"> 管理员 </a>
                     <dl class="layui-nav-child">
+                        <dd><a href="javascript:modifyPassword();">修改密码</a></dd>
                         <dd><a href="index.html">退出</a></dd>
                     </dl>
                 </li>
-                <!-- <li class="layui-nav-item"><a href="">退出</a></li> -->
             </ul>
         </div>
     </div>
@@ -44,59 +41,140 @@
     <![endif]-->
     <div class="layui-side layui-bg-black">
         <div class="layui-side-scroll">
-
-            <ul class="layui-nav layui-nav-tree site-demo-nav" id="v_menu">
-
-            </ul>
-
+            <ul class="layui-nav layui-nav-tree site-demo-nav" id="v_menu"></ul>
         </div>
     </div>
     <div class="layui-body layui-tab-content site-demo site-demo-body">
         <div class="layui-tab-item layui-show">
             <div class="layui-main">
-                <div id="LAY_preview">
-
-
-                </div>
+                <div id="LAY_preview"></div>
             </div>
         </div>
-
-
     </div>
 </div>
+
 <div class="site-tree-mobile layui-hide" style="opacity: 0.4;">
     <i class="layui-icon">&#xe602;</i>
 </div>
 <div class="site-mobile-shade"></div>
+
+<div class="layui-form" id="change-password" style="display:none;">
+    <div class="layui-form" lay-filter="filter-test-layer" style="margin: 16px;">
+        <div class="change-password-container">
+            <div class="layui-form-item">
+                <div class="layui-input-wrap">
+                    <div class="layui-input-prefix">
+                        <i class="layui-icon layui-icon-password"></i>
+                    </div>
+                    <input autocomplete="off" class="layui-input" lay-affix="eye" lay-reqtext="原密码" lay-verify="required"
+                           name="oldPassword" placeholder="原密码" type="password" value="">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-wrap">
+                    <div class="layui-input-prefix">
+                        <i class="layui-icon layui-icon-password"></i>
+                    </div>
+                    <input autocomplete="off" class="layui-input" lay-affix="eye" lay-reqtext="请填写新密码"
+                           lay-verify="required|checkPasswordSame"
+                           name="newPassword" placeholder="新密码" type="password" value="">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-wrap">
+                    <div class="layui-input-prefix">
+                        <i class="layui-icon layui-icon-password"></i>
+                    </div>
+                    <input autocomplete="off" class="layui-input" lay-affix="eye" lay-reqtext="请确认新密码"
+                           lay-verify="required|confirmPassword" name="confirmPassword" placeholder="确认新密码"
+                           type="password" value="">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <button class="layui-btn layui-btn-fluid" lay-filter="change-pass-filter" lay-submit>保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="//unpkg.com/layui@2.9.6/dist/layui.js"></script>
 <script>
+    var passwordIndex;
+
     window.global = {
-        pageType: 'demo'
-        , preview: function () {
+        pageType: 'demo',
+        preview: function () {
             var preview = document.getElementById('LAY_preview');
             return preview ? preview.innerHTML : '';
         }()
     };
     layui.config({
-        base: 'js/'
-        , version: '1531663423583'
+        base: 'js/',
+        version: '1531663423583'
     }).use('global');
-</script>
-</div>
-<script>
 
+    function modifyPassword() {
+        passwordIndex = layer.open({
+            type: 1,
+            title: '修改密码',
+            content: $('#change-password'),
+            success: function (index, layero, that) {
+                $('input[name=oldPassword]').val('');
+                $('input[name=newPassword]').val('');
+                $('input[name=confirmPassword]').val('');
+            },
+            cancel: function (index, layero, that) {
+                $('#change-password').css("display", "none");
+            }
+        })
+    }
 
     layui.use(['layer', 'element'], function () {
-        var $ = layui.$
-            , setIframe = function () {
-            var height = $(window).height() - 370;
-            $('#demoAdmin').height(height);
-        };
-
+        var $ = layui.$,
+            form = layui.form,
+            layer = layui.layer,
+            setIframe = function () {
+                var height = $(window).height() - 370;
+                $('#demoAdmin').height(height);
+            };
         setIframe();
         $(window).on('resize', setIframe);
 
+        form.verify({
+            // 自定义密码验证规则
+            confirmPassword: function (value, item) {
+                // 获取第一个密码框的值
+                var newPassword = $('input[name=newPassword]').val();
+                // 判断两次输入的密码是否一致
+                if (value !== newPassword) {
+                    return '两次输入的密码不一致';
+                }
+            },
+            // 自定义密码验证规则
+            checkPasswordSame: function (value, item) {
+                // 获取第一个密码框的值
+                var oldPassword = $('input[name=oldPassword]').val();
+                // 判断两次输入的密码是否一致
+                if (value === oldPassword) {
+                    return '新旧密码不能相同';
+                }
+            }
+        });
 
+        // 提交事件
+        form.on('submit(change-pass-filter)', function (data) {
+            var param = {
+                oldPassword: data.field.oldPassword,
+                newPassword: data.field.newPassword,
+            }
+            API.changePassword(param, function (data) {
+                $('#change-password').css("display", "none");
+                layer.close(passwordIndex);
+                layer.msg('密码修改成功');
+            });
+            return false; // 阻止默认 form 跳转
+        });
     });
 </script>
 <script src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script>
@@ -108,18 +186,6 @@
 <script type="text/javascript">
 
     $("#LAY_preview").load("main.html")
-
-    function getObjectURL(file) {
-        let url = null;
-        if (window.createObjectURL !== undefined) { // basic
-            url = window.createObjectURL(file);
-        } else if (window.webkitURL !== undefined) { // webkit or chrome
-            url = window.webkitURL.createObjectURL(file);
-        } else if (window.URL !== undefined) { // mozilla(firefox)
-            url = window.URL.createObjectURL(file);
-        }
-        return url;
-    }
 
     var menuData = [
         {
