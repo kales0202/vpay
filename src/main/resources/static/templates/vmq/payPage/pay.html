@@ -261,6 +261,8 @@
 
             if (distance <= 0) {
                 clearInterval(countdownId);
+                order.stateName = ORDER_STATE['-1'].name;
+                order.stateTips = ORDER_STATE['-1'].tips;
                 order.timeout = true;
             } else {
                 order.hour = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -284,6 +286,8 @@
                 function (res) {
                     if (res.msg === "订单已过期") {
                         clearInterval(countdownId);
+                        order.stateName = ORDER_STATE['-1'].name;
+                        order.stateTips = ORDER_STATE['-1'].tips;
                         order.timeout = true;
                     }
                 }
