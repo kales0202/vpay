@@ -83,7 +83,7 @@ public class HttpUtil {
     public static String map2GetParam(String url, Map<String, String> map) {
         url = Strings.isBlank(url) ? "" : url;
         String params = map.entrySet().stream()
-                .filter(e -> Strings.isBlank(e.getKey()) || Strings.isBlank(e.getValue()))
+                .filter(e -> Strings.isNotBlank(e.getKey()) && Strings.isNotBlank(e.getValue()))
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining("&"));
         if (Strings.isBlank(params)) {

@@ -2,3 +2,5 @@ spring:
   devtools:
     restart:
       enabled: false
+  mvc:
+    log-resolved-exception: false

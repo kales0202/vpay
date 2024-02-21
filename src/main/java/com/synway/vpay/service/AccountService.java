@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -153,18 +154,40 @@ public class AccountService {
     }
 
     /**
+     * 获取全量账户信息
+     *
+     * @return accounts
+     * @since 0.1
+     */
+    public List<Account> findAll() {
+        return accountRepository.findAll();
+    }
+
+    /**
      * 获取账户状态
      *
      * @return 账户状态信息
      * @since 0.1
      */
     public AccountState getAccountState() {
+        return this.getAccountState(account.getId());
+    }
+
+    /**
+     * 获取账户状态
+     *
+     * @param id 账户ID
+     * @return 账户状态信息
+     * @since 0.1
+     */
+    public AccountState getAccountState(UUID id) {
         AccountState accountState;
-        if (ACCOUNT_STATE_MAP.containsKey(account.getId())) {
-            accountState = ACCOUNT_STATE_MAP.get(account.getId());
+        if (ACCOUNT_STATE_MAP.containsKey(id)) {
+            accountState = ACCOUNT_STATE_MAP.get(id);
         } else {
-            accountState = new AccountState(account.getId(), account.getName());
-            ACCOUNT_STATE_MAP.put(account.getId(), accountState);
+            Account ac = this.findById(id);
+            accountState = new AccountState(id, ac.getName());
+            ACCOUNT_STATE_MAP.put(id, accountState);
         }
         return accountState;
     }

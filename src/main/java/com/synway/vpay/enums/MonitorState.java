@@ -16,7 +16,7 @@ public enum MonitorState implements IBaseEnum {
      *
      * @since 0.1
      */
-    OFFLINE(0, "在线"),
+    OFFLINE(0, "离线"),
 
     /**
      * 在线

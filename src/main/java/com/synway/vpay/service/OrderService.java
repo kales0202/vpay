@@ -64,6 +64,7 @@ public class OrderService {
      * @return 订单数据
      * @since 0.1
      */
+    @Transactional
     public Order create(OrderCreateBO bo) {
         if (this.countByPayId(bo.getPayId()) > 0) {
             throw new BusinessException("商户订单号已存在");
@@ -91,6 +92,7 @@ public class OrderService {
      * @return 订单数据
      * @since 0.1
      */
+    @Transactional
     public Order save(Order order) {
         return orderRepository.save(order);
     }
@@ -183,6 +185,18 @@ public class OrderService {
 
         Page<Order> orders = orderRepository.findAll(specification, bo.getPageable());
         return new PageData<>(orders.getTotalElements(), bo.getPage(), bo.getSize(), orders.getContent());
+    }
+
+    /**
+     * 批量更新已过期的订单
+     *
+     * @param accountId 账户ID
+     * @param deadline  截至时间
+     * @return 过期的订单数量
+     */
+    @Transactional
+    public int updateExpiredOrders(UUID accountId, LocalDateTime deadline) {
+        return orderRepository.updateExpiredOrders(accountId, deadline);
     }
 
     public OrderStatisticsVO statistics() {

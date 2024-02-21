@@ -5,6 +5,7 @@ import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -28,6 +29,18 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
      * @return 删除的订单数量
      */
     long deleteByAccountIdAndId(UUID accountId, UUID id);
+
+
+    /**
+     * 批量更新已过期的订单
+     *
+     * @param accountId 账户ID
+     * @param deadline  截至时间
+     * @return 过期的订单数量
+     */
+    @Modifying
+    @Query("update pay_order o set o.state = -1 where o.accountId = :accountId and o.state = 0 and o.createTime <= :deadline")
+    int updateExpiredOrders(UUID accountId, LocalDateTime deadline);
 
     /**
      * 统计时间范围内的订单数量
