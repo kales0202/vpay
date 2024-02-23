@@ -17,3 +17,6 @@ spring:
         trace: false
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  web:
+    resources:
+      static-locations: classpath:/static/,file:./templates/

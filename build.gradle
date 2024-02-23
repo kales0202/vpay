@@ -28,7 +28,7 @@ smartdoc {
 }
 
 bootRun {
-	sourceResources sourceSets.main
+    sourceResources sourceSets.main
 }
 
 dependencies {
@@ -52,4 +52,36 @@ tasks.named('test') {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
+}
+
+tasks.register('copyTemplates', Copy) {
+    // 清除现有的配置目录
+    delete fileTree(dir: 'build/libs/templates')
+
+    // 复制模板文件到libs/templates目录下
+    from('templates')
+    into 'build/libs/templates'
+}
+
+tasks.register('copyDependencies', Copy) {
+    // 删除libs/lib文件夹下的jar包
+    delete fileTree(dir: 'build/libs/lib', include: '*.jar')
+
+    // 复制依赖jar包到libs/lib目录下
+    from configurations.runtimeClasspath
+    into 'build/libs/lib'
+    include '*.jar'
+}
+
+bootJar {
+    excludes = ['*.jar']
+
+    // 外置依赖包、模板文件
+    dependsOn(copyDependencies, copyTemplates)
+
+    // 修改MANIFEST.MF文件，指定类路径
+    manifest {
+        attributes "Manifest-Version": 1.0,
+                'Class-Path': configurations.runtimeClasspath.files.collect { "lib/" + it.getName() }.join(' ')
+    }
 }

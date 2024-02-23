@@ -59,16 +59,22 @@
     }
 
 
-    var ZXingReader = new window.ZXingBrowser.BrowserQRCodeReader();
-    var ZxingWriter = new window.ZXingBrowser.BrowserQRCodeSvgWriter();
-
+    var ZXingReader;
     function decodeQRCode(url, callback) {
+        if (!ZXingReader) {
+            ZXingReader = new window.ZXingBrowser.BrowserQRCodeReader();
+        }
         ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
             console.error(err)
         })
     }
 
+    var ZxingWriter;
     function encodeQRCode($container, text) {
+        if (!ZxingWriter) {
+            ZxingWriter = new window.ZXingBrowser.BrowserQRCodeSvgWriter();
+        }
+
         if (!$container || $container.length === 0 || !text) {
             $container.attr("data-code", "");
             $container.html("");

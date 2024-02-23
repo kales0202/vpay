@@ -2,6 +2,7 @@ package com.synway.vpay.spring;
 
 import com.synway.vpay.entity.Account;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -13,6 +14,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfigurer implements WebMvcConfigurer {
+
+    @Value("${spring.web.resources.static-locations}")
+    private String[] staticLocations;
 
     @Resource
     private LoginInterceptor loginInterceptor;
@@ -29,7 +33,7 @@ public class WebConfigurer implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/");
+                .addResourceLocations(staticLocations);
     }
 
     @Bean

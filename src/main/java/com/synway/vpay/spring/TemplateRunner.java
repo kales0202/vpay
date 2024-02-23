@@ -9,13 +9,13 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 初始化页面模板
@@ -36,9 +37,9 @@ public class TemplateRunner implements ApplicationRunner {
 
     public static final Map<String, TemplateConfig> CONFIGS = new HashMap<>();
 
-    private static final String TEMPLATES_DIR = "templates/";
+    private static final String TEMPLATES_DIR = "templates" + File.separator;
 
-    private static final String TEMPLATES_PATH = "classpath:/static/" + TEMPLATES_DIR;
+    private static final String TEMPLATES_PATH = System.getProperty("user.dir") + File.separator + TEMPLATES_DIR;
 
     @jakarta.annotation.Resource
     private ResourceLoader resourceLoader;
@@ -63,8 +64,7 @@ public class TemplateRunner implements ApplicationRunner {
 
     private List<TemplateConfig> getCustomTemplates() throws IOException {
         // 读取/static/templates下的文件夹
-        Resource folderResource = resourceLoader.getResource(TEMPLATES_PATH);
-        File[] files = folderResource.getFile().listFiles();
+        File[] files = new File(TEMPLATES_PATH).listFiles();
         if (Objects.isNull(files)) {
             return Collections.emptyList();
         }
@@ -74,29 +74,27 @@ public class TemplateRunner implements ApplicationRunner {
             if (!file.isDirectory()) {
                 continue;
             }
-
-            // 读取文件夹下的config.json
-            Resource configResource = resourceLoader.getResource(TEMPLATES_PATH + file.getName() + "/config.json");
-            if (!configResource.exists()) {
+            File configFile = new File(TEMPLATES_PATH + file.getName() + File.separator + "config.json");
+            if (!configFile.exists()) {
                 continue;
             }
+            // 读取config.json
             String content;
-            try (InputStream inputStream = configResource.getInputStream()) {
-                content = new String(inputStream.readAllBytes());
+            try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+                content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
             TemplateConfig config = BaseUtil.json2Object(content, TemplateConfig.class);
             if (Objects.isNull(config)) {
                 continue;
             }
 
-            String resourcePath = TEMPLATES_DIR + file.getName();
             if (Strings.isBlank(config.getId())) {
-                config.setId(VpayUtil.md5(resourcePath));
+                config.setId(VpayUtil.md5(file.getName()));
             }
-            Optional.ofNullable(config.getLogin()).ifPresent(s -> config.setLogin(resourcePath + "/" + s));
-            Optional.ofNullable(config.getIndex()).ifPresent(s -> config.setIndex(resourcePath + "/" + s));
-            Optional.ofNullable(config.getPay()).ifPresent(s -> config.setPay(resourcePath + "/" + s));
-            Optional.ofNullable(config.getNotFound()).ifPresent(s -> config.setNotFound(resourcePath + "/" + s));
+            Optional.ofNullable(config.getLogin()).ifPresent(s -> config.setLogin(file.getName() + "/" + s));
+            Optional.ofNullable(config.getIndex()).ifPresent(s -> config.setIndex(file.getName() + "/" + s));
+            Optional.ofNullable(config.getPay()).ifPresent(s -> config.setPay(file.getName() + "/" + s));
+            Optional.ofNullable(config.getNotFound()).ifPresent(s -> config.setNotFound(file.getName() + "/" + s));
             configs.add(config);
         }
         return configs;
@@ -122,7 +120,7 @@ public class TemplateRunner implements ApplicationRunner {
 
     private String getTemplatePath(String path, String defaultPath) {
         // 判断登录页是否存在
-        if (Objects.isNull(path) || !resourceLoader.getResource("classpath:/static/" + path).exists()) {
+        if (Objects.isNull(path) || !new File(TEMPLATES_PATH + path).exists()) {
             return defaultPath;
         }
         return path;
