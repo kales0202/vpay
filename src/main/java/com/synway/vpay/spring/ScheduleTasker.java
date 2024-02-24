@@ -26,7 +26,7 @@ public class ScheduleTasker {
 
     @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     public void checkAccountAndOrder() {
-        log.info("执行定时任务...");
+        log.info("====== 执行定时任务 ======");
         List<Account> accounts = accountService.findAll();
         for (Account account : accounts) {
             LocalDateTime now = LocalDateTime.now();

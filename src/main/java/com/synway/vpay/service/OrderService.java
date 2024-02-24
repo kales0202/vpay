@@ -66,13 +66,16 @@ public class OrderService {
      */
     @Transactional
     public Order create(OrderCreateBO bo) {
-        if (this.countByPayId(bo.getPayId()) > 0) {
-            throw new BusinessException("商户订单号已存在");
-        }
+        // 验证签名
+        bo.verifySign(account.getKeyword());
 
         String payUrl = account.getPayUrl(bo.getPayType());
         if (Strings.isBlank(payUrl)) {
             throw new BusinessException("请您先配置支付地址");
+        }
+
+        if (this.countByPayId(bo.getPayId()) > 0) {
+            throw new BusinessException("商户订单号已存在");
         }
 
         Order order = bo.toOrder();

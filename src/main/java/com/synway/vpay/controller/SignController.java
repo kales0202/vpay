@@ -2,27 +2,20 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.AccountState;
-import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.service.AccountService;
 import com.synway.vpay.service.OrderService;
-import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -46,27 +39,6 @@ public class SignController {
 
     @Resource
     private HttpServletRequest request;
-
-    /**
-     * 创建订单
-     *
-     * @param response HttpServletResponse
-     * @param bo       订单创建入参
-     * @return 生成的订单信息
-     * @throws IOException IOException
-     * @since 0.1
-     */
-    @PostMapping("/order/create")
-    public Result<Order> createOrder(HttpServletResponse response, @RequestBody OrderCreateBO bo) throws IOException {
-        if (Strings.isBlank(bo.getAccountName())) {
-            bo.setAccountName(VpayConstant.SUPER_ACCOUNT);
-        }
-        Order order = orderService.create(bo);
-        if (bo.openHtml()) {
-            response.sendRedirect("/pay?orderId=" + order.getOrderId());
-        }
-        return Result.success(order);
-    }
 
     /**
      * 关闭订单

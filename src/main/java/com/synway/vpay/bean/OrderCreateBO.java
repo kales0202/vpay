@@ -1,6 +1,7 @@
 package com.synway.vpay.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.synway.vpay.base.bean.SignBo;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.PayType;
@@ -9,30 +10,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
  * 订单创建入参
+ * 签名方式为 md5(payId + param + payType + price + 通讯密钥)
  *
  * @since 0.1
  */
 @Data
-public class OrderCreateBO {
-
-    /**
-     * 账户名
-     *
-     * @since 0.1
-     */
-    private String accountName;
-
-    /**
-     * 业务缓存，账户信息
-     */
-    @JsonIgnore
-    private Account account;
+@EqualsAndHashCode(callSuper = true)
+public class OrderCreateBO extends SignBo {
 
     /**
      * 商户订单号
@@ -81,14 +72,6 @@ public class OrderCreateBO {
     private String returnUrl;
 
     /**
-     * 签名认证 签名方式为 md5(payId + param + type + price + 通讯密钥)
-     *
-     * @since 0.1
-     */
-    @NotBlank
-    private String sign;
-
-    /**
      * 是否为页面级接口， 0-返回json数据，1-跳转到支付页面
      *
      * @since 0.1
@@ -109,5 +92,10 @@ public class OrderCreateBO {
         order.setNotifyUrl(notifyUrl);
         order.setReturnUrl(returnUrl);
         return order;
+    }
+
+    @Override
+    public String calculateSign(String key) {
+        return VpayUtil.md5(this.payId + this.param + this.payType.getValue() + this.price + key);
     }
 }

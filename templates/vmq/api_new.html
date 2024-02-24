@@ -24,23 +24,21 @@
             <div>
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求地址：http://localhost:8080/createOrder
+                        请求地址：http://localhost:8080/public/order/create
                     </div>
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求方式：POST/GET
+                        请求方式：POST
                     </div>
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
-
                     <p>通讯密钥（示例）：a7cc8678193ee9c70ae3d75fd04ae6a9</p>
                     <p>校验签名（示例）：md5(1547129707139vone66620.1a7cc8678193ee9c70ae3d75fd04ae6a9) =
                         2b8b5d58c51203162f14939bdbc46a54</p>
-                    <p>参数示例（示例）：payId=1547129707139&amp;type=2&amp;price=0.1&amp;sign=2b8b5d58c51203162f14939bdbc46a54&amp;param=vone666&amp;isHtml=0</p>
-
+                    <p>参数示例（示例）：---</p>
 
                     <div class="layui-inline">
                         <p>参数说明:</p>
@@ -101,13 +99,11 @@
                         </tr>
                         </tbody>
                     </table>
-
-
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
                     <p>
-                        返回数据（示例）：{"code":1,"msg":"成功","data":{"payId":"1547129707139","orderId":"201901102220147500","payType":2,"price":0.1,"reallyPrice":0.1,"payUrl":"HTTPS://QR.ALIPAY.COM/FKX03500Z2ZYWA0ELYUB5D","isAuto":1,"state":0,"timeOut":5,"date":1547130014777}}</p>
+                        返回数据（示例）：{"code":0,"msg":null,"data":{"payId":"1547129707139","orderId":"201901102220147500","payType":2,"price":0.1,"reallyPrice":0.1,"payUrl":"HTTPS://QR.ALIPAY.COM/FKX03500Z2ZYWA0ELYUB5D","isAuto":1,"state":0,"close":5,"createTime":"2024-12-25 22:20:14"}}</p>
                     <div class="layui-inline">
                         返回数据说明:
                     </div>
@@ -194,14 +190,14 @@
                                         <td>订单状态：-1|订单过期 0|等待支付 1|完成 2|支付完成但通知失败</td>
                                     </tr>
                                     <tr>
-                                        <td>timeOut</td>
+                                        <td>close</td>
                                         <td>整数</td>
                                         <td>订单有效时间（分钟）</td>
                                     </tr>
                                     <tr>
-                                        <td>date</td>
-                                        <td>长整数</td>
-                                        <td>订单创建时间时间戳（13位）</td>
+                                        <td>createTime</td>
+                                        <td>字符串</td>
+                                        <td>订单创建时间，格式：yyyy-MM-dd HH:mm:ss</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -223,13 +219,13 @@
 
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求地址：http://localhost:8080/getOrder
+                        请求地址：http://localhost:8080/public/order/get
                     </div>
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求方式：POST/GET
+                        请求方式：GET
                     </div>
                 </blockquote>
 
@@ -257,7 +253,7 @@
                         <tr>
                             <td>orderId</td>
                             <td>字符串</td>
-                            <td>【必传】云端订单号，创建订单返回的</td>
+                            <td>【必传】订单号，创建订单返回的</td>
                         </tr>
                         </tbody>
                     </table>
@@ -267,7 +263,7 @@
 
                 <blockquote class="layui-elem-quote news_search">
                     <p>
-                        返回数据（示例）：{"code":1,"msg":"成功","data":{"payId":"1547129707139","orderId":"201901102220147500","payType":2,"price":0.1,"reallyPrice":0.1,"payUrl":"HTTPS://QR.ALIPAY.COM/FKX03500Z2ZYWA0ELYUB5D","isAuto":1,"state":0,"timeOut":5,"date":1547130014777}}</p>
+                        返回数据（示例）：{"code":0,"msg":null,"data":{"payId":"1547129707139","orderId":"201901102220147500","payType":2,"price":0.1,"reallyPrice":0.1,"payUrl":"HTTPS://QR.ALIPAY.COM/FKX03500Z2ZYWA0ELYUB5D","isAuto":1,"state":0,"close":5,"createTime":"2024-12-25 22:20:14"}}</p>
                     <div class="layui-inline">
                         返回数据说明:
                     </div>
@@ -354,14 +350,14 @@
                                         <td>订单状态：-1|订单过期 0|等待支付 1|完成 2|支付完成但通知失败</td>
                                     </tr>
                                     <tr>
-                                        <td>timeOut</td>
+                                        <td>close</td>
                                         <td>整数</td>
                                         <td>订单有效时间（分钟）</td>
                                     </tr>
                                     <tr>
-                                        <td>date</td>
-                                        <td>长整数</td>
-                                        <td>订单创建时间时间戳（13位）</td>
+                                        <td>createTime</td>
+                                        <td>字符串</td>
+                                        <td>订单创建时间，格式：yyyy-MM-dd HH:mm:ss</td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -385,13 +381,13 @@
 
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求地址：http://localhost:8080/checkOrder
+                        请求地址：http://localhost:8080/public/order/check
                     </div>
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求方式：POST/GET
+                        请求方式：GET
                     </div>
                 </blockquote>
 
@@ -420,7 +416,7 @@
                         <tr>
                             <td>orderId</td>
                             <td>字符串</td>
-                            <td>【必传】云端订单号，创建订单返回的</td>
+                            <td>【必传】订单号，创建订单返回的</td>
                         </tr>
 
                         </tbody>
@@ -430,7 +426,7 @@
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
-                    <p>返回数据（示例）：{"code":1,"msg":"成功","data":"https://bbs.125.la/?payId=1547130880571&amp;param=vone666&amp;type=2&amp;price=0.1&amp;reallyPrice=0.1&amp;sign=c79f041bd5bc47d73bc19dc8406c9843"}</p>
+                    <p>返回数据（示例）：{"code":0,"msg":null,"data":"https://bbs.125.la/?payId=1547130880571&amp;param=vone666&amp;type=2&amp;price=0.1&amp;reallyPrice=0.1&amp;sign=c79f041bd5bc47d73bc19dc8406c9843"}</p>
                     <div class="layui-inline">
                         返回数据说明:
                     </div>
@@ -451,7 +447,7 @@
                         <tr>
                             <td>code</td>
                             <td>整数</td>
-                            <td>返回代码（1：订单已被支付，-1：支付失败或还未支付，具体查看msg字段）</td>
+                            <td>返回代码（1：订单已被支付，其它：支付失败或还未支付，具体查看msg字段）</td>
                         </tr>
                         <tr>
                             <td>msg</td>
@@ -462,7 +458,7 @@
                             <td>data</td>
                             <td>字符串</td>
                             <td>
-                                如果code为-1，则data为null，否则为该订单支付完成后的跳转地址（带回调参数）
+                                如果code不为1，则data为null，否则为该订单支付完成后的跳转地址（带回调参数）
                             </td>
                         </tr>
                         </tbody>
@@ -481,7 +477,7 @@
 
                 <blockquote class="layui-elem-quote news_search">
                     <div class="layui-inline">
-                        请求地址：http://localhost:8080/closeOrder
+                        请求地址：http://localhost:8080/public/order/close(TODO...)
                     </div>
                 </blockquote>
 
@@ -530,7 +526,7 @@
                 </blockquote>
 
                 <blockquote class="layui-elem-quote news_search">
-                    <p>返回数据（示例）：{"code":1,"msg":"成功","data":null}</p>
+                    <p>返回数据（示例）：{"code":0,"msg":null,"data":null}</p>
                     <div class="layui-inline">
                         返回数据说明:
                     </div>
@@ -632,7 +628,7 @@
 
                 <blockquote class="layui-elem-quote news_search">
                     <p>
-                        返回数据（示例）：{"code":1,"msg":"成功","data":{"lastpay":"1547394640856","lastheart":"1547613873755","state":"1"}}</p>
+                        返回数据（示例）：{"code":0,"msg":null,"data":{"lastpay":"1547394640856","lastheart":"1547613873755","state":"1"}}</p>
                     <div class="layui-inline">
                         返回数据说明:
                     </div>

@@ -62,7 +62,7 @@ public class VmqController {
      * @param sign      签名认证 签名方式为 md5(payId + param + type + price + 通讯密钥)
      * @param isHtml    0返回json数据 1跳转到支付页面
      * @return 订单信息
-     * @see SignController#createOrder
+     * @see PublicController#createOrder
      * @since 0.1
      */
     @RequestMapping("/createOrder")
@@ -83,20 +83,19 @@ public class VmqController {
         bo.setReturnUrl(returnUrl);
         bo.setSign(sign);
         bo.setIsHtml(isHtml);
-        bo.setAccountName(VpayConstant.SUPER_ACCOUNT);
 
-        // 校验签名
         this.simulatedLogin((ac) -> {
-            String cSign = VpayUtil.md5(bo.getPayId() + bo.getParam() + bo.getPayType().getValue()
-                    + bo.getPrice() + ac.getKeyword());
-            if (!Objects.equals(bo.getSign(), cSign)) {
-                throw new SignatureException();
-            }
         });
 
         Order order = orderService.create(bo);
         if (isHtml == 0) {
-            return BaseUtil.object2Json(this.success(order));
+            OrderVO vo = new OrderVO(account, order);
+            Map<String, Object> orderInfo = BaseUtil.object2Map(vo);
+            // 订单有效时间（分钟）
+            orderInfo.put("timeOut", vo.getClose());
+            // 订单创建时间戳（13位）
+            orderInfo.put("date", VpayUtil.toTimestamp(vo.getCreateTime()));
+            return BaseUtil.object2Json(this.success(orderInfo));
         }
         return "<script>window.location.href = '/pay?orderId=" + order.getOrderId() + "'</script>";
     }
@@ -145,14 +144,21 @@ public class VmqController {
      * @since 0.1
      */
     @RequestMapping("/getOrder")
-    public Result<OrderVO> getOrder(String orderId) {
+    public Result<Map<String, Object>> getOrder(String orderId) {
         if (orderId == null) {
             return Result.error("请传入订单编号");
         }
         this.simulatedLogin((ac) -> {
         });
         Order order = orderService.findByOrderId(orderId);
-        return this.success(new OrderVO(account, order));
+
+        OrderVO vo = new OrderVO(account, order);
+        Map<String, Object> orderInfo = BaseUtil.object2Map(vo);
+        // 订单有效时间（分钟）
+        orderInfo.put("timeOut", vo.getClose());
+        // 订单创建时间戳（13位）
+        orderInfo.put("date", VpayUtil.toTimestamp(vo.getCreateTime()));
+        return this.success(orderInfo);
     }
 
     /**
