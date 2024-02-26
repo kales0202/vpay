@@ -105,24 +105,10 @@ public class AccountService {
      */
     @CacheEvict(cacheNames = "account")
     public void delete(Account account) {
-        if (Objects.equals(VpayConstant.SUPER_ID, account.getId())) {
+        if (Objects.equals(VpayConstant.SUPER_ACCOUNT, account.getName())) {
             throw new IllegalOperationException("不允许删除超级管理员！");
         }
         accountRepository.delete(account);
-    }
-
-    /**
-     * 删除设置 by id
-     *
-     * @param id 设置ID
-     * @since 0.1
-     */
-    @CacheEvict(cacheNames = "account")
-    public void delete(@NotNull UUID id) {
-        if (Objects.equals(VpayConstant.SUPER_ID, id)) {
-            throw new IllegalOperationException("不允许删除超级管理员！");
-        }
-        accountRepository.deleteById(id);
     }
 
     /**

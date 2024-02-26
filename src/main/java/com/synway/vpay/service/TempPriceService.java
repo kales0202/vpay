@@ -8,6 +8,7 @@ import com.synway.vpay.repository.TempPriceRepository;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class TempPriceService {
      * @return 保存的实际支付金额
      * @since 0.1
      */
+    @Transactional
     public BigDecimal saveReallyPrice(UUID accountId, PayType payType, BigDecimal price) {
         TempPrice tempPrice = new TempPrice(accountId, payType, price);
         while (true) {
@@ -64,6 +66,7 @@ public class TempPriceService {
      * @return int 删除的数量
      * @since 0.1
      */
+    @Transactional
     public int deleteByPayTypeAndPrice(PayType payType, BigDecimal price) {
         return tempPriceRepository.deleteByAccountIdAndPayTypeAndPrice(account.getId(), payType, price);
     }

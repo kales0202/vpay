@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * 初始化数据库
@@ -49,7 +50,7 @@ public class DatabaseRunner implements ApplicationRunner {
 
     private void initAccount() {
         Account account = new Account();
-        account.setId(VpayConstant.SUPER_ID);
+        account.setId(UUID.randomUUID());
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayUtil.jbEncrypt(VpayConstant.SUPER_ACCOUNT));
         account.setKeyword(VpayUtil.md5(LocalDateTime.now().toString()));
@@ -60,7 +61,7 @@ public class DatabaseRunner implements ApplicationRunner {
 
     private void initAccountFake() {
         Account account = new Account();
-        account.setId(VpayConstant.SUPER_ID);
+        account.setId(UUID.randomUUID());
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayUtil.jbEncrypt(VpayConstant.SUPER_ACCOUNT));
         account.setKeyword("f3ba2ab83fc2465dd567e70129772d3a");
@@ -73,7 +74,7 @@ public class DatabaseRunner implements ApplicationRunner {
         // 模拟数据
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
         order.setOrderId("202402071918485874");
-        order.setAccountId(VpayConstant.SUPER_ID);
+        order.setAccountId(account.getId());
         order.setPayId("191f06f2-8c84-481e-8e9c-3f6beb9c1551");
         order.setPrice(new BigDecimal("2.11"));
         order.setReallyPrice(new BigDecimal("2.12"));

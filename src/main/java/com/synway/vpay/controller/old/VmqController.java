@@ -303,7 +303,7 @@ public class VmqController {
     }
 
     private void simulatedLogin(Consumer<Account> consumer) {
-        Account ac = accountService.findById(VpayConstant.SUPER_ID);
+        Account ac = accountService.findByName(VpayConstant.SUPER_ACCOUNT);
         consumer.accept(ac);
         account.copyFrom(ac);
     }
