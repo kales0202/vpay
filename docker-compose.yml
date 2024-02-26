@@ -4,9 +4,10 @@ services:
   vpay:
     image: openjdk:17-jdk-slim
     volumes:
-      - ./vpay.tar.gz:/app/vpay.tar.gz
-      - ./templates/:/app/templates/
+      - ./app:/app
     working_dir: /app
-    command: bash -c "tar -zxf vpay.tar.gz --overwrite && java -jar vpay.jar"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    command: java -jar vpay.jar
     ports:
-      - "8080:8080"
+      - "8899:8899"

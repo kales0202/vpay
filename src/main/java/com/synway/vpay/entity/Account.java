@@ -78,12 +78,12 @@ public class Account extends BaseEntity {
     private String aliPay;
 
     /**
-     * 区分方式 0-金额递增 1-金额递减
+     * 区分方式 0-金额递减 1-金额递增
      *
      * @mock 0
      * @since 0.1
      */
-    private int payQf = 0;
+    private int payQf = 1;
 
     /**
      * 订单有效时间，单位分钟，默认是5

@@ -4,3 +4,7 @@ spring:
       enabled: false
   mvc:
     log-resolved-exception: false
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true

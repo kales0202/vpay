@@ -76,6 +76,7 @@ tasks.register('packageTarGz', Tar) {
 }
 
 bootJar {
+    archiveFileName = 'vpay.jar'
     excludes = ['*.jar']
 
     // 外置依赖包

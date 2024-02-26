@@ -16,6 +16,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 初始化数据库
@@ -39,9 +40,10 @@ public class DatabaseRunner implements ApplicationRunner {
             return;
         }
         log.info("检测到系统为首次启动，初始化数据库中...");
+
         initAccount();
-        // TODO... 先搞点模拟数据
-        generateSomeFakeData();
+        // TODO... 测试数据
+        // initAccountFake();
         log.info("初始化数据库完成...");
     }
 
@@ -50,18 +52,25 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setId(VpayConstant.SUPER_ID);
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayUtil.jbEncrypt(VpayConstant.SUPER_ACCOUNT));
-        // account.setKeyword(VpayUtil.md5(new Date().toString()));
-        // TODO... 测试数据
+        account.setKeyword(VpayUtil.md5(LocalDateTime.now().toString()));
+        account.setWxPay("");
+        account.setAliPay("");
+        accountRepository.save(account);
+    }
+
+    private void initAccountFake() {
+        Account account = new Account();
+        account.setId(VpayConstant.SUPER_ID);
+        account.setName(VpayConstant.SUPER_ACCOUNT);
+        account.setPassword(VpayUtil.jbEncrypt(VpayConstant.SUPER_ACCOUNT));
         account.setKeyword("f3ba2ab83fc2465dd567e70129772d3a");
         account.setNotifyUrl("http://localhost:8080/fakeNotifyUrl");
         account.setReturnUrl("http://localhost:8080/fakeReturnUrl");
         account.setWxPay("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
         account.setAliPay("https://qr.alipay.com/dhsjkahdujkashdjkhasj");
         accountRepository.save(account);
-    }
 
-    // 生成一些假数据
-    private void generateSomeFakeData() {
+        // 模拟数据
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
         order.setOrderId("202402071918485874");
         order.setAccountId(VpayConstant.SUPER_ID);

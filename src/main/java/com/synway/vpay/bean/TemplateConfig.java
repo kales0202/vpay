@@ -37,13 +37,6 @@ public class TemplateConfig {
     private String name;
 
     /**
-     * 模板所在位置：绝对路径（不包含模板名称）
-     *
-     * @since 0.1
-     */
-    private String location;
-
-    /**
      * 登录页地址
      *
      * @since 0.1
