@@ -13,7 +13,7 @@ public class TemplateConfig {
     public static final TemplateConfig DEFAULT = new TemplateConfig();
 
     static {
-        DEFAULT.setId("8c4c0f7d-c627-4364-81fc-38a00e735d42");
+        DEFAULT.setKey("default");
         DEFAULT.setName("默认模板");
         DEFAULT.setLogin("login.html");
         DEFAULT.setIndex("index.html");
@@ -23,11 +23,11 @@ public class TemplateConfig {
     }
 
     /**
-     * 模板ID
+     * 模板KEY, 唯一标识
      *
      * @since 0.1
      */
-    private String id;
+    private String key;
 
     /**
      * 模板名称
@@ -35,6 +35,13 @@ public class TemplateConfig {
      * @since 0.1
      */
     private String name;
+
+    /**
+     * 模板所在位置：绝对路径（不包含模板名称）
+     *
+     * @since 0.1
+     */
+    private String location;
 
     /**
      * 登录页地址

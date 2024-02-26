@@ -54,15 +54,7 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
-tasks.register('copyTemplates', Copy) {
-    // 清除现有的配置目录
-    delete fileTree(dir: 'build/libs/templates')
-
-    // 复制模板文件到libs/templates目录下
-    from('templates')
-    into 'build/libs/templates'
-}
-
+// 外置依赖包
 tasks.register('copyDependencies', Copy) {
     // 删除libs/lib文件夹下的jar包
     delete fileTree(dir: 'build/libs/lib', include: '*.jar')
@@ -73,11 +65,21 @@ tasks.register('copyDependencies', Copy) {
     include '*.jar'
 }
 
+// 生成vpay.tar.gz文件
+tasks.register('packageTarGz', Tar) {
+    delete(destinationDirectory)
+
+    from jar.destinationDirectory
+    compression = Compression.GZIP
+    // archiveFileName = "vpay-${project.version}.tar.gz"
+    archiveFileName = "vpay.tar.gz"
+}
+
 bootJar {
     excludes = ['*.jar']
 
-    // 外置依赖包、模板文件
-    dependsOn(copyDependencies, copyTemplates)
+    // 外置依赖包
+    dependsOn(copyDependencies)
 
     // 修改MANIFEST.MF文件，指定类路径
     manifest {
@@ -85,3 +87,6 @@ bootJar {
                 'Class-Path': configurations.runtimeClasspath.files.collect { "lib/" + it.getName() }.join(' ')
     }
 }
+
+// bootJar执行完成后，生成vpay.tar.gz文件
+bootJar.finalizedBy(packageTarGz)

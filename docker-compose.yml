@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  vpay:
+    image: openjdk:17-jdk-slim
+    volumes:
+      - ./vpay.tar.gz:/app/vpay.tar.gz
+      - ./templates/:/app/templates/
+    working_dir: /app
+    command: bash -c "tar -zxf vpay.tar.gz --overwrite && java -jar vpay.jar"
+    ports:
+      - "8080:8080"

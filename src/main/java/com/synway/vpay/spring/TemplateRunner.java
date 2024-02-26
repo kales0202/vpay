@@ -3,26 +3,24 @@ package com.synway.vpay.spring;
 import com.synway.vpay.base.util.BaseUtil;
 import com.synway.vpay.bean.TemplateConfig;
 import com.synway.vpay.util.VpayConstant;
-import com.synway.vpay.util.VpayUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,27 +35,37 @@ public class TemplateRunner implements ApplicationRunner {
 
     public static final Map<String, TemplateConfig> CONFIGS = new HashMap<>();
 
-    private static final String TEMPLATES_DIR = "templates" + File.separator;
+    private static final String TEMPLATES_DIR = "templates";
 
     private static final String TEMPLATES_PATH = System.getProperty("user.dir") + File.separator + TEMPLATES_DIR;
-
-    @jakarta.annotation.Resource
-    private ResourceLoader resourceLoader;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         log.info("初始化页面模板...");
 
-        CONFIGS.put(TemplateConfig.DEFAULT.getId(), TemplateConfig.DEFAULT);
+        CONFIGS.put(TemplateConfig.DEFAULT.getKey(), TemplateConfig.DEFAULT);
 
-        List<TemplateConfig> customTemplates = this.getCustomTemplates();
+        List<TemplateConfig> customTemplates = new ArrayList<>();
 
+        // 添加自定义模板：经典模板(vmq)
+        URL resourceStatic = this.getClass().getClassLoader().getResource("static");
+        if (Objects.nonNull(resourceStatic)) {
+            TemplateConfig vmq = this.getTemplateConfig(resourceStatic.getPath(), "vmq");
+            if (Objects.nonNull(vmq)) {
+                customTemplates.add(vmq);
+            }
+        }
+
+        // 添加用户自定义模板
+        customTemplates.addAll(this.getCustomTemplates());
+
+        // 自定义模板检查
         this.dealTemplates(customTemplates);
 
-        CONFIGS.put(VpayConstant.ACTIVE, TemplateConfig.DEFAULT);
+        customTemplates.forEach(c -> CONFIGS.put(c.getKey(), c));
 
-        // TODO... 暂时用经典模板
-        CONFIGS.put(VpayConstant.ACTIVE, CONFIGS.get("bec923cc-d5e2-44d5-bab9-a278331b59db"));
+        // TODO... 暂时使用经典模板
+        CONFIGS.put(VpayConstant.ACTIVE, CONFIGS.get("vmq"));
 
         log.info("初始化页面模板完成...");
     }
@@ -74,55 +82,51 @@ public class TemplateRunner implements ApplicationRunner {
             if (!file.isDirectory()) {
                 continue;
             }
-            File configFile = new File(TEMPLATES_PATH + file.getName() + File.separator + "config.json");
-            if (!configFile.exists()) {
-                continue;
+            TemplateConfig config = this.getTemplateConfig(TEMPLATES_PATH, file.getName());
+            if (Objects.nonNull(config)) {
+                configs.add(config);
             }
-            // 读取config.json
-            String content;
-            try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
-                content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            }
-            TemplateConfig config = BaseUtil.json2Object(content, TemplateConfig.class);
-            if (Objects.isNull(config)) {
-                continue;
-            }
-
-            if (Strings.isBlank(config.getId())) {
-                config.setId(VpayUtil.md5(file.getName()));
-            }
-            Optional.ofNullable(config.getLogin()).ifPresent(s -> config.setLogin(file.getName() + "/" + s));
-            Optional.ofNullable(config.getIndex()).ifPresent(s -> config.setIndex(file.getName() + "/" + s));
-            Optional.ofNullable(config.getPay()).ifPresent(s -> config.setPay(file.getName() + "/" + s));
-            Optional.ofNullable(config.getNotFound()).ifPresent(s -> config.setNotFound(file.getName() + "/" + s));
-            configs.add(config);
         }
         return configs;
     }
 
+    private TemplateConfig getTemplateConfig(String location, String key) throws IOException {
+        File configFile = new File(location + File.separator + key + File.separator + "config.json");
+        if (!configFile.exists()) {
+            return null;
+        }
+        // 读取config.json
+        String content;
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+            content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
+        TemplateConfig config = BaseUtil.json2Object(content, TemplateConfig.class);
+        if (Objects.isNull(config)) {
+            return null;
+        }
+        config.setKey(key);
+        config.setLocation(location);
+        return config;
+    }
+
     private void dealTemplates(List<TemplateConfig> customTemplates) {
         for (TemplateConfig t : customTemplates) {
-            if (Strings.isBlank(t.getId())) {
-                log.warn("自定义模板缺少ID: {}", BaseUtil.object2Json(t));
-                continue;
-            }
             t.setName(Strings.isBlank(t.getName()) ? "未命名" : t.getName());
-            log.info("成功加载自定义模板：{}", t.getName());
+            log.info("成功加载自定义模板：key={}, name={}", t.getKey(), t.getName());
 
-            t.setLogin(this.getTemplatePath(t.getLogin(), TemplateConfig.DEFAULT.getLogin()));
-            t.setIndex(this.getTemplatePath(t.getIndex(), TemplateConfig.DEFAULT.getIndex()));
-            t.setPay(this.getTemplatePath(t.getPay(), TemplateConfig.DEFAULT.getPay()));
-            t.setNotFound(this.getTemplatePath(t.getNotFound(), TemplateConfig.DEFAULT.getNotFound()));
-
-            CONFIGS.put(t.getId(), t);
+            t.setLogin(this.getTemplatePage(t, t.getLogin(), TemplateConfig.DEFAULT.getLogin()));
+            t.setIndex(this.getTemplatePage(t, t.getIndex(), TemplateConfig.DEFAULT.getIndex()));
+            t.setPay(this.getTemplatePage(t, t.getPay(), TemplateConfig.DEFAULT.getPay()));
+            t.setNotFound(this.getTemplatePage(t, t.getNotFound(), TemplateConfig.DEFAULT.getNotFound()));
         }
     }
 
-    private String getTemplatePath(String path, String defaultPath) {
-        // 判断登录页是否存在
-        if (Objects.isNull(path) || !new File(TEMPLATES_PATH + path).exists()) {
+    private String getTemplatePage(TemplateConfig t, String page, String defaultPath) {
+        // 判断页面是否存在
+        String pagePath = t.getLocation() + File.separator + t.getKey() + File.separator + page;
+        if (Objects.isNull(page) || !new File(pagePath).exists()) {
             return defaultPath;
         }
-        return path;
+        return t.getKey() + "/" + page;
     }
 }
