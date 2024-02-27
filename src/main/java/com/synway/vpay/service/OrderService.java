@@ -194,17 +194,6 @@ public class OrderService {
     }
 
     /**
-     * 查询已过期的订单
-     *
-     * @param accountId 账户ID
-     * @param deadline  截至时间
-     * @return 过期的订单数据
-     */
-    public List<Order> findExpiredOrders(UUID accountId, LocalDateTime deadline) {
-        return orderRepository.findExpiredOrders(accountId, deadline);
-    }
-
-    /**
      * 批量更新已过期的订单
      *
      * @param accountId 账户ID
@@ -214,18 +203,6 @@ public class OrderService {
     @Transactional
     public int updateExpiredOrders(UUID accountId, LocalDateTime deadline) {
         return orderRepository.updateExpiredOrders(accountId, deadline);
-    }
-
-    /**
-     * 批量更新已过期的订单
-     *
-     * @param accountId 账户ID
-     * @param ids       订单ID集合
-     * @return 过期的订单数量
-     */
-    @Transactional
-    public int updateExpiredOrders(UUID accountId, List<UUID> ids) {
-        return orderRepository.updateExpiredOrders(accountId, ids);
     }
 
     public OrderStatisticsVO statistics() {
@@ -431,8 +408,10 @@ public class OrderService {
             order.setState(OrderState.SUCCESS);
             orderRepository.save(order);
         } else {
-            order.setState(OrderState.NOTIFY_FAILED);
-            orderRepository.save(order);
+            if (order.getState() != OrderState.NOTIFY_FAILED) {
+                order.setState(OrderState.NOTIFY_FAILED);
+                orderRepository.save(order);
+            }
             throw new FulfillException(res);
         }
     }

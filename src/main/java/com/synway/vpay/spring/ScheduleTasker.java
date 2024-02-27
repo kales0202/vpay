@@ -2,7 +2,6 @@ package com.synway.vpay.spring;
 
 import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
-import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.service.AccountService;
 import com.synway.vpay.service.OrderService;
@@ -33,10 +32,8 @@ public class ScheduleTasker {
     public void checkAccountAndOrder() {
         log.info("====== 执行定时任务 ======");
         List<Account> accounts = accountService.findAll();
+        LocalDateTime now = LocalDateTime.now();
         for (Account account : accounts) {
-            LocalDateTime now = LocalDateTime.now();
-            int close = account.getClose();
-
             AccountState state = accountService.getAccountState(account.getId());
             if (state.getMonitorState() == MonitorState.ONLINE) {
                 LocalDateTime expiredHeartTime = now.minus(3, ChronoUnit.MINUTES);
@@ -48,17 +45,14 @@ public class ScheduleTasker {
                 log.warn("【{}】监控状态为：{}", account.getName(), state.getMonitorState().getName());
             }
 
-            // 查询过期订单
-            List<Order> expiredOrders = orderService.findExpiredOrders(account.getId(), now.minus(close, ChronoUnit.MINUTES));
-
-            // 删除缓存的实际支付金额
-            for (Order order : expiredOrders) {
-                tempPriceService.deleteByPayTypeAndPrice(account.getId(), order.getPayType(), order.getReallyPrice());
-            }
-
+            LocalDateTime deadline = now.minus(account.getClose(), ChronoUnit.MINUTES);
             // 清理过期订单
-            int rows = orderService.updateExpiredOrders(account.getId(), expiredOrders.stream().map(Order::getId).toList());
+            int rows = orderService.updateExpiredOrders(account.getId(), deadline);
+            // 清理过期缓存金额
+            int temp = tempPriceService.deleteExpiredPrices(account.getId(), deadline);
+
             log.info("【{}】成功清理{}个订单...", account.getName(), rows);
+            log.debug("【{}】成功清理{}个缓存金额...", account.getName(), temp);
         }
     }
 }

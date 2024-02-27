@@ -46,6 +46,7 @@ public class VpayUtil {
      *
      * @param text 待加密的文本
      * @return 加密数据
+     * @since 0.1
      */
     public static String jbEncrypt(String text) {
         return BCrypt.hashpw(text, BCrypt.gensalt());
@@ -57,6 +58,7 @@ public class VpayUtil {
      * @param text   待验证的文本
      * @param hashed 校验数据
      * @return 校验结果
+     * @since 0.1
      */
     public static boolean jbVerify(String text, String hashed) {
         return BCrypt.checkpw(text, hashed);

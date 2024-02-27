@@ -11,6 +11,8 @@ public abstract class SignBo {
 
     /**
      * 接口请求方计算出来的数据签名
+     *
+     * @since 0.1
      */
     @NotBlank
     protected String sign;

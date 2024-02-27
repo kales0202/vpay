@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -81,5 +82,10 @@ public class TempPriceService {
     @Transactional
     public int deleteByPayTypeAndPrice(UUID accountId, PayType payType, BigDecimal price) {
         return tempPriceRepository.deleteByAccountIdAndPayTypeAndPrice(accountId, payType, price);
+    }
+
+    @Transactional
+    public int deleteExpiredPrices(UUID id, LocalDateTime deadline) {
+        return tempPriceRepository.deleteByAccountIdAndCreateTimeBefore(id, deadline);
     }
 }

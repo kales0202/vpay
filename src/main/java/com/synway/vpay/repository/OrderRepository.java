@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -32,16 +31,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     long deleteByAccountIdAndId(UUID accountId, UUID id);
 
     /**
-     * 查询已过期的订单
-     *
-     * @param accountId 账户ID
-     * @param deadline  截至时间
-     * @return 过期的订单数据
-     */
-    @Query("select o from pay_order o where o.accountId = :accountId and o.state = 0 and o.createTime <= :deadline")
-    List<Order> findExpiredOrders(UUID accountId, LocalDateTime deadline);
-
-    /**
      * 批量更新已过期的订单
      *
      * @param accountId 账户ID
@@ -51,17 +40,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     @Modifying
     @Query("update pay_order o set o.state = -1 where o.accountId = :accountId and o.state = 0 and o.createTime <= :deadline")
     int updateExpiredOrders(UUID accountId, LocalDateTime deadline);
-
-    /**
-     * 批量更新已过期的订单
-     *
-     * @param accountId 账户ID
-     * @param ids       订单ID集合
-     * @return 过期的订单数量
-     */
-    @Modifying
-    @Query("update pay_order o set o.state = -1 where o.accountId = :accountId and o.state = 0 and o.id in (:ids)")
-    int updateExpiredOrders(UUID accountId, List<UUID> ids);
 
     /**
      * 统计时间范围内的订单数量
