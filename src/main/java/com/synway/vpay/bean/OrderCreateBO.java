@@ -1,8 +1,6 @@
 package com.synway.vpay.bean;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.synway.vpay.base.bean.SignBo;
-import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.util.VpayUtil;

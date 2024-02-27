@@ -1,10 +1,13 @@
 package com.synway.vpay.spring;
 
+import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.repository.OrderRepository;
+import com.synway.vpay.service.AccountService;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -28,6 +31,9 @@ import java.util.UUID;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class DatabaseRunner implements ApplicationRunner {
+
+    @Resource
+    private AccountService accountService;
 
     @Resource
     private AccountRepository accountRepository;
@@ -60,6 +66,8 @@ public class DatabaseRunner implements ApplicationRunner {
     }
 
     private void initAccountFake() {
+        log.debug("初始化模拟数据中...");
+
         Account account = new Account();
         account.setId(UUID.randomUUID());
         account.setName(VpayConstant.SUPER_ACCOUNT);
@@ -82,5 +90,10 @@ public class DatabaseRunner implements ApplicationRunner {
         order.setPayType(PayType.WECHAT);
         order.setPayUrl("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
         orderRepository.save(order);
+
+        AccountState accountState = accountService.getAccountState(account.getId());
+        accountState.setMonitorState(MonitorState.ONLINE);
+        accountState.setLastPay(LocalDateTime.now());
+        accountState.setLastHeart(LocalDateTime.now());
     }
 }

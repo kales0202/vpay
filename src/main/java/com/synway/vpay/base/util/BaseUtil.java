@@ -1,10 +1,14 @@
 package com.synway.vpay.base.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.synway.vpay.base.define.LocalDateTimestampDeserializer;
+import com.synway.vpay.base.define.LocalDateTimestampSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +17,14 @@ import java.util.Objects;
 public class BaseUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        // LocalDateTime 序列化配置
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(LocalDateTime.class, new LocalDateTimestampSerializer());
+        module.addDeserializer(LocalDateTime.class, new LocalDateTimestampDeserializer());
+        OBJECT_MAPPER.registerModule(module);
+    }
 
     public static boolean initialized(Object value) {
         if (value instanceof String s) {

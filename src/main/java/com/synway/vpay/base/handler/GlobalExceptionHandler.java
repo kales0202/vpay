@@ -7,6 +7,7 @@ import com.synway.vpay.base.exception.AuthorizedException;
 import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
 import com.synway.vpay.base.exception.NotFoundException;
+import com.synway.vpay.exception.UnimportantException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -45,8 +46,21 @@ public class GlobalExceptionHandler {
         return Result.error();
     }
 
+    @ResponseBody
+    @ExceptionHandler(value = BusinessException.class)
+    public Result<Object> businessException(HttpServletRequest request, BusinessException e) {
+        this.commonHandle(request, e);
+        return Result.error(e.getCode(), e.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = UnimportantException.class)
+    public Result<Object> unimportantException(HttpServletRequest request, UnimportantException e) {
+        return Result.error(e.getCode(), e.getMessage());
+    }
+
     @ExceptionHandler(value = {NoResourceFoundException.class, NoHandlerFoundException.class})
-    public Object businessException(HttpServletRequest request, Exception e) throws ExecutionException {
+    public Object noHandlerFoundException(HttpServletRequest request, Exception e) throws ExecutionException {
         this.commonHandle(request, e);
         if (this.isInterface(request)) {
             return this.jsonResult(NotFoundException.CODE, NotFoundException.MESSAGE);
@@ -65,22 +79,15 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseBody
-    @ExceptionHandler(value = BusinessException.class)
-    public Result<Object> businessException(HttpServletRequest request, BusinessException e) {
-        this.commonHandle(request, e);
-        return Result.error(e.getCode(), e.getMessage());
-    }
-
-    @ResponseBody
     @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
-    public Result<Object> exception(HttpServletRequest request, MethodArgumentTypeMismatchException e) {
+    public Result<Object> methodArgumentTypeMismatchException(HttpServletRequest request, MethodArgumentTypeMismatchException e) {
         this.commonHandle(request, e);
         return Result.error("非法参数！");
     }
 
     @ResponseBody
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public Result<Object> exception(HttpServletRequest request, MethodArgumentNotValidException e) {
+    public Result<Object> methodArgumentNotValidException(HttpServletRequest request, MethodArgumentNotValidException e) {
         this.commonHandle(request, e);
         String msg = Optional.ofNullable(e.getBindingResult().getFieldError())
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())

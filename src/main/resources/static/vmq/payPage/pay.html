@@ -144,7 +144,7 @@
 <body>
 <div class="container" x-data="payOrder" x-init="init($data)">
     <div class="head">
-        <div class="icon" :class="payType==2 ? 'icon-alipay' : 'icon-wepay'"></div>
+        <div :class="payType==2 ? 'icon-alipay' : 'icon-wepay'" class="icon"></div>
     </div>
     <div class="content">
         <div class="timeout" x-show="timeout">
@@ -182,7 +182,7 @@
                     </div>
                     <div class="order-row">
                         <div class="order-title">创建时间</div>
-                        <div class="order-value" x-text="createTime"></div>
+                        <div class="order-value" x-text="createTimeFormat"></div>
                     </div>
                     <div class="order-row">
                         <div class="order-title">订单状态</div>
@@ -213,7 +213,8 @@
         stateName: '',
         stateTips: '',
         payId: '',
-        createTime: '1970-01-01 00:00:00',
+        createTime: null,
+        createTimeFormat: '',
         price: 0,
         reallyPrice: 0,
         isAuto: 0,
@@ -235,8 +236,8 @@
             Object.assign(order, data);
 
             if (order.createTime) {
-                var createTime = Util.toTimestamp(order.createTime);
-                order.expiredTime = createTime + order.close * 60 * 1000;
+                order.createTimeFormat = Util.formatTime(order.createTime);
+                order.expiredTime = order.createTime + order.close * 60 * 1000;
                 order.timeout = order.expiredTime <= new Date().getTime();
             }
 

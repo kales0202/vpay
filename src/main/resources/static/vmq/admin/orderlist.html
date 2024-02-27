@@ -97,7 +97,14 @@
             },
             page: true,
             cols: [[ // 表头
-                {field: 'createTime', title: '创建时间', minWidth: 160},
+                {
+                    field: 'createTime',
+                    title: '创建时间',
+                    minWidth: 160,
+                    templet: function (d) {
+                        return Util.formatTime(d.createTime);
+                    }
+                },
                 {field: 'orderId', title: '订单编号', minWidth: 180},
                 {field: 'payId', title: '商户编号', minWidth: 180},
                 {
@@ -139,9 +146,9 @@
             var data = obj.data, layEvent = obj.event;
             console.log("layEvent", layEvent);
             if (layEvent === 'info') {
-                var out = "<p>创建时间：" + (data.createTime || '') + "</p>";
-                out += "<p>支付时间：" + (data.payTime || '') + "</p>";
-                out += "<p>关闭时间：" + (data.closeTime || '') + "</p>";
+                var out = "<p>创建时间：" + Util.formatTime(data.createTime) + "</p>";
+                out += "<p>支付时间：" + Util.formatTime(data.payTime) + "</p>";
+                out += "<p>关闭时间：" + Util.formatTime(data.closeTime) + "</p>";
                 out += "<p>自定义参数：" + (data.param || '') + "</p>";
                 layer.alert(out);
             } else if (layEvent === 'bd') {

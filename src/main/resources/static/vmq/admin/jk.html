@@ -89,8 +89,8 @@
         } else if (data.monitorState === 1) {
             $("#jkstate").val("运行正常");
         }
-        $("#lastheart").val(data.lastHeart);
-        $("#lastpay").val(data.lastPay);
+        $("#lastheart").val(Util.formatTime(data.lastHeart));
+        $("#lastpay").val(Util.formatTime(data.lastPay));
         var code = window.location.host + "/" + data.keyword + "/" + data.name;
         $("#input").val(code);
         Util.encodeQRCode($("#pzqrcode"), code);

@@ -23,12 +23,48 @@
         factory(window[moduleName] = {});
     }
 }(function (self, server) {
-    function formatTime(time) {
-        time = time || new Date();
-        if (typeof time === 'number') {
-            time = new Date(time);
+    Date.prototype.format = function (format) {
+        /*
+         * eg:format="YYYY-MM-dd hh:mm:ss";
+         */
+        var o = {
+            "M+": this.getMonth() + 1, // month
+            "d+": this.getDate(), // day
+            "H+": this.getHours(), // hour
+            "m+": this.getMinutes(), // minute
+            "s+": this.getSeconds(), // second
+            "q+": Math.floor((this.getMonth() + 3) / 3), // quarter
+            "S": this.getMilliseconds()
+            // millisecond
         }
-        return time.toISOString().slice(0, 19).replace('T', ' ');
+        if (/(y+)/.test(format)) {
+            format = format.replace(RegExp.$1, (this.getFullYear() + "")
+                .substr(4 - RegExp.$1.length));
+        }
+        for (var k in o) {
+            if (new RegExp("(" + k + ")").test(format)) {
+                format = format.replace(RegExp.$1, RegExp.$1.length === 1 ? o[k]
+                    : ("00" + o[k]).substr(("" + o[k]).length));
+            }
+        }
+        return format;
+    }
+
+    function formatTime(time) {
+        if (!time) {
+            return '';
+        }
+        try {
+            if (typeof time === 'number') {
+                time = new Date(time);
+            } else if (typeof time === 'string') {
+                time = new Date(parseInt(time));
+            }
+            return time.format('yyyy-MM-dd HH:mm:ss');
+        } catch (e) {
+            console.error('时间格式化出错, time = ' + time, e);
+            return '';
+        }
     }
 
     /**
@@ -60,6 +96,7 @@
 
 
     var ZXingReader;
+
     function decodeQRCode(url, callback) {
         if (!ZXingReader) {
             ZXingReader = new window.ZXingBrowser.BrowserQRCodeReader();
@@ -70,6 +107,7 @@
     }
 
     var ZxingWriter;
+
     function encodeQRCode($container, text) {
         if (!ZxingWriter) {
             ZxingWriter = new window.ZXingBrowser.BrowserQRCodeSvgWriter();

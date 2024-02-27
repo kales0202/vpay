@@ -14,6 +14,7 @@ import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayQRCodeType;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.exception.FulfillException;
+import com.synway.vpay.exception.UnimportantException;
 import com.synway.vpay.repository.OrderRepository;
 import com.synway.vpay.util.HttpUtil;
 import com.synway.vpay.util.VpayUtil;
@@ -80,10 +81,12 @@ public class OrderService {
 
         Order order = bo.toOrder();
         order.setAccountId(account.getId());
-        order.setReallyPrice(tempPriceService.saveReallyPrice(order.getAccountId(), order.getPayType(), order.getPrice()));
         order.setPayUrl(payUrl);
         order.setIsAuto(PayQRCodeType.GENERIC);
         order.setState(OrderState.WAIT);
+
+        BigDecimal reallyPrice = tempPriceService.saveReallyPrice(order.getAccountId(), order.getPayType(), order.getPrice());
+        order.setReallyPrice(reallyPrice);
 
         return orderRepository.save(order);
     }
@@ -191,6 +194,17 @@ public class OrderService {
     }
 
     /**
+     * 查询已过期的订单
+     *
+     * @param accountId 账户ID
+     * @param deadline  截至时间
+     * @return 过期的订单数据
+     */
+    public List<Order> findExpiredOrders(UUID accountId, LocalDateTime deadline) {
+        return orderRepository.findExpiredOrders(accountId, deadline);
+    }
+
+    /**
      * 批量更新已过期的订单
      *
      * @param accountId 账户ID
@@ -200,6 +214,18 @@ public class OrderService {
     @Transactional
     public int updateExpiredOrders(UUID accountId, LocalDateTime deadline) {
         return orderRepository.updateExpiredOrders(accountId, deadline);
+    }
+
+    /**
+     * 批量更新已过期的订单
+     *
+     * @param accountId 账户ID
+     * @param ids       订单ID集合
+     * @return 过期的订单数量
+     */
+    @Transactional
+    public int updateExpiredOrders(UUID accountId, List<UUID> ids) {
+        return orderRepository.updateExpiredOrders(accountId, ids);
     }
 
     public OrderStatisticsVO statistics() {
@@ -315,7 +341,11 @@ public class OrderService {
 
     public String checkOrder(String orderId) {
         Order order = this.findByOrderId(orderId);
-        if (order.getState() == OrderState.WAIT || order.getState() == OrderState.EXPIRED) {
+        if (order.getState() == OrderState.WAIT) {
+            throw new UnimportantException(order.getState().getName());
+        }
+
+        if (order.getState() == OrderState.EXPIRED) {
             throw new BusinessException(order.getState().getName());
         }
 

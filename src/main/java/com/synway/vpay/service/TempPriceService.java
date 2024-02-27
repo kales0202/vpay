@@ -8,6 +8,7 @@ import com.synway.vpay.repository.TempPriceRepository;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
@@ -35,24 +36,21 @@ public class TempPriceService {
      * @return 保存的实际支付金额
      * @since 0.1
      */
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public BigDecimal saveReallyPrice(UUID accountId, PayType payType, BigDecimal price) {
-        TempPrice tempPrice = new TempPrice(accountId, payType, price);
         while (true) {
             try {
-                tempPrice = tempPriceRepository.save(tempPrice);
-                return tempPrice.getPrice();
+                TempPrice tempPrice = new TempPrice(accountId, payType, price);
+                tempPriceRepository.saveAndFlush(tempPrice);
+                return price;
             } catch (Exception e) {
                 // do nothing
             }
             // reallyPrice +/- 0.01
-            if (account.getPayQf() == 0) {
-                tempPrice.setPrice(tempPrice.getPrice().add(RATIO));
-            } else {
-                tempPrice.setPrice(tempPrice.getPrice().subtract(RATIO));
-            }
+            price = account.getPayQf() == 1 ? price.add(RATIO) : price.subtract(RATIO);
+
             // 判断是否小于0
-            if (tempPrice.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            if (price.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BusinessException("所有金额均被占用");
             }
         }
@@ -68,6 +66,20 @@ public class TempPriceService {
      */
     @Transactional
     public int deleteByPayTypeAndPrice(PayType payType, BigDecimal price) {
-        return tempPriceRepository.deleteByAccountIdAndPayTypeAndPrice(account.getId(), payType, price);
+        return this.deleteByPayTypeAndPrice(account.getId(), payType, price);
+    }
+
+    /**
+     * 根据支付方式和支付金额删除订单
+     *
+     * @param accountId 账户ID
+     * @param payType   支付方式
+     * @param price     支付金额
+     * @return int 删除的数量
+     * @since 0.1
+     */
+    @Transactional
+    public int deleteByPayTypeAndPrice(UUID accountId, PayType payType, BigDecimal price) {
+        return tempPriceRepository.deleteByAccountIdAndPayTypeAndPrice(accountId, payType, price);
     }
 }
