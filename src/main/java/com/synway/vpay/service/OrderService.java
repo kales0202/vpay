@@ -406,9 +406,12 @@ public class OrderService {
      * @param order 订单信息
      * @since 0.1
      */
+    @Transactional(noRollbackFor = {BusinessException.class})
     public void sendNotify(Order order) {
         String url = BaseUtil.firstInitialized(order.getNotifyUrl(), account.getNotifyUrl());
         if (Strings.isBlank(url)) {
+            order.setState(OrderState.NOTIFY_FAILED);
+            orderRepository.save(order);
             throw new BusinessException("您还未配置异步通知地址，请先在系统中配置");
         }
         url = this.mackOrderUrl(order.getNotifyUrl(), order);

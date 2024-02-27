@@ -3,6 +3,7 @@ package com.synway.vpay.enums;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.synway.vpay.base.define.IBaseEnum;
 import jakarta.persistence.Converter;
+import org.springframework.stereotype.Component;
 
 /**
  * 支付方式
@@ -55,6 +56,7 @@ public enum PayType implements IBaseEnum {
         return name;
     }
 
+    @Component // 必须加上@Component以支持此枚举作为GET参数
     @Converter(autoApply = true)
     public static class PayTypeConverter extends BaseEnumConverter<PayType> {
     }

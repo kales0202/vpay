@@ -33,6 +33,7 @@ public class HttpUtil {
     public static <T> T get(String url, Class<T> clazz) {
         T result = null;
         try {
+            log.info("发起GET请求：{}", url);
             result = WebClient.create(url).get().retrieve().bodyToMono(clazz).block();
         } catch (Exception e) {
             log.error("get error: " + url, e);

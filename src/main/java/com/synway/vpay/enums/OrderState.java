@@ -3,6 +3,7 @@ package com.synway.vpay.enums;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.synway.vpay.base.define.IBaseEnum;
 import jakarta.persistence.Converter;
+import org.springframework.stereotype.Component;
 
 /**
  * 订单状态
@@ -69,6 +70,7 @@ public enum OrderState implements IBaseEnum {
         return name;
     }
 
+    @Component // 必须加上@Component以支持此枚举作为GET参数
     @Converter(autoApply = true)
     public static class OrderStateConverter extends BaseEnumConverter<OrderState> {
     }

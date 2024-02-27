@@ -1,7 +1,8 @@
 package com.synway.vpay.base.define;
 
-import com.synway.vpay.base.exception.IllegalArgumentException;
 import jakarta.persistence.AttributeConverter;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.core.convert.converter.Converter;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
@@ -44,7 +45,7 @@ public interface IBaseEnum {
      * @param <T> 枚举类型
      * @since 0.1
      */
-    abstract class BaseEnumConverter<T extends IBaseEnum> implements AttributeConverter<T, Integer> {
+    abstract class BaseEnumConverter<T extends IBaseEnum> implements AttributeConverter<T, Integer>, Converter<String, T> {
 
         private Class<T> tClass;
 
@@ -56,6 +57,7 @@ public interface IBaseEnum {
             return attribute.getValue();
         }
 
+        @Override
         public final T convertToEntityAttribute(Integer value) {
             if (Objects.isNull(value)) {
                 return null;
@@ -67,6 +69,21 @@ public interface IBaseEnum {
                 }
             }
             return null;
+        }
+
+        @Override
+        public final T convert(String value) {
+            if (Strings.isBlank(value)) {
+                return null;
+            }
+            Class<T> tClass = this.getTClass();
+            T[] enums = tClass.getEnumConstants();
+            for (T item : enums) {
+                if (Objects.equals(item.getValue(), Integer.parseInt(value))) {
+                    return item;
+                }
+            }
+            throw new IllegalArgumentException("非法枚举值: class: " + tClass.getName() + ", value: " + value);
         }
 
         @SuppressWarnings("unchecked")
