@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -39,7 +40,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
      */
     @Modifying
     @Query("update pay_order o set o.state = -1 where o.accountId = :accountId and o.state = 0 and o.createTime <= :deadline")
-    int updateExpiredOrders(UUID accountId, LocalDateTime deadline);
+    int updateExpiredOrders(@Param("accountId") UUID accountId, @Param("deadline") LocalDateTime deadline);
 
     /**
      * 统计时间范围内的订单数量
@@ -94,7 +95,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
      * @since 0.1
      */
     @Query("select sum(o.price) from pay_order o where o.accountId = :accountId and o.state = 2 and o.createTime between :startTime and :endTime")
-    BigDecimal sumPrice(UUID accountId, LocalDateTime startTime, LocalDateTime endTime);
+    BigDecimal sumPrice(@Param("accountId") UUID accountId,
+                        @Param("startTime") LocalDateTime startTime,
+                        @Param("endTime") LocalDateTime endTime);
 
     /**
      * 统计交易成功的总订单总额
@@ -104,7 +107,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
      * @since 0.1
      */
     @Query("select sum(o.price) from pay_order o where o.accountId = :accountId and o.state = 2")
-    BigDecimal sumPrice(UUID accountId);
+    BigDecimal sumPrice(@Param("accountId") UUID accountId);
 
     /**
      * 通过订单ID获取订单信息

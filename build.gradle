@@ -54,14 +54,23 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
+// 复制docker-compose.yml文件
+tasks.register('copyDockerCompose', Copy) {
+    delete file('build/libs/docker-compose.yml')
+
+    from project.rootDir
+    into jar.destinationDirectory
+    include 'docker-compose.yml'
+}
+
 // 外置依赖包
 tasks.register('copyDependencies', Copy) {
     // 删除libs/lib文件夹下的jar包
-    delete fileTree(dir: 'build/libs/lib', include: '*.jar')
+    delete fileTree(dir: 'build/libs/app/libs', include: '*.jar')
 
     // 复制依赖jar包到libs/lib目录下
     from configurations.runtimeClasspath
-    into 'build/libs/lib'
+    into 'build/libs/app/libs'
     include '*.jar'
 }
 
@@ -76,16 +85,16 @@ tasks.register('packageTarGz', Tar) {
 }
 
 bootJar {
-    archiveFileName = 'vpay.jar'
+    archiveFileName = 'app/vpay.jar'
     excludes = ['*.jar']
 
     // 外置依赖包
-    dependsOn(copyDependencies)
+    dependsOn(copyDockerCompose, copyDependencies)
 
     // 修改MANIFEST.MF文件，指定类路径
     manifest {
         attributes "Manifest-Version": 1.0,
-                'Class-Path': configurations.runtimeClasspath.files.collect { "lib/" + it.getName() }.join(' ')
+                'Class-Path': configurations.runtimeClasspath.files.collect { "libs/" + it.getName() }.join(' ')
     }
 }
 

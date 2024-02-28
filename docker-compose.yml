@@ -5,11 +5,12 @@ services:
     image: openjdk:17-jdk-slim
     volumes:
       - ./app:/app
-    working_dir: /app
+      - ./data:/data
+    working_dir: /
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
-    command: java -jar vpay.jar
+    command: java -jar /app/vpay.jar
     ports:
-      - "8899:8899"
+      - "8080:8080"
       # - "5005:5005"
