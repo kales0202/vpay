@@ -6,6 +6,7 @@ services:
     volumes:
       - ./app:/app
       - ./data:/data
+      - ./logs:/logs
     working_dir: /
     environment:
       - SPRING_PROFILES_ACTIVE=prod
