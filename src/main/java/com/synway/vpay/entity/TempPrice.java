@@ -25,7 +25,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"account_id", "pay_type", "price"}))
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "TEMP_PRICE_UNIQUE_TYPE_PRICE", columnNames = {"account_id", "pay_type", "price"})
+})
 public class TempPrice extends BaseEntity {
 
     private UUID accountId;

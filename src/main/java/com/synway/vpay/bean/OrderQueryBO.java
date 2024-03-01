@@ -20,7 +20,7 @@ import org.springframework.data.domain.Sort;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class OrderQueryBO extends BasePageBO {
-    private final static Sort DESC_BY_CREATE_TIME = Sort.sort(Order.class).by(Order::getCreateTime).descending();
+    protected final static Sort DESC_BY_CREATE_TIME = Sort.sort(Order.class).by(Order::getCreateTime).descending();
 
     /**
      * 支付类型

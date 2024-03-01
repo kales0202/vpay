@@ -5,8 +5,7 @@
  */
 
 layui.define(['code', 'element', 'table', 'util'], function (exports) {
-    var $ = layui.jquery
-        , element = layui.element
+    var element = layui.element
         , layer = layui.layer
         , form = layui.form
         , util = layui.util

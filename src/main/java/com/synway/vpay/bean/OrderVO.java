@@ -3,7 +3,7 @@ package com.synway.vpay.bean;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.OrderState;
-import com.synway.vpay.enums.PayQRCodeType;
+import com.synway.vpay.enums.PayCodeType;
 import com.synway.vpay.enums.PayType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -62,7 +62,7 @@ public class OrderVO {
      *
      * @since 0.1
      */
-    private PayQRCodeType isAuto;
+    private PayCodeType isAuto;
 
     /**
      * 订单状态

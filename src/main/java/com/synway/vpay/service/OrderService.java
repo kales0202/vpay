@@ -11,7 +11,7 @@ import com.synway.vpay.bean.OrderStatisticsVO;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.OrderState;
-import com.synway.vpay.enums.PayQRCodeType;
+import com.synway.vpay.enums.PayCodeType;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.exception.FulfillException;
 import com.synway.vpay.exception.UnimportantException;
@@ -82,7 +82,7 @@ public class OrderService {
         Order order = bo.toOrder();
         order.setAccountId(account.getId());
         order.setPayUrl(payUrl);
-        order.setIsAuto(PayQRCodeType.GENERIC);
+        order.setIsAuto(PayCodeType.GENERIC);
         order.setState(OrderState.WAIT);
 
         BigDecimal reallyPrice = tempPriceService.saveReallyPrice(order.getAccountId(), order.getPayType(), order.getPrice());

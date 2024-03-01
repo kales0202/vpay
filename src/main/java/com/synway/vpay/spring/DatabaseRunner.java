@@ -2,11 +2,13 @@ package com.synway.vpay.spring;
 
 import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.entity.PayCode;
 import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.repository.OrderRepository;
+import com.synway.vpay.repository.PayCodeRepository;
 import com.synway.vpay.service.AccountService;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
@@ -41,6 +43,9 @@ public class DatabaseRunner implements ApplicationRunner {
     @Resource
     private OrderRepository orderRepository;
 
+    @Resource
+    private PayCodeRepository payCodeRepository;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if (accountRepository.count() != 0) {
@@ -48,9 +53,9 @@ public class DatabaseRunner implements ApplicationRunner {
         }
         log.info("检测到系统为首次启动，初始化数据库中...");
 
-        initAccount();
+        // initAccount();
         // TODO... 测试数据
-        // initAccountFake();
+        initAccountFake();
         log.info("初始化数据库完成...");
     }
 
@@ -77,7 +82,7 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setReturnUrl("http://localhost:8080/fakeReturnUrl");
         account.setWxPay("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
         account.setAliPay("https://qr.alipay.com/dhsjkahdujkashdjkhasj");
-        accountRepository.save(account);
+        accountRepository.saveAndFlush(account);
 
         // 模拟数据
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
@@ -89,11 +94,19 @@ public class DatabaseRunner implements ApplicationRunner {
         order.setState(OrderState.WAIT);
         order.setPayType(PayType.WECHAT);
         order.setPayUrl("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
-        orderRepository.save(order);
+        orderRepository.saveAndFlush(order);
 
         AccountState accountState = accountService.getAccountState(account.getId());
         accountState.setMonitorState(MonitorState.ONLINE);
         accountState.setLastPay(LocalDateTime.now());
         accountState.setLastHeart(LocalDateTime.now());
+
+        PayCode payCode = new PayCode();
+        payCode.setAccountId(account.getId());
+        payCode.setName("测试");
+        payCode.setPayType(PayType.WECHAT);
+        payCode.setContent("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
+        payCode.setWeight(1);
+        payCodeRepository.saveAndFlush(payCode);
     }
 }

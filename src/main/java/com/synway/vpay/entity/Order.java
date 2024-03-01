@@ -2,7 +2,7 @@ package com.synway.vpay.entity;
 
 import com.synway.vpay.base.entity.BaseEntity;
 import com.synway.vpay.enums.OrderState;
-import com.synway.vpay.enums.PayQRCodeType;
+import com.synway.vpay.enums.PayCodeType;
 import com.synway.vpay.enums.PayType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -117,7 +117,7 @@ public class Order extends BaseEntity {
      *
      * @since 0.1
      */
-    private PayQRCodeType isAuto;
+    private PayCodeType isAuto;
 
     /**
      * 二维码内容

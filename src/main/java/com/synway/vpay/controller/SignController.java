@@ -93,6 +93,9 @@ public class SignController {
     public Result<Void> push(@RequestParam PayType type, @RequestParam BigDecimal price) {
         log.info("【{}】收款通知 --> type: {}, price: {}", account.getName(), type.getName(), price);
 
+        // 先更新监控端状态
+        accountService.updateMonitorState(MonitorState.ONLINE, LocalDateTime.now());
+
         // 检查是否重复推送
         LocalDateTime payTime = VpayUtil.toDatetime(request.getHeader("Vpay-Time"));
         orderService.checkTimeIfPaid(payTime);

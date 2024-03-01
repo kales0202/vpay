@@ -275,6 +275,9 @@ public class VmqController {
             }
         });
 
+        // 先更新监控端状态
+        accountService.updateMonitorState(MonitorState.ONLINE, LocalDateTime.now());
+
         // 检查是否重复推送
         LocalDateTime payTime = VpayUtil.toDatetime(t);
         orderService.checkTimeIfPaid(payTime);

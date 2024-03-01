@@ -117,10 +117,14 @@ public class GlobalExceptionHandler {
 
     private boolean isInterface(HttpServletRequest request) throws ExecutionException {
         return INTERFACE_CACHE.get(request.getRequestURI(), () -> {
-            // 通过debug调试可以看出request中含有该对象。
+            // 对常规请求来说，非GET请求一定是接口请求
+            if (!"GET".equals(request.getMethod())) {
+                return true;
+            }
+            // 通过debug调试可以看出request中含有该对象
             Object attribute = request.getAttribute("org.springframework.web.servlet.HandlerMapping.bestMatchingHandler");
             if (attribute instanceof HandlerMethod handler) {
-                // getBeanType()拿到发送请求得类模板（Class），getDeclaredAnnotationsByType(指定注解类模板)通过指定得注解，得到一个数组。
+                // getBeanType()拿到发送请求得类模板（Class），getDeclaredAnnotationsByType(指定注解类模板)通过指定得注解，得到一个数组
                 // 判断当类上含有@RestController或是@ResponseBody或是方法上有@ResponseBody时，则表明该异常是一个接口请求发生的
                 RestController[] annotations1 = handler.getBeanType().getDeclaredAnnotationsByType(RestController.class);
                 if (annotations1.length > 0) {

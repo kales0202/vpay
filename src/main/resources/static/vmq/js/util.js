@@ -101,7 +101,11 @@
         if (!ZXingReader) {
             ZXingReader = new window.ZXingBrowser.BrowserQRCodeReader();
         }
-        ZXingReader.decodeFromImageUrl(url).then(callback).catch((err) => {
+        ZXingReader.decodeFromImageUrl(url).then(function (result) {
+            console.log("解析结果：", result.text)
+            callback(result);
+        }).catch((err) => {
+            layer.msg("解析失败")
             console.error(err)
         })
     }
@@ -114,12 +118,12 @@
         }
 
         if (!$container || $container.length === 0 || !text) {
-            $container.attr("data-code", "");
+            $container.data("code", "");
             $container.html("");
             return;
         }
         var element = ZxingWriter.write(text, 200, 200, null);
-        $container.attr("data-code", text);
+        $container.data("code", text);
         $container.html(element);
     }
 

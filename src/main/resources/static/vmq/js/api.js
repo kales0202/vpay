@@ -34,16 +34,30 @@
         });
     }
 
-    function post(url, data, success) {
-        ajaxBody(url, data, success, 'POST');
+    function post(url, data, success, error) {
+        ajaxBody(url, data, success, error, 'POST');
     }
 
-    function del(url, data, success) {
-        ajaxBody(url, data, success, 'DELETE');
+    function put(url, data, success, error) {
+        ajaxBody(url, data, success, error, 'PUT');
     }
 
-    function ajaxBody(url, data, success, method) {
+    function del(url, data, success, error) {
+        ajaxBody(url, data, success, error, 'DELETE');
+    }
+
+    function delById(url, data, success, error) {
+        if (!data.id) {
+            console.error("调用删除接口参数错误，缺少id, url = " + url);
+            return;
+        }
+        ajaxBody(url + "/" + data.id, success, error, 'DELETE');
+    }
+
+    function ajaxBody(url, data, success, error, method) {
         if ($.isFunction(data)) {
+            method = error;
+            error = success;
             success = data;
             data = undefined;
         }
@@ -53,10 +67,11 @@
             contentType: 'application/json',
             data: JSON.stringify(data),
             success: function (res) {
-                resolve(res, success);
+                resolve(res, success, error);
             },
             error: function (xhr, status, error) {
                 // 处理错误响应
+                error && error({code: xhr.status, msg: xhr.responseText});
             }
         });
     }
@@ -81,17 +96,24 @@
 
     self.get = get;
     self.post = post;
+    self.put = put;
     self.del = del;
+    self.delById = delById;
     self.navigate2Login = () => window.location.href = '/login';
     self.navigate2Index = () => window.location.href = '/';
-    self.login = (params, success) => post('/account/login', params, success);
-    self.changePassword = (params, success) => post('/account/password', params, success);
-    self.getAccount = (success) => get('/account', success);
-    self.saveAccount = (params, success) => post('/account', params, success);
-    self.state = (success) => get('/account/state', success);
-    self.statisticsOrder = (success) => get('/order/statistics', success);
-    self.deleteOrder = (params, success) => del('/order', params, success);
-    self.getOrder = (params, success) => get('/public/order/get', params, success);
+    self.login = (params, success, error) => post('/account/login', params, success, error);
+    self.changePassword = (params, success, error) => post('/account/password', params, success, error);
+    self.getAccount = (success, error) => get('/account', success, error);
+    self.saveAccount = (params, success, error) => post('/account', params, success, error);
+    self.state = (success, error) => get('/account/state', success, error);
+    self.statisticsOrder = (success, error) => get('/order/statistics', success, error);
+    self.deleteOrder = (params, success, error) => del('/order', params, success, error);
+    self.getOrder = (params, success, error) => get('/public/order/get', params, success, error);
     self.checkOrder = (params, success, error) => get('/public/order/check', params, success, error);
     self.fulfillOrder = (params, success, error) => get('/order/fulfill', params, success, error);
+
+    // 付款码相关接口
+    self.savePayCode = (params, success, error) => post('/pay-code', params, success, error);
+    self.modifyPayCode = (params, success, error) => put('/pay-code', params, success, error);
+    self.deletePayCode = (params, success, error) => delById('/pay-code', params, success, error);
 });

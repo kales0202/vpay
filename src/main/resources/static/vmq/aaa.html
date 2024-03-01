@@ -12,7 +12,7 @@
 
     <link href="//unpkg.com/layui@2.9.6/dist/css/layui.css" rel="stylesheet">
     <link href="css/global.css?t=1531663423583-6" media="all" rel="stylesheet">
-    <style type="text/css">
+    <style>
         ins.adsbygoogle {
             display: none !important;
         }
@@ -99,9 +99,86 @@
     </div>
 </div>
 
-<script src="//unpkg.com/layui@2.9.6/dist/layui.js"></script>
+<!--弹出层：付款码新增/修改-->
+<div id="pay-code-content" style="display: none">
+    <form action="" class="layui-form pay-code-form" lay-filter="pay-code-form">
+        <input name="id" type="hidden">
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-block">
+                <input autocomplete="off" class="layui-input" lay-reqtext="请输入名称" lay-verify="required" name="name"
+                       placeholder="请输入名称" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+                <input checked name="payType" title="微信" type="radio" value="1">
+                <input name="payType" title="支付宝" type="radio" value="2">
+            </div>
+        </div>
+        <div class="layui-form-item layui-hide">
+            <label class="layui-form-label">类别</label>
+            <div class="layui-input-block">
+                <input checked name="codeType" title="通用付款码" type="radio" value="1">
+                <input name="codeType" title="固定付款码" type="radio" value="0">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">权重</label>
+                <div class="layui-input-inline" style="width: 80px">
+                    <input autocomplete="off" class="layui-input" lay-affix="number" lay-reqtext="请输入权重" lay-verify="required" min="1"
+                           name="weight" step="1" type="number" value="1">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否启用</label>
+            <div class="layui-input-block">
+                <input checked lay-filter="switchPayCodeEnabled" lay-skin="switch" name="enabled" title="ON|OFF"
+                       type="checkbox">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">付款码</label>
+            <div class="layui-input-block">
+                <input class="layui-hide" id="pay-code-code-input" lay-verify="requiredQRDataCode" name="content"
+                       type="file">
+                <div class="layui-upload-drag" id="pay-code-code">
+                    <i class="layui-icon layui-icon-upload"></i>
+                    <div>点击上传付款码</div>
+                    <div class="layui-hide" id="ID-upload-demo-preview">
+                        <hr>
+                        <img alt="上传成功后渲染" src="" style="max-width: 100%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div style="display: none">
+    <div id="pay-code-show">
+        <span>aaa</span>
+    </div>
+</div>
+
+<script src="//unpkg.com/layui@2.9.7/dist/layui.js"></script>
 <script>
     var passwordIndex;
+    var form = layui.form,
+        layer = layui.layer;
+
+    // 自定义验证规则
+    form.verify({
+        requiredQRDataCode: function (value, elem) {
+            var code = $(elem).data("code");
+            if (!code) {
+                return '请上传二维码';
+            }
+        }
+    });
 
     window.global = {
         pageType: 'demo',
@@ -132,15 +209,12 @@
     }
 
     layui.use(['layer', 'element'], function () {
-        var $ = layui.$,
-            form = layui.form,
-            layer = layui.layer,
-            setIframe = function () {
-                var height = $(window).height() - 370;
-                $('#demoAdmin').height(height);
-            };
-        setIframe();
-        $(window).on('resize', setIframe);
+        // var setIframe = function () {
+        //         var height = $(window).height() - 370;
+        //         $('#demoAdmin').height(height);
+        //     };
+        // setIframe();
+        // $(window).on('resize', setIframe);
 
         form.verify({
             // 自定义密码验证规则
@@ -199,6 +273,11 @@
             "type": 1,
             "url": "admin/jk.html"
         },
+        {
+            "name": "二维码管理",
+            "type": 1,
+            "url": "admin/paycode.html"
+        },
         // {
         //     "name": "微信二维码",
         //     "type": 0,
@@ -212,22 +291,6 @@
         //             "name": "管理",
         //             "type": 1,
         //             "url": "admin/wxqrcodelist.html",
-        //         }
-        //     ]
-        // },
-        // {
-        //     "name": "支付宝二维码",
-        //     "type": 0,
-        //     "children": [
-        //         {
-        //             "name": "添加",
-        //             "type": 1,
-        //             "url": "admin/addzfbqrcode.html",
-        //         },
-        //         {
-        //             "name": "管理",
-        //             "type": 1,
-        //             "url": "admin/zfbqrcodelist.html",
         //         }
         //     ]
         // },
@@ -269,6 +332,70 @@
     $("#v_menu").append(out_menu);
     if (layui.element)
         layui.element.render();
+
+    var $payCodeCode = $("#pay-code-code");
+    var $payCodeCodeInput = $("#pay-code-code-input");
+    var payCodeCodeInitHtml = $payCodeCode.html();
+
+    initPayCodeModel();
+
+    function initPayCodeModel() {
+        // 上传付款码事件
+        // 点击上传付款码
+        $payCodeCode.on("click", function () {
+            $payCodeCodeInput.click();
+        });
+        // 解析付款码
+        $payCodeCodeInput.on("change", function () {
+            var _this = this;
+            if (this.files.length > 0) {
+                let objectURL = Util.getObjectURL(this.files[0]);
+                Util.decodeQRCode(objectURL, function (result) {
+                    layer.msg("解析成功")
+                    Util.encodeQRCode($payCodeCode, result.text);
+                    $payCodeCodeInput.data("code", result.text);
+                    // 设置二维码类型
+                    form.val('pay-code-form', {payType: result.text.startsWith("wxp") ? 1 : 2})
+                });
+            }
+        });
+
+        // 指定开关事件 - 开关付款码状态
+        layui.form.on('switch(switchPayCodeEnabled)', function (data) {
+            console.log("pay code enabled checked: ", this.checked);
+        });
+    }
+
+    function savePayCode(callback) {
+        form.submit('pay-code-form', function (data) {
+            console.log("save pay code...", data);
+            var params = JSON.parse(JSON.stringify(data.field));
+            if (!params.id) {
+                delete params.id;
+            }
+
+            params.enabled = params.enabled === 'on';
+            params.content = $payCodeCodeInput.data("code");
+
+            API.savePayCode(params, function (data) {
+                console.log("save pay code success...", data);
+                callback && callback(data);
+            })
+        });
+    }
+
+    function resetPayCodeModel() {
+        $payCodeCode.html(payCodeCodeInitHtml);
+        form.val('pay-code-form', {
+            id: '',
+            name: '',
+            payType: 1,
+            codeType: 1,
+            content: '',
+            weight: 1,
+            enabled: 'on',
+        });
+    }
 </script>
 
 

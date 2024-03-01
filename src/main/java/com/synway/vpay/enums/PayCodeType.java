@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  *
  * @since 0.1
  */
-public enum PayQRCodeType implements IBaseEnum {
+public enum PayCodeType implements IBaseEnum {
 
     /**
      * 固定二维码
@@ -41,7 +41,7 @@ public enum PayQRCodeType implements IBaseEnum {
      */
     private final String name;
 
-    PayQRCodeType(int value, String name) {
+    PayCodeType(int value, String name) {
         this.value = value;
         this.name = name;
     }
@@ -58,6 +58,6 @@ public enum PayQRCodeType implements IBaseEnum {
 
     @Component // 必须加上@Component以支持此枚举作为GET参数
     @Converter(autoApply = true)
-    public static class PayQRCodeTypeConverter extends BaseEnumConverter<PayQRCodeType> {
+    public static class PayQRCodeTypeConverter extends BaseEnumConverter<PayCodeType> {
     }
 }
