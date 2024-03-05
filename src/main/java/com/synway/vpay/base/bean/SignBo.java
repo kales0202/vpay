@@ -22,6 +22,7 @@ public abstract class SignBo {
      *
      * @param key 密钥
      * @return 计算出来的签名，用于进行验签，比较是否和“sign”值是否一致
+     * @since 0.1
      */
     public abstract String calculateSign(String key);
 
@@ -30,6 +31,7 @@ public abstract class SignBo {
      * 验证失败则抛出SignatureException异常
      *
      * @param key 密钥
+     * @since 0.1
      */
     public final void verifySign(String key) {
         String checkSign = this.calculateSign(key);

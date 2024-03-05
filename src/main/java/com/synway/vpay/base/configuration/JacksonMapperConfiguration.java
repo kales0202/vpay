@@ -1,6 +1,8 @@
 package com.synway.vpay.base.configuration;
 
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.synway.vpay.base.define.IBaseEnum;
+import com.synway.vpay.base.define.IBaseEnumSerializer;
 import com.synway.vpay.base.define.LocalDateTimestampDeserializer;
 import com.synway.vpay.base.define.LocalDateTimestampSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -24,6 +26,8 @@ public class JacksonMapperConfiguration {
             builder.serializerByType(Long.TYPE, ToStringSerializer.instance);
             builder.serializerByType(Long.class, ToStringSerializer.instance);
 
+            // IBaseEnum 枚举字段添加翻译字段
+            builder.serializerByType(IBaseEnum.class, new IBaseEnumSerializer());
             // LocalDateTime 序列化配置
             builder.serializerByType(LocalDateTime.class, new LocalDateTimestampSerializer());
             builder.deserializerByType(LocalDateTime.class, new LocalDateTimestampDeserializer());

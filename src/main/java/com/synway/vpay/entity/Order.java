@@ -33,6 +33,13 @@ public class Order extends BaseEntity {
     private UUID accountId;
 
     /**
+     * 监控端ID
+     *
+     * @since 0.1
+     */
+    private UUID monitorId;
+
+    /**
      * 支付云端唯一订单号
      *
      * @since 0.1

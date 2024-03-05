@@ -3,9 +3,7 @@ package com.synway.vpay.service;
 import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
 import com.synway.vpay.base.exception.IllegalOperationException;
-import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
-import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.exception.AccountNotFoundException;
 import com.synway.vpay.repository.AccountRepository;
 import com.synway.vpay.util.VpayConstant;
@@ -20,10 +18,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -32,13 +27,6 @@ import java.util.UUID;
 @Validated
 @CacheConfig(cacheNames = "account")
 public class AccountService {
-
-    /**
-     * 账户当前状态
-     *
-     * @since 0.1
-     */
-    private static final Map<UUID, AccountState> ACCOUNT_STATE_MAP = new HashMap<>();
 
     @Resource
     private AccountRepository accountRepository;
@@ -148,57 +136,5 @@ public class AccountService {
      */
     public List<Account> findAll() {
         return accountRepository.findAll();
-    }
-
-    /**
-     * 获取账户状态
-     *
-     * @return 账户状态信息
-     * @since 0.1
-     */
-    public AccountState getAccountState() {
-        return this.getAccountState(account.getId());
-    }
-
-    /**
-     * 获取账户状态
-     *
-     * @param id 账户ID
-     * @return 账户状态信息
-     * @since 0.1
-     */
-    public AccountState getAccountState(UUID id) {
-        AccountState accountState;
-        if (ACCOUNT_STATE_MAP.containsKey(id)) {
-            accountState = ACCOUNT_STATE_MAP.get(id);
-        } else {
-            Account ac = this.findById(id);
-            accountState = new AccountState(id, ac.getName());
-            ACCOUNT_STATE_MAP.put(id, accountState);
-        }
-        return accountState;
-    }
-
-    /**
-     * 更新账户信息：最后支付时间
-     *
-     * @param lastPay 最后支付时间
-     * @since 0.1
-     */
-    public void updateLastPay(LocalDateTime lastPay) {
-        AccountState accountState = this.getAccountState();
-        accountState.setLastPay(lastPay);
-    }
-
-    /**
-     * 更新账户信息：监控端状态
-     *
-     * @param monitorState 监控端状态
-     * @since 0.1
-     */
-    public void updateMonitorState(MonitorState monitorState, LocalDateTime lastHeart) {
-        AccountState accountState = this.getAccountState();
-        accountState.setMonitorState(monitorState);
-        accountState.setLastHeart(lastHeart);
     }
 }

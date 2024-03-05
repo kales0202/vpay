@@ -1,11 +1,13 @@
 package com.synway.vpay.entity;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.synway.vpay.base.entity.BaseEntity;
-import com.synway.vpay.enums.PayCodeType;
 import com.synway.vpay.enums.PayType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -16,7 +18,7 @@ import lombok.ToString;
 import java.util.UUID;
 
 /**
- * 付款付款码
+ * 付款码
  *
  * @since 0.1
  */
@@ -25,22 +27,17 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @ToString(callSuper = true)
-@Table(uniqueConstraints = {
-        @UniqueConstraint(name = "PAY_CODE_UNIQUE_NAME", columnNames = {"account_id", "name",}),
-        @UniqueConstraint(name = "PAY_CODE_UNIQUE_CODE", columnNames = {"account_id", "content"}),
-})
 public class PayCode extends BaseEntity {
 
     /**
-     * 所属账户ID
+     * 账户ID
      *
      * @since 0.1
      */
-    @NotNull
     private UUID accountId;
 
     /**
-     * 付款码名称，唯一标识
+     * 唯一标识名称
      *
      * @since 0.1
      */
@@ -53,7 +50,7 @@ public class PayCode extends BaseEntity {
      * @since 0.1
      */
     @NotNull
-    private PayType payType;
+    private PayType type;
 
     /**
      * 付款码内容
@@ -61,26 +58,36 @@ public class PayCode extends BaseEntity {
      * @since 0.1
      */
     @NotBlank
-    private String content;
+    private String payment;
 
     /**
-     * 付款码类别
-     *
-     * @since 0.1
-     */
-    private PayCodeType codeType = PayCodeType.GENERIC;
-
-    /**
-     * 权重，默认为1
+     * 权重
      *
      * @since 0.1
      */
     private int weight = 1;
 
     /**
-     * 是否启用，默认启用
+     * 是否启用
      *
      * @since 0.1
      */
-    private boolean enabled = true;
+    private boolean enable = true;
+
+    /**
+     * 所属监控端
+     *
+     * @since 0.1
+     */
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Monitor monitor;
+
+    /**
+     * 监控端ID(一对多关系的映射字段，需要设置@Column属性的insertable和updatable为false)
+     *
+     * @since 0.1
+     */
+    @Column(name = "monitor_id", insertable = false, updatable = false)
+    private UUID monitorId;
 }

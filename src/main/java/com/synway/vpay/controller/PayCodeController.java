@@ -2,7 +2,6 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.PayCodeBO;
-import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.PayCode;
 import com.synway.vpay.service.PayCodeService;
 import jakarta.annotation.Resource;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,9 +29,6 @@ public class PayCodeController {
     @Resource
     private PayCodeService payCodeService;
 
-    @Resource
-    private Account account;
-
     /**
      * 新增付款码
      *
@@ -42,8 +37,7 @@ public class PayCodeController {
      * @since 0.1
      */
     @PostMapping
-    public Result<PayCode> post(@RequestBody PayCode payCode) {
-        payCode.setAccountId(account.getId());
+    public Result<PayCode> create(@RequestBody PayCode payCode) {
         return Result.success(payCodeService.create(payCode));
     }
 
@@ -55,7 +49,7 @@ public class PayCodeController {
      * @since 0.1
      */
     @PutMapping
-    public Result<PayCode> put(@RequestBody PayCodeBO bo) {
+    public Result<PayCode> save(@RequestBody PayCodeBO bo) {
         return Result.success(payCodeService.save(bo));
     }
 
@@ -69,10 +63,5 @@ public class PayCodeController {
     public Result<Void> delete(@PathVariable UUID id) {
         payCodeService.deleteById(id);
         return Result.success();
-    }
-
-    @PostMapping("/list")
-    public Result<List<PayCode>> list(PayCodeBO bo) {
-        return Result.success(payCodeService.list(bo));
     }
 }

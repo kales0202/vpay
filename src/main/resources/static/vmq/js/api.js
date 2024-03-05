@@ -69,7 +69,7 @@
             success: function (res) {
                 resolve(res, success, error);
             },
-            error: function (xhr, status, error) {
+            error: function (xhr, status, e) {
                 // 处理错误响应
                 error && error({code: xhr.status, msg: xhr.responseText});
             }
@@ -112,8 +112,13 @@
     self.checkOrder = (params, success, error) => get('/public/order/check', params, success, error);
     self.fulfillOrder = (params, success, error) => get('/order/fulfill', params, success, error);
 
+    // 监控端相关接口
+    self.monitorList = (params, success, error) => post('/monitor/list', params, success, error);
+    self.monitorDelete = (params, success, error) => delById('/monitor', params, success, error);
+
     // 付款码相关接口
-    self.savePayCode = (params, success, error) => post('/pay-code', params, success, error);
-    self.modifyPayCode = (params, success, error) => put('/pay-code', params, success, error);
-    self.deletePayCode = (params, success, error) => delById('/pay-code', params, success, error);
+    self.payCodeCreate = (params, success, error) => post('/pay-code', params, success, error);
+    self.payCodeSave = (params, success, error) => put('/pay-code', params, success, error);
+    self.payCodeModify = (params, success, error) => put('/pay-code', params, success, error);
+    self.payCodeDelete = (params, success, error) => delById('/pay-code', params, success, error);
 });

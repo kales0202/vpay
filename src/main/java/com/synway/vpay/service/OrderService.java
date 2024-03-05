@@ -3,6 +3,7 @@ package com.synway.vpay.service;
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
+import com.synway.vpay.base.strategy.RandomStrategy;
 import com.synway.vpay.base.util.BaseUtil;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderDeleteBO;
@@ -10,6 +11,7 @@ import com.synway.vpay.bean.OrderQueryBO;
 import com.synway.vpay.bean.OrderStatisticsVO;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
+import com.synway.vpay.entity.PayCode;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayCodeType;
 import com.synway.vpay.enums.PayType;
@@ -53,6 +55,9 @@ public class OrderService {
     private TempPriceService tempPriceService;
 
     @Resource
+    private MonitorService monitorService;
+
+    @Resource
     private EntityManager entityManager;
 
     @Resource
@@ -70,18 +75,19 @@ public class OrderService {
         // 验证签名
         bo.verifySign(account.getKeyword());
 
-        String payUrl = account.getPayUrl(bo.getPayType());
-        if (Strings.isBlank(payUrl)) {
-            throw new BusinessException("请您先配置支付地址");
-        }
-
         if (this.countByPayId(bo.getPayId()) > 0) {
             throw new BusinessException("商户订单号已存在");
         }
 
+        PayCode payCode = this.nextPayCode(bo.getPayType());
+        if (Objects.isNull(payCode)) {
+            throw new BusinessException("请您先配置支付地址");
+        }
+
         Order order = bo.toOrder();
         order.setAccountId(account.getId());
-        order.setPayUrl(payUrl);
+        order.setMonitorId(payCode.getMonitor().getId());
+        order.setPayUrl(payCode.getPayment());
         order.setIsAuto(PayCodeType.GENERIC);
         order.setState(OrderState.WAIT);
 
@@ -427,5 +433,12 @@ public class OrderService {
         params.put("reallyPrice", order.getReallyPrice().toString());
         params.put("sign", VpayUtil.md5(sign));
         return HttpUtil.map2GetParam(url, params);
+    }
+
+    private PayCode nextPayCode(PayType payType) {
+        List<PayCode> entities = monitorService.getPayCodes(account.getId(), payType);
+        // TODO... 需要缓存起来
+        RandomStrategy<PayCode> strategy = new RandomStrategy<>(entities);
+        return strategy.next();
     }
 }

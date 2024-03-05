@@ -1,13 +1,12 @@
 package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
-import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
-import com.synway.vpay.service.AccountService;
+import com.synway.vpay.service.MonitorService;
 import com.synway.vpay.service.OrderService;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -38,7 +37,7 @@ public class SignController {
     private OrderService orderService;
 
     @Resource
-    private AccountService accountService;
+    private MonitorService monitorService;
 
     @Resource
     private HttpServletRequest request;
@@ -59,16 +58,6 @@ public class SignController {
     }
 
     /**
-     * 查询服务端状态
-     *
-     * @since 0.1
-     */
-    @GetMapping("/account/state")
-    public Result<AccountState> getAccountState() {
-        return Result.success(accountService.getAccountState());
-    }
-
-    /**
      * 监控端调用：监控端心跳检测
      *
      * @return void
@@ -76,9 +65,9 @@ public class SignController {
      */
     @GetMapping("/app/heartbeat")
     public Result<Void> heartbeat() {
-        // 更新监控端状态
-        accountService.updateMonitorState(MonitorState.ONLINE, LocalDateTime.now());
-        return Result.success();
+        String monitorName = monitorService.getNameFromHeader();
+        monitorService.updateMonitorState(account.getId(), monitorName, MonitorState.ONLINE, LocalDateTime.now());
+        return Result.success(null, "成功");
     }
 
     /**
@@ -94,7 +83,8 @@ public class SignController {
         log.info("【{}】收款通知 --> type: {}, price: {}", account.getName(), type.getName(), price);
 
         // 先更新监控端状态
-        accountService.updateMonitorState(MonitorState.ONLINE, LocalDateTime.now());
+        String monitorName = monitorService.getNameFromHeader();
+        monitorService.updateMonitorState(account.getId(), monitorName, MonitorState.ONLINE, LocalDateTime.now());
 
         // 检查是否重复推送
         LocalDateTime payTime = VpayUtil.toDatetime(request.getHeader("Vpay-Time"));
@@ -116,10 +106,11 @@ public class SignController {
             order.setState(OrderState.SUCCESS);
             orderService.save(order);
         } else {
+            order.setPayType(type);
             order.setPayTime(payTime);
             orderService.sendNotify(order);
         }
-        accountService.updateLastPay(payTime);
+        monitorService.updateLastPay(account.getId(), monitorName, payTime);
         return Result.success();
     }
 }

@@ -2,6 +2,8 @@ package com.synway.vpay.base.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.synway.vpay.base.define.IBaseEnum;
+import com.synway.vpay.base.define.IBaseEnumSerializer;
 import com.synway.vpay.base.define.LocalDateTimestampDeserializer;
 import com.synway.vpay.base.define.LocalDateTimestampSerializer;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +21,10 @@ public class BaseUtil {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
-        // LocalDateTime 序列化配置
         SimpleModule module = new SimpleModule();
+        // IBaseEnum 枚举字段添加翻译字段
+        module.addSerializer(IBaseEnum.class, new IBaseEnumSerializer());
+        // LocalDateTime 序列化配置
         module.addSerializer(LocalDateTime.class, new LocalDateTimestampSerializer());
         module.addDeserializer(LocalDateTime.class, new LocalDateTimestampDeserializer());
         OBJECT_MAPPER.registerModule(module);

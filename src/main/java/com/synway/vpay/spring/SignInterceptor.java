@@ -3,6 +3,7 @@ package com.synway.vpay.spring;
 import com.synway.vpay.base.exception.SignatureException;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.service.AccountService;
+import com.synway.vpay.service.MonitorService;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -27,15 +28,17 @@ public class SignInterceptor implements HandlerInterceptor {
     @Resource
     private AccountService accountService;
 
+    @Resource
+    private MonitorService monitorService;
 
     @Override
     @SuppressWarnings("NullableProblems")
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String name = request.getHeader("Vpay-Account");
+        String accountName = request.getHeader("Vpay-Account");
         String time = request.getHeader("Vpay-Time");
         String sign = request.getHeader("Vpay-Sign");
-        if (Strings.isBlank(name)) {
-            name = VpayConstant.SUPER_ACCOUNT;
+        if (Strings.isBlank(accountName)) {
+            accountName = VpayConstant.SUPER_ACCOUNT;
         }
         if (Strings.isBlank(time) || Strings.isBlank(sign)) {
             throw new SignatureException();
@@ -46,7 +49,8 @@ public class SignInterceptor implements HandlerInterceptor {
         if (difference > 3 * 60 * 1000) {
             throw new SignatureException("请求已过期...");
         }
-        Account db = accountService.findByName(name);
+
+        Account db = accountService.findByName(accountName);
         sign = sign.toUpperCase();
         String checkSign = VpayUtil.md5(time + db.getKeyword()).toUpperCase();
         if (!Objects.equals(sign, checkSign)) {

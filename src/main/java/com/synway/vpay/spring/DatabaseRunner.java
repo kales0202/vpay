@@ -1,15 +1,16 @@
 package com.synway.vpay.spring;
 
-import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.entity.Monitor;
 import com.synway.vpay.entity.PayCode;
-import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.AccountRepository;
+import com.synway.vpay.repository.MonitorRepository;
 import com.synway.vpay.repository.OrderRepository;
 import com.synway.vpay.repository.PayCodeRepository;
 import com.synway.vpay.service.AccountService;
+import com.synway.vpay.service.MonitorService;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
 import jakarta.annotation.Resource;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -38,10 +40,16 @@ public class DatabaseRunner implements ApplicationRunner {
     private AccountService accountService;
 
     @Resource
+    private MonitorService monitorService;
+
+    @Resource
     private AccountRepository accountRepository;
 
     @Resource
     private OrderRepository orderRepository;
+
+    @Resource
+    private MonitorRepository monitorRepository;
 
     @Resource
     private PayCodeRepository payCodeRepository;
@@ -56,6 +64,8 @@ public class DatabaseRunner implements ApplicationRunner {
         // initAccount();
         // TODO... 测试数据
         initAccountFake();
+
+        initMonitors();
         log.info("初始化数据库完成...");
     }
 
@@ -65,9 +75,12 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setName(VpayConstant.SUPER_ACCOUNT);
         account.setPassword(VpayUtil.jbEncrypt(VpayConstant.SUPER_ACCOUNT));
         account.setKeyword(VpayUtil.md5(LocalDateTime.now().toString()));
-        account.setWxPay("");
-        account.setAliPay("");
-        accountRepository.save(account);
+        account = accountRepository.save(account);
+
+        Monitor monitor = new Monitor();
+        monitor.setAccountId(account.getId());
+        monitor.setName(VpayConstant.DEFAULT_MONITOR_NAME);
+        monitor = monitorRepository.saveAndFlush(monitor);
     }
 
     private void initAccountFake() {
@@ -80,9 +93,12 @@ public class DatabaseRunner implements ApplicationRunner {
         account.setKeyword("f3ba2ab83fc2465dd567e70129772d3a");
         account.setNotifyUrl("http://localhost:8080/fakeNotifyUrl");
         account.setReturnUrl("http://localhost:8080/fakeReturnUrl");
-        account.setWxPay("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
-        account.setAliPay("https://qr.alipay.com/dhsjkahdujkashdjkhasj");
         accountRepository.saveAndFlush(account);
+
+        Monitor monitor = new Monitor();
+        monitor.setAccountId(account.getId());
+        monitor.setName(VpayConstant.DEFAULT_MONITOR_NAME);
+        monitor = monitorRepository.saveAndFlush(monitor);
 
         // 模拟数据
         com.synway.vpay.entity.Order order = new com.synway.vpay.entity.Order();
@@ -96,17 +112,22 @@ public class DatabaseRunner implements ApplicationRunner {
         order.setPayUrl("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
         orderRepository.saveAndFlush(order);
 
-        AccountState accountState = accountService.getAccountState(account.getId());
-        accountState.setMonitorState(MonitorState.ONLINE);
-        accountState.setLastPay(LocalDateTime.now());
-        accountState.setLastHeart(LocalDateTime.now());
-
+        // 模拟数据
         PayCode payCode = new PayCode();
+        payCode.setId(UUID.randomUUID());
         payCode.setAccountId(account.getId());
         payCode.setName("测试");
-        payCode.setPayType(PayType.WECHAT);
-        payCode.setContent("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
-        payCode.setWeight(1);
-        payCodeRepository.saveAndFlush(payCode);
+        payCode.setMonitor(monitor);
+        payCode.setType(PayType.WECHAT);
+        payCode.setPayment("wxp://djaskjdlasjkldjklasjdkljaskldjklasjdklasd");
+        payCode = payCodeRepository.saveAndFlush(payCode);
+    }
+
+    void initMonitors() {
+        log.info("缓存监控端信息...");
+        List<Account> accounts = accountService.findAll();
+        for (Account account : accounts) {
+            monitorService.listAll(account.getId());
+        }
     }
 }

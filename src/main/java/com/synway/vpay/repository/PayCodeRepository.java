@@ -10,7 +10,5 @@ import java.util.UUID;
 @Repository
 public interface PayCodeRepository extends JpaRepository<PayCode, UUID>, JpaSpecificationExecutor<PayCode> {
 
-    int countByIdNotAndAccountIdAndName(UUID id, UUID accountId, String name);
-
-    PayCode findByIdNotAndAccountIdAndContent(UUID id, UUID accountId, String content);
+    PayCode findByAccountIdAndIdNotAndPayment(UUID accountId, UUID id, String payment);
 }

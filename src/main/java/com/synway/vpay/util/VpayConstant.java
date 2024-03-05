@@ -14,5 +14,12 @@ public class VpayConstant {
      */
     public static final String SUPER_ACCOUNT = "admin";
 
+    /**
+     * 默认监控端名称
+     *
+     * @since 0.1
+     */
+    public static final String DEFAULT_MONITOR_NAME = "default";
+
     public static final String ACTIVE = "active";
 }

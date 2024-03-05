@@ -6,17 +6,18 @@ import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
 import com.synway.vpay.base.exception.SignatureException;
 import com.synway.vpay.base.util.BaseUtil;
-import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderVO;
 import com.synway.vpay.controller.PublicController;
 import com.synway.vpay.controller.SignController;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.entity.Monitor;
 import com.synway.vpay.entity.Order;
 import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.enums.OrderState;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.service.AccountService;
+import com.synway.vpay.service.MonitorService;
 import com.synway.vpay.service.OrderService;
 import com.synway.vpay.util.VpayConstant;
 import com.synway.vpay.util.VpayUtil;
@@ -43,6 +44,9 @@ public class VmqController {
 
     @Resource
     private AccountService accountService;
+
+    @Resource
+    private MonitorService monitorService;
 
     @Resource
     private OrderService orderService;
@@ -101,12 +105,12 @@ public class VmqController {
     }
 
     /**
-     * 查询服务端状态（仅超级管理员）
+     * 查询监控端状态（仅超级管理员）
      *
      * @param t    现行时间戳
      * @param sign md5(现行时间戳+通讯密钥)
      * @return 服务端状态
-     * @see SignController#getAccountState
+     * @see TODO...补充监控端状态接口
      * @since 0.1
      */
     @RequestMapping("/getState")
@@ -125,13 +129,13 @@ public class VmqController {
             }
         });
 
-        // 获取账户状态
-        AccountState state = accountService.getAccountState();
+        // 获取监控端状态
+        Monitor monitor = monitorService.getMonitor(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME);
 
         Map<String, Object> data = new HashMap<>();
-        data.put("lastpay", VpayUtil.toTimestamp(state.getLastPay()));
-        data.put("lastheart", VpayUtil.toTimestamp(state.getLastHeart()));
-        data.put("state", state.getMonitorState().getValue());
+        data.put("lastpay", VpayUtil.toTimestamp(monitor.getLastPay()));
+        data.put("lastheart", VpayUtil.toTimestamp(monitor.getLastHeart()));
+        data.put("state", monitor.getState().getValue());
         return this.success(data);
     }
 
@@ -233,7 +237,7 @@ public class VmqController {
             throw new BusinessException("客户端时间错误");
         }
         // 更新监控端状态
-        accountService.updateMonitorState(MonitorState.ONLINE, now);
+        monitorService.updateMonitorState(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME, MonitorState.ONLINE, now);
         return this.success();
     }
 
@@ -276,7 +280,7 @@ public class VmqController {
         });
 
         // 先更新监控端状态
-        accountService.updateMonitorState(MonitorState.ONLINE, LocalDateTime.now());
+        monitorService.updateMonitorState(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME, MonitorState.ONLINE, LocalDateTime.now());
 
         // 检查是否重复推送
         LocalDateTime payTime = VpayUtil.toDatetime(t);
@@ -298,10 +302,11 @@ public class VmqController {
             order.setState(OrderState.SUCCESS);
             orderService.save(order);
         } else {
+            order.setPayType(payType);
             order.setPayTime(payTime);
             orderService.sendNotify(order);
         }
-        accountService.updateLastPay(payTime);
+        monitorService.updateLastPay(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME, payTime);
         return this.success();
     }
 

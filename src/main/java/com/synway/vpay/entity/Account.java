@@ -1,9 +1,10 @@
 package com.synway.vpay.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.synway.vpay.base.define.Strategy;
 import com.synway.vpay.base.entity.BaseEntity;
-import com.synway.vpay.enums.PayType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -60,22 +61,6 @@ public class Account extends BaseEntity {
     private String returnUrl;
 
     /**
-     * 微信通用收款码
-     *
-     * @since 0.1
-     */
-    @NotNull
-    private String wxPay;
-
-    /**
-     * 支付宝通用收款码
-     *
-     * @since 0.1
-     */
-    @NotNull
-    private String aliPay;
-
-    /**
      * 区分方式 0-金额递减 1-金额递增
      *
      * @mock 0
@@ -92,6 +77,14 @@ public class Account extends BaseEntity {
     private int close = 5;
 
     /**
+     * 轮询策略
+     *
+     * @since 0.1
+     */
+    @Transient
+    private Strategy<String> strategy;
+
+    /**
      * 拷贝Account数据
      *
      * @param from 源
@@ -104,27 +97,9 @@ public class Account extends BaseEntity {
         this.setKeyword(from.getKeyword());
         this.setNotifyUrl(from.getNotifyUrl());
         this.setReturnUrl(from.getReturnUrl());
-        this.setWxPay(from.getWxPay());
-        this.setAliPay(from.getAliPay());
         this.setPayQf(from.getPayQf());
         this.setClose(from.getClose());
         this.setCreateTime(from.getCreateTime());
         this.setUpdateTime(from.getUpdateTime());
-    }
-
-    /**
-     * 根据支付方式，获取支付地址
-     *
-     * @param payType 支付方式
-     * @return 支付地址
-     * @since 0.1
-     */
-    public String getPayUrl(PayType payType) {
-        if (payType == PayType.WECHAT) {
-            return wxPay;
-        } else if (payType == PayType.ALIPAY) {
-            return aliPay;
-        }
-        return null;
     }
 }

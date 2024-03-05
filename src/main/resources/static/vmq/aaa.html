@@ -103,6 +103,7 @@
 <div id="pay-code-content" style="display: none">
     <form action="" class="layui-form pay-code-form" lay-filter="pay-code-form">
         <input name="id" type="hidden">
+        <input name="monitorId" type="hidden">
         <div class="layui-form-item">
             <label class="layui-form-label">名称</label>
             <div class="layui-input-block">
@@ -113,8 +114,8 @@
         <div class="layui-form-item layui-hide">
             <label class="layui-form-label">类型</label>
             <div class="layui-input-block">
-                <input checked name="payType" title="微信" type="radio" value="1">
-                <input name="payType" title="支付宝" type="radio" value="2">
+                <input checked name="type" title="微信" type="radio" value="1">
+                <input name="type" title="支付宝" type="radio" value="2">
             </div>
         </div>
         <div class="layui-form-item layui-hide">
@@ -128,7 +129,8 @@
             <div class="layui-inline">
                 <label class="layui-form-label">权重</label>
                 <div class="layui-input-inline" style="width: 80px">
-                    <input autocomplete="off" class="layui-input" lay-affix="number" lay-reqtext="请输入权重" lay-verify="required" min="1"
+                    <input autocomplete="off" class="layui-input" lay-affix="number" lay-reqtext="请输入权重"
+                           lay-verify="required" min="1"
                            name="weight" step="1" type="number" value="1">
                 </div>
             </div>
@@ -136,14 +138,14 @@
         <div class="layui-form-item">
             <label class="layui-form-label">是否启用</label>
             <div class="layui-input-block">
-                <input checked lay-filter="switchPayCodeEnabled" lay-skin="switch" name="enabled" title="ON|OFF"
+                <input checked lay-filter="switchPayCodeEnable" lay-skin="switch" name="enable" title="ON|OFF"
                        type="checkbox">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">付款码</label>
             <div class="layui-input-block">
-                <input class="layui-hide" id="pay-code-code-input" lay-verify="requiredQRDataCode" name="content"
+                <input class="layui-hide" id="pay-code-code-input" lay-verify="requiredQRDataCode" name="payment"
                        type="file">
                 <div class="layui-upload-drag" id="pay-code-code">
                     <i class="layui-icon layui-icon-upload"></i>
@@ -156,12 +158,6 @@
             </div>
         </div>
     </form>
-</div>
-
-<div style="display: none">
-    <div id="pay-code-show">
-        <span>aaa</span>
-    </div>
 </div>
 
 <script src="//unpkg.com/layui@2.9.7/dist/layui.js"></script>
@@ -271,12 +267,7 @@
         {
             "name": "监控端设置",
             "type": 1,
-            "url": "admin/jk.html"
-        },
-        {
-            "name": "二维码管理",
-            "type": 1,
-            "url": "admin/paycode.html"
+            "url": "admin/monitor.html"
         },
         // {
         //     "name": "微信二维码",
@@ -347,7 +338,6 @@
         });
         // 解析付款码
         $payCodeCodeInput.on("change", function () {
-            var _this = this;
             if (this.files.length > 0) {
                 let objectURL = Util.getObjectURL(this.files[0]);
                 Util.decodeQRCode(objectURL, function (result) {
@@ -355,46 +345,91 @@
                     Util.encodeQRCode($payCodeCode, result.text);
                     $payCodeCodeInput.data("code", result.text);
                     // 设置二维码类型
-                    form.val('pay-code-form', {payType: result.text.startsWith("wxp") ? 1 : 2})
+                    form.val('pay-code-form', {type: result.text.startsWith("wxp") ? 1 : 2})
                 });
             }
         });
 
         // 指定开关事件 - 开关付款码状态
-        layui.form.on('switch(switchPayCodeEnabled)', function (data) {
-            console.log("pay code enabled checked: ", this.checked);
+        layui.form.on('switch(switchPayCodeEnable)', function (data) {
         });
     }
 
-    function savePayCode(callback) {
-        form.submit('pay-code-form', function (data) {
-            console.log("save pay code...", data);
-            var params = JSON.parse(JSON.stringify(data.field));
-            if (!params.id) {
-                delete params.id;
+
+    var $payCodeContent = $('#pay-code-content');
+
+    function openPayCodePage(param, callback) {
+        console.log("pay code form render...", param);
+        fillPayCodeModel(param);
+        layer.open({
+            type: 1,
+            title: '付款码',
+            shade: 0.8,
+            area: ['520px', 'auto'],
+            content: $payCodeContent,
+            btn: ['取消', '保存'],
+            btn1: function (index, layero, that) {
+                console.log("取消...");
+                layer.close(index);
+            },
+            btn2: function (index, layero, that) {
+                console.log("保存...");
+                form.submit('pay-code-form', function (data) {
+                    var params = JSON.parse(JSON.stringify(data.field));
+                    if (!params.id) {
+                        delete params.id;
+                    }
+
+                    params.enable = params.enable === 'on';
+                    params.payment = $payCodeCodeInput.data("code");
+
+                    // 微信付款码校验
+                    if (param.payType === '1' && params.payment.includes("alipay")) {
+                        layer.msg("请上传正确的微信付款码");
+                        return false;
+                    }
+
+                    // 支付宝付款码校验
+                    if (param.payType === '2' && params.payment.startsWith("wxp://")) {
+                        layer.msg("请上传正确的支付宝付款码");
+                        return false;
+                    }
+
+                    var method = params.id ? API.payCodeSave : API.payCodeCreate;
+                    method(params, function (data) {
+                        callback && callback(data);
+                        layer.close(index);
+                    })
+                });
+                return false // 不关闭弹层
+            },
+            // 打开弹层成功后的回调函数
+            success: function (layero, index, that) {
+            },
+            end: function () {
+                $payCodeContent.hide();
+                fillPayCodeModel({
+                    id: '',
+                    name: '',
+                    type: 1,
+                    codeType: 1,
+                    payment: '',
+                    weight: 1,
+                    enable: 'on',
+                });
             }
-
-            params.enabled = params.enabled === 'on';
-            params.content = $payCodeCodeInput.data("code");
-
-            API.savePayCode(params, function (data) {
-                console.log("save pay code success...", data);
-                callback && callback(data);
-            })
-        });
+        })
     }
 
-    function resetPayCodeModel() {
-        $payCodeCode.html(payCodeCodeInitHtml);
-        form.val('pay-code-form', {
-            id: '',
-            name: '',
-            payType: 1,
-            codeType: 1,
-            content: '',
-            weight: 1,
-            enabled: 'on',
-        });
+    function fillPayCodeModel(param) {
+        $payCodeCodeInput.data('code', param.payment || '');
+        if (param.payment) {
+            Util.encodeQRCode($payCodeCode, param.payment);
+        } else {
+            $payCodeCode.html(payCodeCodeInitHtml);
+        }
+        param.payment = '';
+        form.val('pay-code-form', param);
     }
 </script>
 

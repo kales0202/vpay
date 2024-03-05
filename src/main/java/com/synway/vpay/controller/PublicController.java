@@ -94,11 +94,11 @@ public class PublicController {
     }
 
     private void simulatedLogin() {
-        String name = request.getHeader("vpay-name");
-        if (Strings.isBlank(name)) {
-            name = VpayConstant.SUPER_ACCOUNT;
+        String accountName = request.getHeader("Vpay-Account");
+        if (Strings.isBlank(accountName)) {
+            accountName = VpayConstant.SUPER_ACCOUNT;
         }
-        Account db = accountService.findByName(name);
+        Account db = accountService.findByName(accountName);
         account.copyFrom(db);
     }
 }

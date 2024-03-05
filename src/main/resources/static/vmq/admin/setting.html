@@ -54,36 +54,6 @@
         </div>
     </div>
 
-    <div class="layui-form-item">
-        <label class="layui-form-label">微信码</label>
-        <div class="layui-input-block">
-            <div class="layui-upload">
-                <button class="layui-btn" id="wxup" type="button">上传收款二维码</button>
-                （此处上传的是无金额的收款二维码）
-                <input id="wxup-input" style="display: none" type="file">
-                <div class="layui-upload-list">
-                    <p id="wxPay"></p>
-                    <p id="wxcs"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">支付宝码</label>
-        <div class="layui-input-block">
-            <div class="layui-upload">
-                <button class="layui-btn" id="aliup" type="button">上传收款二维码</button>
-                （此处上传的是无金额的收款二维码）
-                <input id="aliup-input" style="display: none" type="file">
-                <div class="layui-upload-list">
-                    <p id="aliPay"></p>
-                    <p id="alics"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     <div class="layui-form-item" style="text-align: right;">
         <button class="layui-btn" id="btn-save">保存</button>
     </div>
@@ -93,36 +63,8 @@
 <script>
     $(function () {
 
-        var $wxPay = $("#wxPay");
-        var $aliPay = $("#aliPay");
-
         layui.use(['form', 'layer', 'upload'], function () {
             var form = layui.form, upload = layui.upload;
-
-            $("#wxup-input").on("change", function () {
-                if (this.files.length > 0) {
-                    let objectURL = Util.getObjectURL(this.files[0]);
-                    Util.decodeQRCode(objectURL, function (result) {
-                        Util.encodeQRCode($wxPay, result.text);
-                    });
-                }
-            });
-            $("#wxup").on("click", function () {
-                $("#wxup-input").click();
-            });
-
-            $("#aliup-input").on("change", function () {
-                if (this.files.length > 0) {
-                    let objectURL = Util.getObjectURL(this.files[0]);
-                    Util.decodeQRCode(objectURL, function (result) {
-                        Util.encodeQRCode($aliPay, result.text);
-                    });
-                }
-            });
-            $("#aliup").on("click", function () {
-                $("#aliup-input").click();
-            });
-
             form.render();
 
         });
@@ -155,25 +97,13 @@
                 layer.msg("请输入创建的订单几分钟后失效");
                 return;
             }
-            var wxPay = $wxPay.attr("data-code");
-            if (!wxPay) {
-                layer.msg("请上传微信无金额的收款二维码");
-                return;
-            }
-            var aliPay = $aliPay.attr("data-code");
-            if (!aliPay) {
-                layer.msg("请上传支付宝无金额的收款二维码");
-                return;
-            }
             var param = {
                 name: name,
                 notifyUrl: notifyUrl,
                 returnUrl: returnUrl,
                 keyword: keyword,
                 close: close,
-                payQf: payQf,
-                wxPay: wxPay,
-                aliPay: aliPay
+                payQf: payQf
             }
 
             API.saveAccount(param, function (data) {
@@ -190,8 +120,6 @@
             $("#keyword").val(data.keyword);
             $("#close").val(data.close);
             $("#payQf").val(data.payQf);
-            Util.encodeQRCode($wxPay, data.wxPay);
-            Util.encodeQRCode($aliPay, data.aliPay);
         }
 
         API.getAccount(function (data) {

@@ -1,0 +1,265 @@
+<style>
+    .monitor-online {
+        background-color: #16b777;
+        color: #fff;
+    }
+
+    .monitor-offline {
+        background-color: #ff5722;
+        color: #fff;
+    }
+
+    .monitor-unbound {
+        background-color: #ffb800;
+        color: #fff;
+    }
+
+    .monitor-title {
+        width: 90px;
+    }
+
+    .monitor-content {
+        line-height: 20px;
+        padding: 9px 15px;
+    }
+
+    .pay-code {
+        height: 210px;
+    }
+
+    .pay-code > * {
+        cursor: pointer;
+    }
+
+    .pay-code .layui-icon {
+        font-size: 100px;
+        line-height: 100px;
+        color: #16baaa;
+    }
+
+    .pay-code-header .layui-form-switch {
+        margin-top: 0;
+    }
+
+</style>
+
+<div class="layui-bg-gray" style="padding: 16px;">
+    <!--搜索区-->
+    <div class="monitor-search layui-row">
+
+    </div>
+    <!--操作区-->
+    <div class="monitor-operate layui-row">
+
+    </div>
+    <!--展示区-->
+    <!--缺少删除监控端功能-->
+    <div class="monitor-show layui-row"></div>
+</div>
+
+<script id="monitor-card" type="text/html">
+    {{#  layui.each(d, function(index, item){ }}
+    <div class="layui-card" data-id="{{= item.id }}">
+        <div class="layui-card-header monitor-header flex-space-between {{= item.stateClass }}">
+            <div class="monitor-name">{{= item.name }}（{{= item.stateTrans }}）</div>
+            <div>
+                <button type="button" lay-on="monitor-delete"
+                        class="layui-btn layui-btn-sm layui-btn-danger layui-btn-radius">
+                    <i class="layui-icon layui-icon-delete"></i> 删除
+                </button>
+            </div>
+        </div>
+        <div class="layui-card-body layui-row">
+            <form class="layui-form layui-row" action="">
+                <div class="layui-form-item">
+                    <div class="layui-col-md6">
+                        <div class="layui-form-label monitor-title">最后心跳时间</div>
+                        <div class="monitor-content">{{= item.lastHeart }}</div>
+                    </div>
+                    <div class="layui-col-md6">
+                        <div class="layui-form-label monitor-title">最后收款时间</div>
+                        <div class="monitor-content">{{= item.lastPay }}</div>
+                    </div>
+                </div>
+                <div class="layui-bg-gray" style="padding: 16px;">
+                    <div class="layui-row layui-col-space15">
+                        <div class="layui-col-md6">
+                            <div class="layui-card" data-id="{{= item.id }}">
+                                <div class="layui-card-header pay-code-header flex-space-between">
+                                    <div class="pay-code-name">{{= item.wechat.name }}</div>
+                                    <div>
+                                        <input class="pay-code-enable" title="ON|OFF" lay-skin="switch"
+                                               style="display:{{= item.wechat.enable?'layui-show':'layui-hide' }}"
+                                               type="checkbox" name="wechatEnable" value="{{= item.wechat.id }}"
+                                               lay-filter="pay-code-enable" {{=item.wechat.enable?"checked":"" }}
+                                               {{=item.wechat.payment?"":"disabled"}} data-key="wechat">
+                                    </div>
+                                </div>
+                                <div class="layui-card-body pay-code flex-column-center" data-key="wechat">
+                                    <div class="pay-code-show {{= item.wechat.payment?'layui-show':'layui-hide' }}"
+                                         data-code="{{= item.wechat.payment }}"></div>
+                                    <div class="pay-code-upload {{= item.wechat.payment?'layui-hide':'layui-show' }}">
+                                        <i class="layui-icon layui-icon-upload"></i>
+                                        <div>点击上传微信付款码</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6">
+                            <div class="layui-card" data-id="{{= item.id }}">
+                                <div class="layui-card-header pay-code-header flex-space-between">
+                                    <div class="pay-code-name">{{= item.aliName }}</div>
+                                    <div>
+                                        <input class="pay-code-enable" title="ON|OFF" lay-skin="switch"
+                                               style="display:{{= item.alipay.enable?'layui-show':'layui-hide' }}"
+                                               type="checkbox" name="aliEnable" value="{{= item.alipay.id }}"
+                                               lay-filter="pay-code-enable" {{=item.alipay.enable?"checked":"" }}
+                                               {{=item.alipay.payment?"":"disabled"}} data-key="alipay">
+                                    </div>
+                                </div>
+                                <div class="layui-card-body pay-code flex-column-center" data-key="alipay">
+                                    <div class="pay-code-show {{= item.alipay.payment?'layui-show':'layui-hide' }}"
+                                         data-code="{{= item.alipay.payment }}"></div>
+                                    <div class="pay-code-upload {{= item.alipay.payment?'layui-hide':'layui-show' }}">
+                                        <i class="layui-icon layui-icon-upload"></i>
+                                        <div>点击上传支付宝付款码</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {{#  }); }}
+</script>
+
+<script>
+    var $monitorShow = $(".monitor-show")
+    var MONITOR_DATA = {};
+
+    layui.use(function () {
+        var form = layui.form;
+        var laytpl = layui.laytpl;
+        var util = layui.util;
+
+        API.monitorList({}, function (data) {
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                item.wechat = item.wechat || {};
+                item.alipay = item.alipay || {};
+                switch (item.state) {
+                    case 0:
+                        item.stateClass = 'monitor-offline';
+                        break;
+                    case 1:
+                        item.stateClass = 'monitor-online';
+                        break;
+                    case -1:
+                        item.stateClass = 'monitor-unbound';
+                        break;
+                }
+                MONITOR_DATA[item.id] = item;
+            }
+
+            // 渲染页面
+            laytpl(document.getElementById('monitor-card').innerHTML).render(data, function (str) {
+                // 渲染监控端
+                $monitorShow.html(str);
+                // 渲染付款码
+                $(".pay-code-show").each(function () {
+                    var payCode = this.getAttribute("data-code");
+                    if (!payCode) {
+                        return;
+                    }
+                    Util.encodeQRCode($(this), payCode);
+                })
+                // 渲染付款码开关
+                form.render($(".pay-code-enable"))
+
+                util.on({
+                    // 监控端删除事件
+                    "monitor-delete": function () {
+                        var item = getMonitorData(this);
+                        if (!item) {
+                            return;
+                        }
+                        layer.confirm('确定删除该监控端？', {icon: 3}, function () {
+                            API.monitorDelete({id: item.id}, function () {
+                                layer.msg('删除成功');
+                            })
+                        });
+                    }
+                });
+
+                // 付款码开关事件
+                form.on('switch(pay-code-enable)', function (obj) {
+                    var _this = this;
+                    var key = this.getAttribute('data-key');
+                    var monitor = getMonitorData(this);
+
+                    API.payCodeModify({id: monitor[key].id, enable: obj.elem.checked},
+                        function () {
+                            monitor[key].enable = obj.elem.checked;
+                            layer.msg('修改成功');
+                        },
+                        function () {
+                            obj.elem.checked = !obj.elem.checked;
+                            form.render($(_this));
+                            layer.msg('修改失败');
+                        }
+                    );
+                    console.log(key, monitor);
+                });
+
+                $(".pay-code").on('click', function () {
+                    var _this = this;
+                    var codeCardNode = _this.closest(".layui-card");
+                    var key = this.getAttribute('data-key');
+
+                    var monitor = getMonitorData(this);
+                    if (!monitor) {
+                        return;
+                    }
+
+                    var param = getData(monitor, key);
+
+                    openPayCodePage(param, function (payCode) {
+                        console.log("pay code request success...", data);
+                        monitor[key] = payCode;
+
+                        // 重新渲染
+                        var enableNode = codeCardNode.querySelector('.pay-code-enable');
+                        var nameNode = codeCardNode.querySelector('.pay-code-name');
+                        var showNode = codeCardNode.querySelector('.pay-code-show');
+                        var uploadNode = codeCardNode.querySelector('.pay-code-upload');
+                        enableNode.checked = payCode.enable;
+                        enableNode.disabled = false;
+                        form.render($(enableNode));
+                        Util.encodeQRCode($(showNode), payCode.payment);
+                        nameNode.innerText = payCode.name;
+                        uploadNode.classList.add('layui-hide');
+                        showNode.classList.remove('layui-hide');
+                    });
+
+                    function getData(monitor, key) {
+                        var type = (key === 'wechat' ? 1 : 2);
+                        var param = {monitorId: monitor.id, type: type, enable: 'on', codeType: 1, weight: 1};
+                        if (monitor[key] && monitor[key].id) {
+                            param = monitor[key];
+                            param.codeType = 1;
+                        }
+                        return param;
+                    }
+                });
+            });
+        })
+
+        function getMonitorData(item) {
+            var monitorId = item.closest('.layui-card').getAttribute('data-id');
+            return MONITOR_DATA[monitorId];
+        }
+    });
+
+</script>

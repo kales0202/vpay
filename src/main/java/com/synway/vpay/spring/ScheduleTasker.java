@@ -1,9 +1,10 @@
 package com.synway.vpay.spring;
 
-import com.synway.vpay.bean.AccountState;
 import com.synway.vpay.entity.Account;
+import com.synway.vpay.entity.Monitor;
 import com.synway.vpay.enums.MonitorState;
 import com.synway.vpay.service.AccountService;
+import com.synway.vpay.service.MonitorService;
 import com.synway.vpay.service.OrderService;
 import com.synway.vpay.service.TempPriceService;
 import jakarta.annotation.Resource;
@@ -26,6 +27,9 @@ public class ScheduleTasker {
     private AccountService accountService;
 
     @Resource
+    private MonitorService monitorService;
+
+    @Resource
     private TempPriceService tempPriceService;
 
     @Scheduled(initialDelay = 5000, fixedDelay = 30000)
@@ -34,15 +38,19 @@ public class ScheduleTasker {
         List<Account> accounts = accountService.findAll();
         LocalDateTime now = LocalDateTime.now();
         for (Account account : accounts) {
-            AccountState state = accountService.getAccountState(account.getId());
-            if (state.getMonitorState() == MonitorState.ONLINE) {
-                LocalDateTime expiredHeartTime = now.minus(3, ChronoUnit.MINUTES);
-                if (state.getLastHeart().isBefore(expiredHeartTime)) {
-                    log.warn("【{}】心跳超时，设置监控状态为离线", account.getName());
-                    state.setMonitorState(MonitorState.OFFLINE);
+
+            // 检查监控端状态
+            List<Monitor> monitors = monitorService.getMonitors(account.getId());
+            for (Monitor monitor : monitors) {
+                if (monitor.getState() == MonitorState.ONLINE) {
+                    LocalDateTime expiredHeartTime = now.minus(3, ChronoUnit.MINUTES);
+                    if (monitor.getLastHeart().isBefore(expiredHeartTime)) {
+                        log.warn("【{}】[{}]心跳超时，设置监控状态为离线", account.getName(), monitor.getName());
+                        monitor.setState(MonitorState.OFFLINE);
+                    }
+                } else {
+                    log.warn("【{}】[{}]监控状态为：{}", account.getName(), monitor.getName(), monitor.getState().getName());
                 }
-            } else {
-                log.warn("【{}】监控状态为：{}", account.getName(), state.getMonitorState().getName());
             }
 
             LocalDateTime deadline = now.minus(account.getClose(), ChronoUnit.MINUTES);
