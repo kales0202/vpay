@@ -13,5 +13,5 @@ public interface MonitorRepository extends JpaRepository<Monitor, UUID>, JpaSpec
 
     int countByAccountIdAndIdNotAndName(UUID accountId, UUID id, String name);
 
-    List<Monitor> findByAccountIdOrderByCreateTimeDesc(UUID accountId);
+    List<Monitor> findByAccountId(UUID accountId);
 }

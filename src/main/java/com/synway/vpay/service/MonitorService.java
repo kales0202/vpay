@@ -139,9 +139,8 @@ public class MonitorService {
         if (MONITOR_STATE_MAP.containsKey(accountId)) {
             return Lists.newArrayList(MONITOR_STATE_MAP.get(accountId).values());
         }
-        List<Monitor> monitors = this.monitorRepository.findByAccountIdOrderByCreateTimeDesc(accountId);
-        LinkedHashMap<String, Monitor> monitorMap = monitors.stream()
-                .collect(Collectors.toMap(Monitor::getName, Function.identity(), (e, r) -> e, LinkedHashMap::new));
+        List<Monitor> monitors = this.monitorRepository.findByAccountId(accountId);
+        Map<String, Monitor> monitorMap = monitors.stream().collect(Collectors.toMap(Monitor::getName, Function.identity()));
         MONITOR_STATE_MAP.put(accountId, monitorMap);
         return monitors;
     }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -44,7 +45,7 @@ public class ScheduleTasker {
             for (Monitor monitor : monitors) {
                 if (monitor.getState() == MonitorState.ONLINE) {
                     LocalDateTime expiredHeartTime = now.minus(3, ChronoUnit.MINUTES);
-                    if (monitor.getLastHeart().isBefore(expiredHeartTime)) {
+                    if (Objects.isNull(monitor.getLastHeart()) || monitor.getLastHeart().isBefore(expiredHeartTime)) {
                         log.warn("【{}】[{}]心跳超时，设置监控状态为离线", account.getName(), monitor.getName());
                         monitor.setState(MonitorState.OFFLINE);
                     }
