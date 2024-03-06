@@ -1,7 +1,6 @@
 package com.synway.vpay.service;
 
 import com.synway.vpay.base.exception.BusinessException;
-import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.TempPrice;
 import com.synway.vpay.enums.PayType;
 import com.synway.vpay.repository.TempPriceRepository;
@@ -26,19 +25,18 @@ public class TempPriceService {
     @Resource
     private TempPriceRepository tempPriceRepository;
 
-    @Resource
-    private Account account;
-
     /**
      * 获取实际支付金额
      *
-     * @param payType 支付方式
-     * @param price   支付金额
+     * @param accountId 账户ID
+     * @param payType   支付方式
+     * @param price     支付金额
+     * @param payQf     区分方式
      * @return 保存的实际支付金额
      * @since 0.1
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public BigDecimal saveReallyPrice(UUID accountId, PayType payType, BigDecimal price) {
+    public BigDecimal saveReallyPrice(UUID accountId, PayType payType, BigDecimal price, int payQf) {
         while (true) {
             try {
                 TempPrice tempPrice = new TempPrice(accountId, payType, price);
@@ -48,26 +46,13 @@ public class TempPriceService {
                 // do nothing
             }
             // reallyPrice +/- 0.01
-            price = account.getPayQf() == 1 ? price.add(RATIO) : price.subtract(RATIO);
+            price = payQf == 1 ? price.add(RATIO) : price.subtract(RATIO);
 
             // 判断是否小于0
             if (price.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BusinessException("所有金额均被占用");
             }
         }
-    }
-
-    /**
-     * 根据支付方式和支付金额删除订单
-     *
-     * @param payType 支付方式
-     * @param price   支付金额
-     * @return int 删除的数量
-     * @since 0.1
-     */
-    @Transactional
-    public int deleteByPayTypeAndPrice(PayType payType, BigDecimal price) {
-        return this.deleteByPayTypeAndPrice(account.getId(), payType, price);
     }
 
     /**

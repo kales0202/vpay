@@ -57,7 +57,7 @@ public class PublicController {
     @PostMapping("/order/create")
     public Result<OrderVO> createOrder(HttpServletResponse response, @RequestBody OrderCreateBO bo) throws IOException {
         this.simulatedLogin();
-        Order order = orderService.create(bo);
+        Order order = orderService.create(account, bo);
         if (bo.openHtml()) {
             response.sendRedirect("/pay?orderId=" + order.getOrderId());
         }

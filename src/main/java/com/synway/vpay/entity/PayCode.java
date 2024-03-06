@@ -2,6 +2,7 @@ package com.synway.vpay.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.synway.vpay.base.define.IWeight;
 import com.synway.vpay.base.entity.BaseEntity;
 import com.synway.vpay.enums.PayType;
 import jakarta.persistence.Column;
@@ -14,6 +15,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.apache.logging.log4j.util.Strings;
 
 import java.util.UUID;
 
@@ -27,7 +29,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @ToString(callSuper = true)
-public class PayCode extends BaseEntity {
+public class PayCode extends BaseEntity implements IWeight {
 
     /**
      * 账户ID
@@ -90,4 +92,8 @@ public class PayCode extends BaseEntity {
      */
     @Column(name = "monitor_id", insertable = false, updatable = false)
     private UUID monitorId;
+
+    public boolean isAvailable() {
+        return enable && Strings.isNotBlank(payment);
+    }
 }

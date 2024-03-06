@@ -3,6 +3,7 @@ package com.synway.vpay.service;
 import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
 import com.synway.vpay.base.exception.IllegalOperationException;
+import com.synway.vpay.controller.AccountController.PasswordBO;
 import com.synway.vpay.entity.Account;
 import com.synway.vpay.exception.AccountNotFoundException;
 import com.synway.vpay.repository.AccountRepository;
@@ -31,9 +32,6 @@ public class AccountService {
     @Resource
     private AccountRepository accountRepository;
 
-    @Resource
-    private Account account;
-
     public Account login(String name, String pass) {
         if (Strings.isBlank(name) || Strings.isBlank(pass)) {
             throw new IllegalArgumentException("请输入账号和密码！");
@@ -47,19 +45,21 @@ public class AccountService {
     }
 
     @CacheEvict(cacheNames = "account")
-    public void changePassword(String oldPassword, String newPassword) {
-        if (Strings.isBlank(oldPassword) || Strings.isBlank(newPassword)) {
+    public String changePassword(PasswordBO bo) {
+        if (Strings.isBlank(bo.getOldPassword()) || Strings.isBlank(bo.getNewPassword())) {
             throw new IllegalArgumentException("请输入原密码和新密码！");
         }
 
-        Account db = accountRepository.findByName(account.getName());
-        if (!VpayUtil.jbVerify(oldPassword, db.getPassword())) {
+        Account db = accountRepository.findById(bo.getAccountId())
+                .orElseThrow(AccountNotFoundException::new);
+        if (!VpayUtil.jbVerify(bo.getOldPassword(), db.getPassword())) {
             throw new IllegalOperationException("原密码输入错误！");
         }
-        db.setPassword(VpayUtil.jbEncrypt(newPassword));
+
+        db.setPassword(VpayUtil.jbEncrypt(bo.getNewPassword()));
         accountRepository.save(db);
 
-        account.setPassword(db.getPassword());
+        return db.getPassword();
     }
 
     /**
@@ -70,18 +70,14 @@ public class AccountService {
      */
     @CacheEvict(cacheNames = "account")
     public Account save(Account param) {
-        if (!Objects.equals(account.getName(), param.getName())) {
+        Account db = accountRepository.findById(param.getId())
+                .orElseThrow(AccountNotFoundException::new);
+        if (!Objects.equals(db.getName(), param.getName())) {
             throw new IllegalOperationException("不允许修改账户名");
-        }
-        Account db = accountRepository.findByName(account.getName());
-        if (Objects.isNull(db)) {
-            throw new AccountNotFoundException();
         }
 
         VpayUtil.copyNonNullProperties(param, db);
         db = accountRepository.save(db);
-
-        account.copyFrom(db);
         return db;
     }
 

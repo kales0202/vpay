@@ -24,6 +24,13 @@ public class MonitorBO {
     private UUID id;
 
     /**
+     * 账户ID
+     *
+     * @since 0.1
+     */
+    private UUID accountId;
+
+    /**
      * 唯一标识名称
      *
      * @since 0.1

@@ -24,7 +24,7 @@ public class RandomStrategy<T> implements Strategy<T> {
 
     @Override
     public String getName() {
-        return "无视权重随机轮询";
+        return "随机轮询";
     }
 
     @Override

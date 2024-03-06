@@ -33,20 +33,27 @@ public class PayCodeService {
 
     public PayCode findById(UUID id) {
         return payCodeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("没有找到对应的支付码"));
+                .orElseThrow(() -> new IllegalArgumentException("没有找到对应的支付码"));
     }
 
     public void deleteById(UUID id) {
-        payCodeRepository.deleteById(id);
+        PayCode payCode = payCodeRepository.findById(id).orElse(null);
+        this.delete(payCode);
     }
 
     public void delete(PayCode payCode) {
+        if (Objects.isNull(payCode)) {
+            return;
+        }
         payCodeRepository.delete(payCode);
+
+        // 更新缓存的轮询策略
+        if (payCode.isAvailable()) {
+            monitorService.resetStrategyCache(account.getId(), account.getStrategy());
+        }
     }
 
     public PayCode create(PayCode payCode) {
-        payCode.setAccountId(account.getId());
-
         Monitor monitor = monitorService.findById(payCode.getMonitorId());
         payCode.setMonitor(monitor);
 
@@ -56,6 +63,11 @@ public class PayCodeService {
         });
 
         this.validateUniquePayment(payCode);
+
+        // 更新缓存的轮询策略
+        if (payCode.isAvailable()) {
+            monitorService.resetStrategyCache(account.getId(), account.getStrategy());
+        }
 
         return payCodeRepository.save(payCode);
     }
@@ -68,13 +80,17 @@ public class PayCodeService {
             payCode.setPayment(bo.getPayment());
             this.validateUniquePayment(payCode);
         }
+
         bo.merge2PayCode(payCode);
+
+        // 更新缓存的轮询策略
+        monitorService.resetStrategyCache(account.getId(), account.getStrategy());
 
         return payCodeRepository.save(payCode);
     }
 
     public void validateUniquePayment(PayCode payCode) {
-        PayCode existed = payCodeRepository.findByAccountIdAndIdNotAndPayment(account.getId(), payCode.getId(), payCode.getPayment());
+        PayCode existed = payCodeRepository.findByAccountIdAndIdNotAndPayment(payCode.getAccountId(), payCode.getId(), payCode.getPayment());
         if (Objects.nonNull(existed)) {
             Monitor monitor = existed.getMonitor();
             throw new IllegalArgumentException("付款码已存在请勿重复添加，监控端名称为：" + monitor.getName());

@@ -3,7 +3,6 @@ package com.synway.vpay.service;
 import com.synway.vpay.base.bean.PageData;
 import com.synway.vpay.base.exception.BusinessException;
 import com.synway.vpay.base.exception.IllegalArgumentException;
-import com.synway.vpay.base.strategy.RandomStrategy;
 import com.synway.vpay.base.util.BaseUtil;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderDeleteBO;
@@ -66,12 +65,13 @@ public class OrderService {
     /**
      * 创建订单
      *
-     * @param bo 订单信息
+     * @param account 账户信息
+     * @param bo      订单信息
      * @return 订单数据
      * @since 0.1
      */
     @Transactional
-    public Order create(OrderCreateBO bo) {
+    public Order create(Account account, OrderCreateBO bo) {
         // 验证签名
         bo.verifySign(account.getKeyword());
 
@@ -79,19 +79,20 @@ public class OrderService {
             throw new BusinessException("商户订单号已存在");
         }
 
-        PayCode payCode = this.nextPayCode(bo.getPayType());
+        PayCode payCode = monitorService.nextPayCode(account.getId(), bo.getPayType(), account.getStrategy());
         if (Objects.isNull(payCode)) {
             throw new BusinessException("请您先配置支付地址");
         }
 
         Order order = bo.toOrder();
         order.setAccountId(account.getId());
-        order.setMonitorId(payCode.getMonitor().getId());
+        order.setMonitorId(payCode.getMonitorId());
         order.setPayUrl(payCode.getPayment());
         order.setIsAuto(PayCodeType.GENERIC);
         order.setState(OrderState.WAIT);
 
-        BigDecimal reallyPrice = tempPriceService.saveReallyPrice(order.getAccountId(), order.getPayType(), order.getPrice());
+        BigDecimal reallyPrice = tempPriceService.saveReallyPrice(
+                order.getAccountId(), order.getPayType(), order.getPrice(), account.getPayQf());
         order.setReallyPrice(reallyPrice);
 
         return orderRepository.save(order);
@@ -343,15 +344,16 @@ public class OrderService {
     /**
      * 关闭订单
      *
-     * @param orderId 订单ID
+     * @param accountId 账户ID
+     * @param orderId   订单ID
      * @since 0.1
      */
-    public void closeOrder(String orderId) {
+    public void closeOrder(UUID accountId, String orderId) {
         Order order = this.findByOrderId(orderId);
         if (order.getState() != OrderState.WAIT) {
             throw new BusinessException("订单状态不允许关闭");
         }
-        tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getReallyPrice());
+        tempPriceService.deleteByPayTypeAndPrice(accountId, order.getPayType(), order.getReallyPrice());
         order.setCloseTime(LocalDateTime.now());
         order.setState(OrderState.EXPIRED);
         orderRepository.save(order);
@@ -408,7 +410,7 @@ public class OrderService {
 
         if (Strings.isNotBlank(res) && res.equals("success")) {
             if (order.getState() == OrderState.WAIT) {
-                tempPriceService.deleteByPayTypeAndPrice(order.getPayType(), order.getReallyPrice());
+                tempPriceService.deleteByPayTypeAndPrice(order.getAccountId(), order.getPayType(), order.getReallyPrice());
             }
             order.setCloseTime(LocalDateTime.now());
             order.setState(OrderState.SUCCESS);
@@ -433,12 +435,5 @@ public class OrderService {
         params.put("reallyPrice", order.getReallyPrice().toString());
         params.put("sign", VpayUtil.md5(sign));
         return HttpUtil.map2GetParam(url, params);
-    }
-
-    private PayCode nextPayCode(PayType payType) {
-        List<PayCode> entities = monitorService.getPayCodes(account.getId(), payType);
-        // TODO... 需要缓存起来
-        RandomStrategy<PayCode> strategy = new RandomStrategy<>(entities);
-        return strategy.next();
     }
 }

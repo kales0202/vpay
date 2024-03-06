@@ -2,6 +2,7 @@ package com.synway.vpay.controller;
 
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.PayCodeBO;
+import com.synway.vpay.entity.Account;
 import com.synway.vpay.entity.PayCode;
 import com.synway.vpay.service.PayCodeService;
 import jakarta.annotation.Resource;
@@ -29,6 +30,9 @@ public class PayCodeController {
     @Resource
     private PayCodeService payCodeService;
 
+    @Resource
+    private Account account;
+
     /**
      * 新增付款码
      *
@@ -38,6 +42,7 @@ public class PayCodeController {
      */
     @PostMapping
     public Result<PayCode> create(@RequestBody PayCode payCode) {
+        payCode.setAccountId(account.getId());
         return Result.success(payCodeService.create(payCode));
     }
 

@@ -59,6 +59,7 @@ public class MonitorController {
      */
     @PutMapping
     public Result<Monitor> save(@RequestBody MonitorBO bo) {
+        bo.setAccountId(account.getId());
         return Result.success(monitorService.save(bo));
     }
 
@@ -70,7 +71,7 @@ public class MonitorController {
      */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable UUID id) {
-        monitorService.deleteById(id);
+        monitorService.delete(id, account.getId(), account.getStrategy());
         return Result.success();
     }
 
@@ -83,6 +84,7 @@ public class MonitorController {
      */
     @PostMapping("/list")
     public Result<List<MonitorVO>> list(MonitorListBO bo) {
+        bo.setAccountId(account.getId());
         List<Monitor> monitors = monitorService.list(bo);
         return Result.success(monitors.stream().map(MonitorVO::from).toList());
     }

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 /**
  * 管理员相关接口
  *
@@ -53,7 +55,8 @@ public class AccountController {
      */
     @PostMapping("/password")
     public Result<Void> password(@RequestBody @Valid PasswordBO bo) {
-        accountService.changePassword(bo.getOldPassword(), bo.getNewPassword());
+        String newPassword = accountService.changePassword(bo);
+        account.setPassword(newPassword);
         return Result.success();
     }
 
@@ -76,7 +79,9 @@ public class AccountController {
      */
     @PostMapping
     public Result<Account> save(@RequestBody @Valid Account param) {
-        return Result.success(accountService.save(param));
+        Account db = accountService.save(param);
+        account.copyFrom(db);
+        return Result.success(db);
     }
 
     /**
@@ -111,6 +116,13 @@ public class AccountController {
      */
     @Data
     public static class PasswordBO {
+
+        /**
+         * 账户ID
+         *
+         * @since 0.1
+         */
+        private UUID accountId;
 
         /**
          * 旧密码

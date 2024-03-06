@@ -53,7 +53,7 @@ public class SignController {
      */
     @GetMapping("/order/close")
     public Result<Void> closeOrder(String orderId) {
-        orderService.closeOrder(orderId);
+        orderService.closeOrder(account.getId(), orderId);
         return Result.success();
     }
 

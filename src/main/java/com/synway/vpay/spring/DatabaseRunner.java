@@ -128,6 +128,7 @@ public class DatabaseRunner implements ApplicationRunner {
         List<Account> accounts = accountService.findAll();
         for (Account account : accounts) {
             monitorService.listAll(account.getId());
+            monitorService.resetStrategyCache(account.getId(), account.getStrategy());
         }
     }
 }

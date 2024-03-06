@@ -28,9 +28,9 @@ public class TempPriceServiceTest {
     @Test
     public void saveReallyPrice() {
         UUID id = UUID.randomUUID();
-        tempPriceService.saveReallyPrice(id, PayType.WECHAT, new BigDecimal("100"));
-        tempPriceService.saveReallyPrice(id, PayType.WECHAT, new BigDecimal("100"));
-        BigDecimal bigDecimal = tempPriceService.saveReallyPrice(id, PayType.WECHAT, new BigDecimal("100"));
+        tempPriceService.saveReallyPrice(id, PayType.WECHAT, new BigDecimal("100"), 1);
+        tempPriceService.saveReallyPrice(id, PayType.WECHAT, new BigDecimal("100"), 1);
+        BigDecimal bigDecimal = tempPriceService.saveReallyPrice(id, PayType.WECHAT, new BigDecimal("100"), 1);
 
         Assertions.assertEquals(new BigDecimal("100.02"), bigDecimal);
     }

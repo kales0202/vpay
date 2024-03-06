@@ -1,10 +1,9 @@
 package com.synway.vpay.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.synway.vpay.base.define.Strategy;
 import com.synway.vpay.base.entity.BaseEntity;
+import com.synway.vpay.enums.PaymentStrategy;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -77,12 +76,11 @@ public class Account extends BaseEntity {
     private int close = 5;
 
     /**
-     * 轮询策略
+     * 轮询策略，默认是随机轮询
      *
      * @since 0.1
      */
-    @Transient
-    private Strategy<String> strategy;
+    private PaymentStrategy strategy = PaymentStrategy.RandomStrategy;
 
     /**
      * 拷贝Account数据

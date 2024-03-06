@@ -1,5 +1,6 @@
 package com.synway.vpay.base.strategy;
 
+import com.synway.vpay.base.define.IWeight;
 import com.synway.vpay.base.define.Strategy;
 
 import java.util.List;
@@ -8,20 +9,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 权重轮询策略
  *
- * @param <T> 轮询值类型
  * @since 0.1
  */
-public class WeightStrategy<T> implements Strategy<T> {
+public class WeightStrategy implements Strategy<IWeight> {
 
     private final AtomicInteger counter = new AtomicInteger(0);
 
-    private final List<WeightItem<T>> items;
+    private final List<IWeight> items;
 
     private final int total;
 
-    public WeightStrategy(List<WeightItem<T>> items) {
+    public WeightStrategy(List<IWeight> items) {
         this.items = items;
-        this.total = items.stream().mapToInt(WeightItem::weight).sum();
+        this.total = items.stream().mapToInt(IWeight::getWeight).sum();
     }
 
     @Override
@@ -30,18 +30,21 @@ public class WeightStrategy<T> implements Strategy<T> {
     }
 
     @Override
-    public T next() {
-        int currentIndex = counter.getAndIncrement() % total;
+    public IWeight next() {
+        // counter加1，如果达到最大值，则重置为0
+        int cur = counter.getAndIncrement();
+        if (cur == Integer.MAX_VALUE) {
+            counter.getAndSet(0);
+        }
 
-        for (WeightItem<T> item : items) {
-            currentIndex -= item.weight();
+        int currentIndex = cur % total;
+
+        for (IWeight item : items) {
+            currentIndex -= item.getWeight();
             if (currentIndex < 0) {
-                return item.item();
+                return item;
             }
         }
         return null;
-    }
-
-    public record WeightItem<T>(T item, int weight) {
     }
 }

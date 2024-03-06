@@ -2,9 +2,9 @@ package com.synway.vpay.entity;
 
 import com.synway.vpay.base.entity.BaseEntity;
 import com.synway.vpay.enums.MonitorState;
-import com.synway.vpay.enums.PayType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -15,8 +15,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.apache.logging.log4j.util.Strings;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -66,7 +64,7 @@ public class Monitor extends BaseEntity {
      *
      * @since 0.1
      */
-    @OneToMany(mappedBy = "monitor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "monitor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PayCode> payCodes = new ArrayList<>();
 
     /**
@@ -92,15 +90,4 @@ public class Monitor extends BaseEntity {
      */
     @Transient
     private LocalDateTime lastPay;
-
-    public List<PayCode> getPayCodes(PayType type) {
-        if (CollectionUtils.isEmpty(payCodes)) {
-            return List.of();
-        }
-        return payCodes.stream()
-                .filter(p -> p.getType() == type)
-                .filter(PayCode::isEnable)
-                .filter(p -> Strings.isNotBlank(p.getPayment()))
-                .toList();
-    }
 }

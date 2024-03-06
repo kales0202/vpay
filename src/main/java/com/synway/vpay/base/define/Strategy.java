@@ -1,5 +1,7 @@
 package com.synway.vpay.base.define;
 
+import java.util.List;
+
 /**
  * 轮询策略接口
  *
@@ -7,6 +9,26 @@ package com.synway.vpay.base.define;
  * @since 0.1
  */
 public interface Strategy<T> {
+
+    /**
+     * 创建策略实例
+     *
+     * @param list 策略值
+     * @return 策略实例
+     */
+    static <T> Strategy<T> newInstance(List<T> list) {
+        return new Strategy<T>() {
+            @Override
+            public String getName() {
+                return null;
+            }
+
+            @Override
+            public T next() {
+                return null;
+            }
+        };
+    }
 
     /**
      * 获取策略名称

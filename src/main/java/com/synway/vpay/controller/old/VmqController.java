@@ -78,6 +78,9 @@ public class VmqController {
             throw new IllegalArgumentException("支付方式不正确: " + type);
         }
 
+        this.simulatedLogin((ac) -> {
+        });
+
         OrderCreateBO bo = new OrderCreateBO();
         bo.setPayId(payId);
         bo.setParam(param);
@@ -88,10 +91,7 @@ public class VmqController {
         bo.setSign(sign);
         bo.setIsHtml(isHtml);
 
-        this.simulatedLogin((ac) -> {
-        });
-
-        Order order = orderService.create(bo);
+        Order order = orderService.create(account, bo);
         if (isHtml == 0) {
             OrderVO vo = new OrderVO(account, order);
             Map<String, Object> orderInfo = BaseUtil.object2Map(vo);
@@ -205,7 +205,7 @@ public class VmqController {
                 throw new SignatureException();
             }
         });
-        orderService.closeOrder(orderId);
+        orderService.closeOrder(account.getId(), orderId);
         return this.success();
     }
 

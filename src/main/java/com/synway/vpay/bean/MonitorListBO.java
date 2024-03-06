@@ -3,6 +3,8 @@ package com.synway.vpay.bean;
 import com.synway.vpay.enums.PayType;
 import lombok.Data;
 
+import java.util.UUID;
+
 /**
  * 监控端列表查询入参
  *
@@ -10,6 +12,13 @@ import lombok.Data;
  */
 @Data
 public class MonitorListBO {
+
+    /**
+     * 账户ID
+     *
+     * @since 0.1
+     */
+    private UUID accountId;
 
     /**
      * 监控端名称
