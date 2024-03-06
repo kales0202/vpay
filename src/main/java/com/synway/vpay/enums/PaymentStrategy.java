@@ -11,9 +11,9 @@ import java.util.List;
 @SuppressWarnings("rawtypes")
 public enum PaymentStrategy implements IBaseEnum {
 
-    RandomStrategy(1, "无视权重随机轮询", RandomStrategy.class),
+    RandomStrategy(1, "随机轮询", RandomStrategy.class),
 
-    WeightStrategy(2, "依据权重轮询", WeightStrategy.class);
+    WeightStrategy(2, "加权轮询", WeightStrategy.class);
 
     private final int value;
 

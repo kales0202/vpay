@@ -59,7 +59,6 @@ public class MonitorController {
      */
     @PutMapping
     public Result<Monitor> save(@RequestBody MonitorBO bo) {
-        bo.setAccountId(account.getId());
         return Result.success(monitorService.save(bo));
     }
 

@@ -1,4 +1,8 @@
 <style>
+    .monitor-operate {
+        padding: 10px 15px;
+    }
+
     .monitor-online {
         background-color: #16b777;
         color: #fff;
@@ -49,8 +53,15 @@
 
     </div>
     <!--操作区-->
-    <div class="monitor-operate layui-row">
-
+    <div class="monitor-operate flex-space-between">
+        <div class="">
+            <button class="layui-btn layui-btn-sm" lay-on="monitor-new" style="{{= item.state==-1?'':'display:none'}}"
+                    type="button">
+                <i class="layui-icon layui-icon-add-circle-fine"></i> 新建
+            </button>
+        </div>
+        <div class="">
+        </div>
     </div>
     <!--展示区-->
     <!--缺少删除监控端功能-->
@@ -63,6 +74,10 @@
         <div class="layui-card-header monitor-header flex-space-between {{= item.stateClass }}">
             <div class="monitor-name">{{= item.name }}（{{= item.stateTrans }}）</div>
             <div>
+                <button type="button" lay-on="monitor-bound" style="{{= item.state==-1?'':'display:none'}}"
+                        class="layui-btn layui-btn-sm layui-btn-radius">
+                    <i class="layui-icon layui-icon-cellphone"></i> 绑定
+                </button>
                 <button type="button" lay-on="monitor-delete"
                         class="layui-btn layui-btn-sm layui-btn-danger layui-btn-radius">
                     <i class="layui-icon layui-icon-delete"></i> 删除
@@ -137,124 +152,196 @@
 
 <script>
     var $monitorShow = $(".monitor-show")
-    var MONITOR_DATA = {};
+    var MONITOR_DATA = null;
+    var ACCOUNT_DATA = null;
 
     layui.use(function () {
         var form = layui.form;
         var laytpl = layui.laytpl;
         var util = layui.util;
 
-        API.monitorList({}, function (data) {
-            for (var i = 0; i < data.length; i++) {
-                var item = data[i];
-                item.wechat = item.wechat || {};
-                item.alipay = item.alipay || {};
-                switch (item.state) {
-                    case 0:
-                        item.stateClass = 'monitor-offline';
-                        break;
-                    case 1:
-                        item.stateClass = 'monitor-online';
-                        break;
-                    case -1:
-                        item.stateClass = 'monitor-unbound';
-                        break;
-                }
-                MONITOR_DATA[item.id] = item;
-            }
+        renderMonitors();
 
-            // 渲染页面
-            laytpl(document.getElementById('monitor-card').innerHTML).render(data, function (str) {
-                // 渲染监控端
-                $monitorShow.html(str);
-                // 渲染付款码
-                $(".pay-code-show").each(function () {
-                    var payCode = this.getAttribute("data-code");
-                    if (!payCode) {
-                        return;
+        function renderMonitors() {
+            MONITOR_DATA = {};
+            API.monitorList({}, function (data) {
+                MONITOR_DATA.length = data.length;
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i];
+                    item.wechat = item.wechat || {};
+                    item.alipay = item.alipay || {};
+                    switch (item.state) {
+                        case 0:
+                            item.stateClass = 'monitor-offline';
+                            break;
+                        case 1:
+                            item.stateClass = 'monitor-online';
+                            break;
+                        case -1:
+                            item.stateClass = 'monitor-unbound';
+                            break;
                     }
-                    Util.encodeQRCode($(this), payCode);
-                })
-                // 渲染付款码开关
-                form.render($(".pay-code-enable"))
+                    MONITOR_DATA[item.id] = item;
+                }
 
-                util.on({
-                    // 监控端删除事件
-                    "monitor-delete": function () {
-                        var item = getMonitorData(this);
-                        if (!item) {
+                // 渲染页面
+                laytpl(document.getElementById('monitor-card').innerHTML).render(data, function (str) {
+                    // 渲染监控端
+                    $monitorShow.html(str);
+                    // 渲染付款码
+                    $(".pay-code-show").each(function () {
+                        var payCode = this.getAttribute("data-code");
+                        if (!payCode) {
                             return;
                         }
-                        layer.confirm('确定删除该监控端？', {icon: 3}, function () {
-                            API.monitorDelete({id: item.id}, function () {
-                                layer.msg('删除成功');
-                            })
-                        });
-                    }
-                });
+                        Util.encodeQRCode($(this), payCode);
+                    })
+                    // 渲染付款码开关
+                    form.render($(".pay-code-enable"))
 
-                // 付款码开关事件
-                form.on('switch(pay-code-enable)', function (obj) {
-                    var _this = this;
-                    var key = this.getAttribute('data-key');
-                    var monitor = getMonitorData(this);
 
-                    API.payCodeModify({id: monitor[key].id, enable: obj.elem.checked},
-                        function () {
-                            monitor[key].enable = obj.elem.checked;
-                            layer.msg('修改成功');
+                    var $monitorBoundContent = $("#monitor-bound-content");
+                    var $QRCodeImg = $(".qr-code-img");
+                    var $QRCodeText = $(".qr-code-text");
+                    var $QRCodeTips = $(".qr-code-tips");
+                    util.on({
+                        // 新建监控端事件
+                        "monitor-new": function () {
+                            layer.prompt({title: '请输入监控端名称'}, function (value, index, elem) {
+                                if (!value) {
+                                    return elem.focus();
+                                }
+                                API.monitorCreate({name: value}, function (data) {
+                                    renderMonitors();
+                                    // 关闭 prompt
+                                    layer.close(index);
+                                })
+                            });
                         },
-                        function () {
-                            obj.elem.checked = !obj.elem.checked;
-                            form.render($(_this));
-                            layer.msg('修改失败');
+                        // 绑定监控端事件
+                        "monitor-bound": function () {
+                            var item = getMonitorData(this);
+                            if (!item) {
+                                return;
+                            }
+                            if (!ACCOUNT_DATA) {
+                                API.getAccount(function (data) {
+                                    ACCOUNT_DATA = data;
+                                    openMonitorBoundPage();
+                                })
+                                return;
+                            }
+                            openMonitorBoundPage();
+
+                            function openMonitorBoundPage() {
+                                var boundCode = window.location.host + "/" + ACCOUNT_DATA.keyword + "/" + ACCOUNT_DATA.name + "/" + item.id;
+                                Util.encodeQRCode($QRCodeImg, boundCode);
+                                $QRCodeText.text(boundCode);
+                                $QRCodeTips.text('请使用监控端APP扫描二维码完成绑定');
+
+                                layer.open({
+                                    type: 1,
+                                    title: '监控端二维码',
+                                    shade: 0.8,
+                                    shadeClose: true,
+                                    area: ['520px', 'auto'],
+                                    content: $monitorBoundContent,
+                                    // 打开弹层成功后的回调函数
+                                    success: function (layero, index, that) {
+                                    },
+                                    end: function () {
+                                        $monitorBoundContent.hide();
+                                        $QRCodeImg.html('');
+                                        $QRCodeText.html('');
+                                        $QRCodeTips.html('')
+                                    }
+                                })
+                            }
+                        },
+                        // 监控端删除事件
+                        "monitor-delete": function () {
+                            if (MONITOR_DATA.length === 1) {
+                                layer.msg('请至少保留一个监控端');
+                                return;
+                            }
+
+                            var item = getMonitorData(this);
+                            if (!item) {
+                                return;
+                            }
+                            layer.confirm('确定删除该监控端？', {icon: 3}, function () {
+                                API.monitorDelete({id: item.id}, function () {
+                                    layer.msg('删除成功');
+                                    renderMonitors();
+                                })
+                            });
                         }
-                    );
-                    console.log(key, monitor);
-                });
-
-                $(".pay-code").on('click', function () {
-                    var _this = this;
-                    var codeCardNode = _this.closest(".layui-card");
-                    var key = this.getAttribute('data-key');
-
-                    var monitor = getMonitorData(this);
-                    if (!monitor) {
-                        return;
-                    }
-
-                    var param = getData(monitor, key);
-
-                    openPayCodePage(param, function (payCode) {
-                        console.log("pay code request success...", data);
-                        monitor[key] = payCode;
-
-                        // 重新渲染
-                        var enableNode = codeCardNode.querySelector('.pay-code-enable');
-                        var nameNode = codeCardNode.querySelector('.pay-code-name');
-                        var showNode = codeCardNode.querySelector('.pay-code-show');
-                        var uploadNode = codeCardNode.querySelector('.pay-code-upload');
-                        enableNode.checked = payCode.enable;
-                        enableNode.disabled = false;
-                        form.render($(enableNode));
-                        Util.encodeQRCode($(showNode), payCode.payment);
-                        nameNode.innerText = payCode.name;
-                        uploadNode.classList.add('layui-hide');
-                        showNode.classList.remove('layui-hide');
                     });
 
-                    function getData(monitor, key) {
-                        var type = (key === 'wechat' ? 1 : 2);
-                        var param = {monitorId: monitor.id, type: type, enable: 'on', codeType: 1, weight: 1};
-                        if (monitor[key] && monitor[key].id) {
-                            param = monitor[key];
-                            param.codeType = 1;
+                    // 付款码开关事件
+                    form.on('switch(pay-code-enable)', function (obj) {
+                        var _this = this;
+                        var key = this.getAttribute('data-key');
+                        var monitor = getMonitorData(this);
+
+                        API.payCodeModify({id: monitor[key].id, enable: obj.elem.checked},
+                            function () {
+                                monitor[key].enable = obj.elem.checked;
+                                layer.msg('修改成功');
+                            },
+                            function () {
+                                obj.elem.checked = !obj.elem.checked;
+                                form.render($(_this));
+                                layer.msg('修改失败');
+                            }
+                        );
+                        console.log(key, monitor);
+                    });
+
+                    $(".pay-code").on('click', function () {
+                        var _this = this;
+                        var codeCardNode = _this.closest(".layui-card");
+                        var key = this.getAttribute('data-key');
+
+                        var monitor = getMonitorData(this);
+                        if (!monitor) {
+                            return;
                         }
-                        return param;
-                    }
+
+                        var param = getData(monitor, key);
+
+                        console.log("pay code form render...", param);
+                        openPayCodePage(param, function (payCode) {
+                            console.log("pay code request success...", payCode);
+                            monitor[key] = payCode;
+
+                            // 重新渲染
+                            var enableNode = codeCardNode.querySelector('.pay-code-enable');
+                            var nameNode = codeCardNode.querySelector('.pay-code-name');
+                            var showNode = codeCardNode.querySelector('.pay-code-show');
+                            var uploadNode = codeCardNode.querySelector('.pay-code-upload');
+                            enableNode.checked = payCode.enable;
+                            enableNode.disabled = false;
+                            form.render($(enableNode));
+                            Util.encodeQRCode($(showNode), payCode.payment);
+                            nameNode.innerText = payCode.name;
+                            uploadNode.classList.add('layui-hide');
+                            showNode.classList.remove('layui-hide');
+                        });
+
+                        function getData(monitor, key) {
+                            var type = (key === 'wechat' ? 1 : 2);
+                            var param = {monitorId: monitor.id, type: type, enable: 'on', codeType: 1, weight: 1};
+                            if (monitor[key] && monitor[key].id) {
+                                param = monitor[key];
+                                param.codeType = 1;
+                            }
+                            return JSON.parse(JSON.stringify(param));
+                        }
+                    });
                 });
-            });
-        })
+            })
+        }
 
         function getMonitorData(item) {
             var monitorId = item.closest('.layui-card').getAttribute('data-id');

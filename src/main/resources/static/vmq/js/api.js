@@ -113,8 +113,9 @@
     self.fulfillOrder = (params, success, error) => get('/order/fulfill', params, success, error);
 
     // 监控端相关接口
-    self.monitorList = (params, success, error) => post('/monitor/list', params, success, error);
+    self.monitorCreate = (params, success, error) => post('/monitor', params, success, error);
     self.monitorDelete = (params, success, error) => delById('/monitor', params, success, error);
+    self.monitorList = (params, success, error) => post('/monitor/list', params, success, error);
 
     // 付款码相关接口
     self.payCodeCreate = (params, success, error) => post('/pay-code', params, success, error);

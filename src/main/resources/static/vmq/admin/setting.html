@@ -54,6 +54,18 @@
         </div>
     </div>
 
+    <div class="layui-form-item">
+        <label class="layui-form-label">付款码策略</label>
+        <div class="layui-input-block">
+            <div class="layui-upload">
+                <select id="strategy">
+                    <option value="1">随机轮询</option>
+                    <option value="2">加权轮询</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
     <div class="layui-form-item" style="text-align: right;">
         <button class="layui-btn" id="btn-save">保存</button>
     </div>
@@ -76,6 +88,7 @@
             var keyword = $("#keyword").val();
             var close = $("#close").val();
             var payQf = $("#payQf").val();
+            var strategy = $("#strategy").val();
             if (!name) {
                 layer.msg("请输入管理员账号");
                 return;
@@ -103,7 +116,8 @@
                 returnUrl: returnUrl,
                 keyword: keyword,
                 close: close,
-                payQf: payQf
+                payQf: payQf,
+                strategy: strategy
             }
 
             API.saveAccount(param, function (data) {
@@ -120,6 +134,7 @@
             $("#keyword").val(data.keyword);
             $("#close").val(data.close);
             $("#payQf").val(data.payQf);
+            $("#strategy").val(data.strategy);
         }
 
         API.getAccount(function (data) {

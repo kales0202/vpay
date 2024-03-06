@@ -178,7 +178,7 @@ public class MonitorService {
         Monitor monitor = this.findById(bo.getId());
         // 如果修改了名称，需要校验监控端名称是否唯一
         if (Strings.isNotBlank(bo.getName()) && !Objects.equals(bo.getName(), monitor.getName())) {
-            this.validateName(bo.getAccountId(), bo.getId(), bo.getName());
+            this.validateName(monitor.getAccountId(), bo.getId(), bo.getName());
         }
 
         // 赋值

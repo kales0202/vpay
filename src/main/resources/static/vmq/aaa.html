@@ -147,7 +147,7 @@
             <div class="layui-input-block">
                 <input class="layui-hide" id="pay-code-code-input" lay-verify="requiredQRDataCode" name="payment"
                        type="file">
-                <div class="layui-upload-drag" id="pay-code-code">
+                <div class="layui-upload-drag flex-column-center" id="pay-code-code">
                     <i class="layui-icon layui-icon-upload"></i>
                     <div>点击上传付款码</div>
                     <div class="layui-hide" id="ID-upload-demo-preview">
@@ -158,6 +158,15 @@
             </div>
         </div>
     </form>
+</div>
+
+<!--弹出层：付款码新增/修改-->
+<div id="monitor-bound-content" style="display: none">
+    <div class="qr-code-content flex-column-center">
+        <div class="qr-code-img"></div>
+        <div class="qr-code-text"></div>
+        <div class="qr-code-tips"></div>
+    </div>
 </div>
 
 <script src="//unpkg.com/layui@2.9.7/dist/layui.js"></script>
@@ -359,7 +368,6 @@
     var $payCodeContent = $('#pay-code-content');
 
     function openPayCodePage(param, callback) {
-        console.log("pay code form render...", param);
         fillPayCodeModel(param);
         layer.open({
             type: 1,
@@ -367,12 +375,8 @@
             shade: 0.8,
             area: ['520px', 'auto'],
             content: $payCodeContent,
-            btn: ['取消', '保存'],
+            btn: ['保存'],
             btn1: function (index, layero, that) {
-                console.log("取消...");
-                layer.close(index);
-            },
-            btn2: function (index, layero, that) {
                 console.log("保存...");
                 form.submit('pay-code-form', function (data) {
                     var params = JSON.parse(JSON.stringify(data.field));
