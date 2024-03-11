@@ -2,6 +2,7 @@ package com.synway.vpay.spring;
 
 import com.synway.vpay.entity.Account;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +22,9 @@ public class WebConfigurer implements WebMvcConfigurer {
     @Resource
     private LoginInterceptor loginInterceptor;
 
-    @Resource
-    private SignInterceptor signInterceptor;
-
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+    public void addInterceptors(@NotNull InterceptorRegistry registry) {
         loginInterceptor.registry(registry);
-        signInterceptor.registry(registry);
     }
 
     @Override

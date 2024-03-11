@@ -72,9 +72,6 @@ public class OrderService {
      */
     @Transactional
     public Order create(Account account, OrderCreateBO bo) {
-        // 验证签名
-        bo.verifySign(account.getKeyword());
-
         if (this.countByPayId(bo.getPayId()) > 0) {
             throw new BusinessException("商户订单号已存在");
         }
@@ -119,12 +116,13 @@ public class OrderService {
     /**
      * 通过订单ID获取订单信息
      *
-     * @param orderId 订单ID
+     * @param accountId 账户ID
+     * @param orderId   订单ID
      * @return 订单信息
      * @since 0.1
      */
-    public Order findByOrderId(String orderId) {
-        Order order = orderRepository.findByAccountIdAndOrderId(account.getId(), orderId);
+    public Order findByOrderId(UUID accountId, String orderId) {
+        Order order = orderRepository.findByAccountIdAndOrderId(accountId, orderId);
         if (Objects.isNull(order)) {
             throw new IllegalArgumentException("订单不存在");
         }
@@ -324,7 +322,7 @@ public class OrderService {
     }
 
     public String checkOrder(String orderId) {
-        Order order = this.findByOrderId(orderId);
+        Order order = this.findByOrderId(account.getId(), orderId);
         if (order.getState() == OrderState.WAIT) {
             throw new UnimportantException(order.getState().getName());
         }
@@ -349,7 +347,7 @@ public class OrderService {
      * @since 0.1
      */
     public void closeOrder(UUID accountId, String orderId) {
-        Order order = this.findByOrderId(orderId);
+        Order order = this.findByOrderId(accountId, orderId);
         if (order.getState() != OrderState.WAIT) {
             throw new BusinessException("订单状态不允许关闭");
         }

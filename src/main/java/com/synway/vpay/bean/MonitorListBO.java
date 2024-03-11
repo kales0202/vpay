@@ -14,6 +14,13 @@ import java.util.UUID;
 public class MonitorListBO {
 
     /**
+     * 监控端ID
+     *
+     * @since 0.1
+     */
+    private UUID id;
+
+    /**
      * 账户ID
      *
      * @since 0.1

@@ -78,8 +78,9 @@ public class DatabaseRunner implements ApplicationRunner {
         account = accountRepository.save(account);
 
         Monitor monitor = new Monitor();
+        monitor.setId(VpayConstant.DEFAULT_MONITOR_ID);
         monitor.setAccountId(account.getId());
-        monitor.setName(VpayConstant.DEFAULT_MONITOR_NAME);
+        monitor.setName("default");
         monitor = monitorRepository.saveAndFlush(monitor);
     }
 
@@ -96,8 +97,9 @@ public class DatabaseRunner implements ApplicationRunner {
         accountRepository.saveAndFlush(account);
 
         Monitor monitor = new Monitor();
+        monitor.setId(VpayConstant.DEFAULT_MONITOR_ID);
         monitor.setAccountId(account.getId());
-        monitor.setName(VpayConstant.DEFAULT_MONITOR_NAME);
+        monitor.setName("default");
         monitor = monitorRepository.saveAndFlush(monitor);
 
         // 模拟数据

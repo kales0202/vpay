@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -20,8 +19,7 @@ import java.util.Objects;
  * @since 0.1
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class OrderCreateBO extends SignBo {
+public class OrderCreateBO implements SignBo {
 
     /**
      * 商户订单号
@@ -93,7 +91,7 @@ public class OrderCreateBO extends SignBo {
     }
 
     @Override
-    public String calculateSign(String key) {
+    public String calculateSign(String time, String key) {
         return VpayUtil.md5(this.payId + this.param + this.payType.getValue() + this.price + key);
     }
 }

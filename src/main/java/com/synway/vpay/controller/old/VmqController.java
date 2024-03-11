@@ -72,14 +72,10 @@ public class VmqController {
     @RequestMapping("/createOrder")
     public String createOrder(String payId, String param, Integer type, String price,
                               String notifyUrl, String returnUrl, String sign, int isHtml) {
-
         PayType payType = IBaseEnum.fromValue(PayType.class, type);
         if (Objects.isNull(payType)) {
             throw new IllegalArgumentException("支付方式不正确: " + type);
         }
-
-        this.simulatedLogin((ac) -> {
-        });
 
         OrderCreateBO bo = new OrderCreateBO();
         bo.setPayId(payId);
@@ -88,8 +84,15 @@ public class VmqController {
         bo.setPrice(new BigDecimal(price));
         bo.setNotifyUrl(notifyUrl);
         bo.setReturnUrl(returnUrl);
-        bo.setSign(sign);
         bo.setIsHtml(isHtml);
+
+        this.simulatedLogin((ac) -> {
+            // 验证签名
+            String checkSign = bo.calculateSign("", account.getKeyword());
+            if (!Objects.equals(checkSign.toUpperCase(), sign.toUpperCase())) {
+                throw new SignatureException();
+            }
+        });
 
         Order order = orderService.create(account, bo);
         if (isHtml == 0) {
@@ -110,7 +113,7 @@ public class VmqController {
      * @param t    现行时间戳
      * @param sign md5(现行时间戳+通讯密钥)
      * @return 服务端状态
-     * @see TODO...补充监控端状态接口
+     * @see SignController#getMonitorInfo
      * @since 0.1
      */
     @RequestMapping("/getState")
@@ -130,7 +133,7 @@ public class VmqController {
         });
 
         // 获取监控端状态
-        Monitor monitor = monitorService.getMonitor(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME);
+        Monitor monitor = monitorService.getMonitor(account.getId(), VpayConstant.DEFAULT_MONITOR_ID);
 
         Map<String, Object> data = new HashMap<>();
         data.put("lastpay", VpayUtil.toTimestamp(monitor.getLastPay()));
@@ -154,7 +157,7 @@ public class VmqController {
         }
         this.simulatedLogin((ac) -> {
         });
-        Order order = orderService.findByOrderId(orderId);
+        Order order = orderService.findByOrderId(account.getId(), orderId);
 
         OrderVO vo = new OrderVO(account, order);
         Map<String, Object> orderInfo = BaseUtil.object2Map(vo);
@@ -237,7 +240,7 @@ public class VmqController {
             throw new BusinessException("客户端时间错误");
         }
         // 更新监控端状态
-        monitorService.updateMonitorState(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME, MonitorState.ONLINE, now);
+        monitorService.updateMonitorState(account.getId(), VpayConstant.DEFAULT_MONITOR_ID, MonitorState.ONLINE, now);
         return this.success();
     }
 
@@ -274,13 +277,13 @@ public class VmqController {
 
         // 校验签名
         this.simulatedLogin(ac -> {
-            if (!Objects.equals(VpayUtil.md5(t + ac.getKeyword()), sign)) {
+            if (!Objects.equals(VpayUtil.md5(type + price + t + ac.getKeyword()), sign)) {
                 throw new SignatureException();
             }
         });
 
         // 先更新监控端状态
-        monitorService.updateMonitorState(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME, MonitorState.ONLINE, LocalDateTime.now());
+        monitorService.updateMonitorState(account.getId(), VpayConstant.DEFAULT_MONITOR_ID, MonitorState.ONLINE, LocalDateTime.now());
 
         // 检查是否重复推送
         LocalDateTime payTime = VpayUtil.toDatetime(t);
@@ -306,7 +309,7 @@ public class VmqController {
             order.setPayTime(payTime);
             orderService.sendNotify(order);
         }
-        monitorService.updateLastPay(account.getId(), VpayConstant.DEFAULT_MONITOR_NAME, payTime);
+        monitorService.updateLastPay(account.getId(), VpayConstant.DEFAULT_MONITOR_ID, payTime);
         return this.success();
     }
 

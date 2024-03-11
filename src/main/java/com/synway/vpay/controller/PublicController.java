@@ -1,6 +1,5 @@
 package com.synway.vpay.controller;
 
-
 import com.synway.vpay.base.bean.Result;
 import com.synway.vpay.bean.OrderCreateBO;
 import com.synway.vpay.bean.OrderVO;
@@ -46,25 +45,6 @@ public class PublicController {
     private Account account;
 
     /**
-     * 创建订单（方法内进行验签）
-     *
-     * @param response HttpServletResponse
-     * @param bo       订单创建入参
-     * @return 生成的订单信息
-     * @throws IOException IOException
-     * @since 0.1
-     */
-    @PostMapping("/order/create")
-    public Result<OrderVO> createOrder(HttpServletResponse response, @RequestBody OrderCreateBO bo) throws IOException {
-        this.simulatedLogin();
-        Order order = orderService.create(account, bo);
-        if (bo.openHtml()) {
-            response.sendRedirect("/pay?orderId=" + order.getOrderId());
-        }
-        return Result.success(new OrderVO(account, order));
-    }
-
-    /**
      * 查询订单信息
      *
      * @param orderId 订单ID
@@ -75,7 +55,7 @@ public class PublicController {
     @ResponseBody
     public Result<OrderVO> getOrder(String orderId) {
         this.simulatedLogin();
-        Order order = orderService.findByOrderId(orderId);
+        Order order = orderService.findByOrderId(account.getId(), orderId);
         return Result.success(new OrderVO(account, order));
     }
 
@@ -94,7 +74,7 @@ public class PublicController {
     }
 
     private void simulatedLogin() {
-        String accountName = request.getHeader("Vpay-Account");
+        String accountName = request.getHeader(VpayConstant.HEADER_ACCOUNT);
         if (Strings.isBlank(accountName)) {
             accountName = VpayConstant.SUPER_ACCOUNT;
         }

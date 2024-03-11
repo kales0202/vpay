@@ -45,7 +45,7 @@ public class MonitorService {
      *
      * @since 0.1
      */
-    private static final Map<UUID, Map<String, Monitor>> MONITOR_STATE_MAP = new LinkedHashMap<>();
+    private static final Map<UUID, Map<UUID, Monitor>> MONITOR_STATE_MAP = new LinkedHashMap<>();
 
     /**
      * 账户付款码轮询策略缓存
@@ -115,12 +115,12 @@ public class MonitorService {
 
         List<Monitor> monitors = monitorRepository.findAll(specification);
         if (!CollectionUtils.isEmpty(monitors) && MONITOR_STATE_MAP.containsKey(bo.getAccountId())) {
-            Map<String, Monitor> monitorMap = MONITOR_STATE_MAP.get(bo.getAccountId());
+            Map<UUID, Monitor> monitorMap = MONITOR_STATE_MAP.get(bo.getAccountId());
             for (Monitor monitor : monitors) {
-                if (!monitorMap.containsKey(monitor.getName())) {
+                if (!monitorMap.containsKey(monitor.getId())) {
                     continue;
                 }
-                Monitor cache = monitorMap.get(monitor.getName());
+                Monitor cache = monitorMap.get(monitor.getId());
                 monitor.setState(cache.getState());
                 monitor.setLastPay(cache.getLastPay());
                 monitor.setLastHeart(cache.getLastHeart());
@@ -140,7 +140,7 @@ public class MonitorService {
             return Lists.newArrayList(MONITOR_STATE_MAP.get(accountId).values());
         }
         List<Monitor> monitors = this.monitorRepository.findByAccountId(accountId);
-        Map<String, Monitor> monitorMap = monitors.stream().collect(Collectors.toMap(Monitor::getName, Function.identity()));
+        Map<UUID, Monitor> monitorMap = monitors.stream().collect(Collectors.toMap(Monitor::getId, Function.identity()));
         MONITOR_STATE_MAP.put(accountId, monitorMap);
         return monitors;
     }
@@ -161,7 +161,7 @@ public class MonitorService {
         Monitor saved = monitorRepository.save(monitor);
 
         // 添加到缓存中
-        MONITOR_STATE_MAP.get(monitor.getAccountId()).put(monitor.getName(), saved);
+        MONITOR_STATE_MAP.get(monitor.getAccountId()).put(monitor.getId(), saved);
 
         return saved;
     }
@@ -185,13 +185,13 @@ public class MonitorService {
         Monitor saved = monitorRepository.save(monitor);
 
         // 更新到缓存中
-        Monitor cached = MONITOR_STATE_MAP.get(monitor.getAccountId()).get(monitor.getName());
+        Monitor cached = MONITOR_STATE_MAP.get(monitor.getAccountId()).get(monitor.getId());
         if (Objects.nonNull(cached)) {
             saved.setLastHeart(cached.getLastHeart());
             saved.setLastPay(cached.getLastPay());
             saved.setState(cached.getState());
         }
-        MONITOR_STATE_MAP.get(monitor.getAccountId()).put(monitor.getName(), saved);
+        MONITOR_STATE_MAP.get(monitor.getAccountId()).put(monitor.getId(), saved);
 
         return saved;
     }
@@ -209,7 +209,7 @@ public class MonitorService {
         }
 
         // 删除监控端状态缓存
-        this.removeMonitorCache(accountId, monitor.getName());
+        this.removeMonitorCache(accountId, monitor.getId());
 
         // 如果监控端中配置了付款码，则需要刷新缓存
         monitor.getPayCodes().stream()
@@ -238,43 +238,43 @@ public class MonitorService {
      * 更新监控端信息：最后支付时间
      *
      * @param accountId 账户ID
-     * @param name      监控端名称
+     * @param id        监控端ID
      * @param lastPay   最后支付时间
      * @since 0.1
      */
-    public void updateLastPay(UUID accountId, String name, LocalDateTime lastPay) {
+    public void updateLastPay(UUID accountId, UUID id, LocalDateTime lastPay) {
         if (!MONITOR_STATE_MAP.containsKey(accountId)) {
             throw new IllegalArgumentException("更新监控端心跳失败，账户不存在");
         }
-        Map<String, Monitor> monitorMap = MONITOR_STATE_MAP.get(accountId);
-        if (!monitorMap.containsKey(name)) {
+        Map<UUID, Monitor> monitorMap = MONITOR_STATE_MAP.get(accountId);
+        if (!monitorMap.containsKey(id)) {
             throw new IllegalArgumentException("更新监控端心跳失败，监控端不存在");
         }
-        monitorMap.get(name).setLastPay(lastPay);
+        monitorMap.get(id).setLastPay(lastPay);
     }
 
     /**
      * 更新监控端信息：监控端状态
      *
      * @param accountId 账户ID
-     * @param name      监控端名称
+     * @param id        监控端ID
      * @param state     监控端状态
      * @param lastBeat  最后支付时间
      * @since 0.1
      */
-    public Monitor updateMonitorState(UUID accountId, String name, MonitorState state, LocalDateTime lastBeat) {
+    public Monitor updateMonitorState(UUID accountId, UUID id, MonitorState state, LocalDateTime lastBeat) {
         if (!MONITOR_STATE_MAP.containsKey(accountId)) {
             throw new IllegalArgumentException("更新监控端心跳失败，账户不存在");
         }
-        Map<String, Monitor> monitorMap = MONITOR_STATE_MAP.get(accountId);
-        if (!monitorMap.containsKey(name)) {
+        Map<UUID, Monitor> monitorMap = MONITOR_STATE_MAP.get(accountId);
+        if (!monitorMap.containsKey(id)) {
             throw new IllegalArgumentException("更新监控端心跳失败，监控端不存在");
         }
-        monitorMap.get(name).setState(state);
+        monitorMap.get(id).setState(state);
         if (Objects.nonNull(lastBeat)) {
-            monitorMap.get(name).setLastHeart(lastBeat);
+            monitorMap.get(id).setLastHeart(lastBeat);
         }
-        return monitorMap.get(name);
+        return monitorMap.get(id);
     }
 
     /**
@@ -294,26 +294,26 @@ public class MonitorService {
      * 获取监控端信息
      *
      * @param accountId 账户ID
-     * @param name      监控端名称
+     * @param id        监控端ID
      * @since 0.1
      */
-    public Monitor getMonitor(UUID accountId, String name) {
+    public Monitor getMonitor(UUID accountId, UUID id) {
         if (!MONITOR_STATE_MAP.containsKey(accountId)) {
             throw new IllegalArgumentException("获取监控端信息失败，账户不存在");
         }
-        Map<String, Monitor> monitorMap = MONITOR_STATE_MAP.get(accountId);
-        if (!monitorMap.containsKey(name)) {
+        Map<UUID, Monitor> monitorMap = MONITOR_STATE_MAP.get(accountId);
+        if (!monitorMap.containsKey(id)) {
             throw new IllegalArgumentException("获取监控端信息失败，监控端不存在");
         }
-        return monitorMap.get(name);
+        return monitorMap.get(id);
     }
 
-    public String getNameFromHeader() {
-        String name = request.getHeader("Vpay-Monitor");
-        if (Strings.isBlank(name)) {
-            name = VpayConstant.DEFAULT_MONITOR_NAME;
+    public UUID getIdFromHeader() {
+        String monitorId = request.getHeader(VpayConstant.HEADER_MONITOR);
+        if (Strings.isNotBlank(monitorId)) {
+            return UUID.fromString(monitorId);
         }
-        return name;
+        return VpayConstant.DEFAULT_MONITOR_ID;
     }
 
     public PayCode nextPayCode(UUID accountId, PayType payType, PaymentStrategy strategy) {
@@ -348,8 +348,8 @@ public class MonitorService {
         ACCOUNT_STRATEGY_MAP.put(accountId, strategyMap);
     }
 
-    public synchronized void removeMonitorCache(UUID accountId, String monitorName) {
-        MONITOR_STATE_MAP.get(accountId).remove(monitorName);
+    public synchronized void removeMonitorCache(UUID accountId, UUID id) {
+        MONITOR_STATE_MAP.get(accountId).remove(id);
     }
 
     private List<PayCode> getAvailablePayCodes(List<Monitor> monitors, PayType payType) {
